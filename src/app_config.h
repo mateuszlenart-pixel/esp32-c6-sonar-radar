@@ -10,6 +10,15 @@
 #define RADAR_TARGET_CONFIRM_COUNT 3
 #define RADAR_TARGET_LOST_TIMEOUT_MS 1500
 
+#define SERVO_PWM_FREQUENCY_HZ 50
+#define SERVO_PWM_RESOLUTION_BITS 14
+#define SERVO_MIN_PULSE_US 600
+#define SERVO_MAX_PULSE_US 2400
+#define RADAR_STEP_PERIOD_MS 20
+#define RADAR_STEP_DEGREES 1
+#define RADAR_TASK_STACK_SIZE 3072
+#define RADAR_TASK_PRIORITY 4
+
 // Verify against the exact board revision and wiring before connecting hardware.
 #define GPIO_SERVO 4
 #define GPIO_SONAR_TRIG 5
@@ -20,4 +29,3 @@
 #define GPIO_LCD_SDA 20
 #define GPIO_LCD_SCL 21
 #define GPIO_BUZZER 22
-

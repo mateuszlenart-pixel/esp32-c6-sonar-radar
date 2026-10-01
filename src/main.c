@@ -1,9 +1,9 @@
-#include <stdbool.h>
-
 #include "esp_app_desc.h"
 #include "esp_log.h"
 
 #include "app_config.h"
+#include "radar.h"
+#include "servo.h"
 
 static const char *TAG = "RADAR";
 
@@ -15,4 +15,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Project: %s, version: %s", app->project_name, app->version);
     ESP_LOGI(TAG, "Configured scan range: %d-%d degrees",
              RADAR_MIN_ANGLE_DEG, RADAR_MAX_ANGLE_DEG);
+
+    ESP_ERROR_CHECK(servo_init());
+    radar_start();
 }
