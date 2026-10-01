@@ -1,0 +1,23 @@
+#pragma once
+
+#define RADAR_MIN_ANGLE_DEG 15
+#define RADAR_MAX_ANGLE_DEG 165
+
+#define RADAR_TARGET_DISTANCE_CM 50
+#define RADAR_CRITICAL_DISTANCE_CM 20
+#define RADAR_TARGET_RELEASE_DISTANCE_CM 55
+#define RADAR_CRITICAL_RELEASE_DISTANCE_CM 25
+#define RADAR_TARGET_CONFIRM_COUNT 3
+#define RADAR_TARGET_LOST_TIMEOUT_MS 1500
+
+// Verify against the exact board revision and wiring before connecting hardware.
+#define GPIO_SERVO 4
+#define GPIO_SONAR_TRIG 5
+#define GPIO_SONAR_ECHO 6
+#define GPIO_MAX7219_DIN 7
+#define GPIO_MAX7219_CLK 18
+#define GPIO_MAX7219_CS 19
+#define GPIO_LCD_SDA 20
+#define GPIO_LCD_SCL 21
+#define GPIO_BUZZER 22
+
