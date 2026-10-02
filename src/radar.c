@@ -4,13 +4,12 @@
 #include <stdlib.h>
 
 #include "esp_log.h"
-#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "app_config.h"
 #include "logic.h"
-#include "sonar.h"
+#include "sonar_task.h"
 #include "servo.h"
 
 static const char *TAG = "RADAR";
@@ -22,32 +21,12 @@ static void radar_task(void *arg)
     TickType_t last_wake = xTaskGetTickCount();
     int angle = RADAR_MIN_ANGLE_DEG;
     int direction = 1;
+    bool has_scanned = false;
 
     while (true) {
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(RADAR_STEP_PERIOD_MS));
 
-        ESP_ERROR_CHECK(servo_set_angle(angle));
-        vTaskDelay(pdMS_TO_TICKS(RADAR_SERVO_SETTLE_MS));
-
-        uint32_t distance_cm = 0;
-        esp_err_t err = sonar_measure_cm(&distance_cm);
-        const bool measurement_valid = err == ESP_OK;
-        const uint32_t now_ms = (uint32_t)(esp_timer_get_time() / 1000);
-        if (!logic_submit_measurement(angle, measurement_valid, distance_cm, now_ms)) {
-            ESP_LOGW(TAG, "Logic queue full; dropping measurement");
-        }
-
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "angle=%d deg, distance=%lu cm",
-                     angle, (unsigned long)distance_cm);
-        } else if (err == ESP_ERR_TIMEOUT) {
-            ESP_LOGD(TAG, "No echo at %d deg", angle);
-        } else {
-            ESP_LOGE(TAG, "Sonar measurement failed at %d deg: %s",
-                     angle, esp_err_to_name(err));
-        }
-
-        if (!logic_is_target_locked()) {
+        if (has_scanned && !logic_is_target_locked()) {
             angle += direction * RADAR_STEP_DEGREES;
             if (angle >= RADAR_MAX_ANGLE_DEG) {
                 angle = RADAR_MAX_ANGLE_DEG;
@@ -59,6 +38,14 @@ static void radar_task(void *arg)
                 ESP_LOGI(TAG, "Patrol reached %d degrees", angle);
             }
         }
+
+        ESP_ERROR_CHECK(servo_set_angle(angle));
+        vTaskDelay(pdMS_TO_TICKS(RADAR_SERVO_SETTLE_MS));
+
+        if (!sonar_task_request_measurement(angle)) {
+            ESP_LOGW(TAG, "Sonar request queue full; measurement skipped");
+        }
+        has_scanned = true;
     }
 }
 

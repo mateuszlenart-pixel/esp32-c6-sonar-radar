@@ -29,6 +29,9 @@
 #define RADAR_LOGIC_TASK_STACK_SIZE 4096
 #define RADAR_LOGIC_TASK_PRIORITY 6
 #define RADAR_MEASUREMENT_QUEUE_LENGTH 4
+#define RADAR_SONAR_TASK_STACK_SIZE 3072
+#define RADAR_SONAR_TASK_PRIORITY 5
+#define SONAR_REQUEST_QUEUE_LENGTH 1
 
 // Verify against the exact board revision and wiring before connecting hardware.
 #define GPIO_SERVO 4

@@ -1,0 +1,83 @@
+#include "sonar_task.h"
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "esp_log.h"
+#include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+#include "freertos/task.h"
+
+#include "app_config.h"
+#include "logic.h"
+#include "sonar.h"
+
+static const char *TAG = "SONAR_TASK";
+static QueueHandle_t s_request_queue;
+
+static void sonar_task(void *arg)
+{
+    (void)arg;
+
+    int angle_deg;
+    while (xQueueReceive(s_request_queue, &angle_deg, portMAX_DELAY) == pdTRUE) {
+        uint32_t distance_cm = 0;
+        const esp_err_t err = sonar_measure_cm(&distance_cm);
+        const bool distance_valid = err == ESP_OK;
+        const uint32_t timestamp_ms = (uint32_t)(esp_timer_get_time() / 1000);
+
+        if (!logic_submit_measurement(angle_deg,
+                                      distance_valid,
+                                      distance_cm,
+                                      timestamp_ms)) {
+            ESP_LOGW(TAG, "Logic queue full; dropping measurement");
+        }
+
+        if (err == ESP_OK) {
+            ESP_LOGI(TAG, "angle=%d deg, distance=%lu cm",
+                     angle_deg, (unsigned long)distance_cm);
+        } else if (err == ESP_ERR_TIMEOUT) {
+            ESP_LOGD(TAG, "No echo at %d deg", angle_deg);
+        } else {
+            ESP_LOGE(TAG, "Measurement failed at %d deg: %s",
+                     angle_deg, esp_err_to_name(err));
+        }
+    }
+}
+
+esp_err_t sonar_task_start(void)
+{
+    if (s_request_queue != NULL) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    s_request_queue = xQueueCreate(SONAR_REQUEST_QUEUE_LENGTH, sizeof(int));
+    if (s_request_queue == NULL) {
+        return ESP_ERR_NO_MEM;
+    }
+
+    if (xTaskCreate(sonar_task,
+                    "sonar_task",
+                    RADAR_SONAR_TASK_STACK_SIZE,
+                    NULL,
+                    RADAR_SONAR_TASK_PRIORITY,
+                    NULL) != pdPASS) {
+        vQueueDelete(s_request_queue);
+        s_request_queue = NULL;
+        ESP_LOGE(TAG, "Failed to create sonar task");
+        return ESP_ERR_NO_MEM;
+    }
+
+    return ESP_OK;
+}
+
+bool sonar_task_request_measurement(int angle_deg)
+{
+    if (s_request_queue == NULL ||
+        angle_deg < RADAR_MIN_ANGLE_DEG || angle_deg > RADAR_MAX_ANGLE_DEG) {
+        return false;
+    }
+
+    return xQueueSend(s_request_queue, &angle_deg, 0) == pdTRUE;
+}
