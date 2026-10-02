@@ -8,6 +8,7 @@
 #include "freertos/task.h"
 
 #include "app_config.h"
+#include "sonar.h"
 #include "servo.h"
 
 static const char *TAG = "RADAR";
@@ -23,6 +24,21 @@ static void radar_task(void *arg)
     while (true) {
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(RADAR_STEP_PERIOD_MS));
 
+        ESP_ERROR_CHECK(servo_set_angle(angle));
+        vTaskDelay(pdMS_TO_TICKS(RADAR_SERVO_SETTLE_MS));
+
+        uint32_t distance_cm = 0;
+        esp_err_t err = sonar_measure_cm(&distance_cm);
+        if (err == ESP_OK) {
+            ESP_LOGI(TAG, "angle=%d deg, distance=%lu cm",
+                     angle, (unsigned long)distance_cm);
+        } else if (err == ESP_ERR_TIMEOUT) {
+            ESP_LOGD(TAG, "No echo at %d deg", angle);
+        } else {
+            ESP_LOGE(TAG, "Sonar measurement failed at %d deg: %s",
+                     angle, esp_err_to_name(err));
+        }
+
         angle += direction * RADAR_STEP_DEGREES;
         if (angle >= RADAR_MAX_ANGLE_DEG) {
             angle = RADAR_MAX_ANGLE_DEG;
@@ -33,8 +49,6 @@ static void radar_task(void *arg)
             direction = 1;
             ESP_LOGI(TAG, "Patrol reached %d degrees", angle);
         }
-
-        ESP_ERROR_CHECK(servo_set_angle(angle));
     }
 }
 

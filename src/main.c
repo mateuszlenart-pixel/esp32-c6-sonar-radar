@@ -3,6 +3,7 @@
 
 #include "app_config.h"
 #include "radar.h"
+#include "sonar.h"
 #include "servo.h"
 
 static const char *TAG = "RADAR";
@@ -17,5 +18,6 @@ void app_main(void)
              RADAR_MIN_ANGLE_DEG, RADAR_MAX_ANGLE_DEG);
 
     ESP_ERROR_CHECK(servo_init());
+    ESP_ERROR_CHECK(sonar_init());
     radar_start();
 }
