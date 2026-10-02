@@ -32,3 +32,8 @@ jobs:
         run: |
           gcc -std=c11 -Wall -Wextra -Werror -Isrc src/detector.c tests/test_detector.c -o test_detector
           ./test_detector
+
+      - name: Test radar scan control
+        run: |
+          gcc -std=c11 -Wall -Wextra -Werror -Isrc src/scan_control.c tests/test_scan_control.c -o test_scan_control
+          ./test_scan_control
