@@ -2,6 +2,7 @@
 #include "esp_log.h"
 
 #include "app_config.h"
+#include "logic.h"
 #include "radar.h"
 #include "sonar.h"
 #include "servo.h"
@@ -19,5 +20,7 @@ void app_main(void)
 
     ESP_ERROR_CHECK(servo_init());
     ESP_ERROR_CHECK(sonar_init());
+    ESP_ERROR_CHECK(logic_init());
+    ESP_ERROR_CHECK(logic_start());
     radar_start();
 }
