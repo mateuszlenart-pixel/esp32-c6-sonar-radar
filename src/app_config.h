@@ -32,6 +32,12 @@
 #define RADAR_SONAR_TASK_STACK_SIZE 3072
 #define RADAR_SONAR_TASK_PRIORITY 5
 #define SONAR_REQUEST_QUEUE_LENGTH 1
+#define RADAR_UI_TASK_STACK_SIZE 4096
+#define RADAR_UI_TASK_PRIORITY 3
+#define RADAR_UI_REFRESH_MS 200
+#define OLED_I2C_PORT 0
+#define OLED_I2C_ADDRESS 0x3C
+#define OLED_I2C_FREQUENCY_HZ 100000
 
 // Verify against the exact board revision and wiring before connecting hardware.
 #define GPIO_SERVO 4
@@ -40,6 +46,6 @@
 #define GPIO_MAX7219_DIN 7
 #define GPIO_MAX7219_CLK 18
 #define GPIO_MAX7219_CS 19
-#define GPIO_LCD_SDA 20
-#define GPIO_LCD_SCL 21
+#define GPIO_OLED_SDA 20
+#define GPIO_OLED_SCL 21
 #define GPIO_BUZZER 22

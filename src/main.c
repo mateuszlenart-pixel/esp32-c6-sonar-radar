@@ -7,6 +7,7 @@
 #include "sonar.h"
 #include "sonar_task.h"
 #include "servo.h"
+#include "ui_task.h"
 
 static const char *TAG = "RADAR";
 
@@ -24,5 +25,6 @@ void app_main(void)
     ESP_ERROR_CHECK(logic_init());
     ESP_ERROR_CHECK(logic_start());
     ESP_ERROR_CHECK(sonar_task_start());
+    ESP_ERROR_CHECK(ui_task_start());
     radar_start();
 }
