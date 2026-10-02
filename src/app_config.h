@@ -38,6 +38,7 @@
 #define OLED_I2C_PORT 0
 #define OLED_I2C_ADDRESS 0x3C
 #define OLED_I2C_FREQUENCY_HZ 100000
+#define MAX7219_INTENSITY 2
 
 // Verify against the exact board revision and wiring before connecting hardware.
 #define GPIO_SERVO 4
