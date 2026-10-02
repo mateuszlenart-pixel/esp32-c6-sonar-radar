@@ -56,6 +56,8 @@ radar_detector_events_t radar_detector_update(radar_detector_t *detector,
             detector->critical_confirm_count = 0;
             detector->critical_clear_count = 0;
             events |= RADAR_EVENT_TARGET_LOST;
+            detector->state = RADAR_STATE_TARGET_LOST;
+            detector->state_changed_ms = now_ms;
             if (detector->critical_active) {
                 detector->critical_active = false;
                 events |= RADAR_EVENT_CRITICAL_CLEARED;
@@ -91,6 +93,24 @@ radar_detector_events_t radar_detector_update(radar_detector_t *detector,
             detector->critical_confirm_count = 0;
             detector->critical_clear_count = 0;
         }
+    }
+
+    radar_state_t next_state;
+    if (detector->critical_active) {
+        next_state = RADAR_STATE_CRITICAL_ALERT;
+    } else if (detector->target_active) {
+        next_state = RADAR_STATE_TARGET_LOCKED;
+    } else if (detector->state == RADAR_STATE_TARGET_LOST &&
+               (uint32_t)(now_ms - detector->state_changed_ms) <
+                   RADAR_TARGET_LOST_DISPLAY_MS) {
+        next_state = RADAR_STATE_TARGET_LOST;
+    } else {
+        next_state = RADAR_STATE_PATROL;
+    }
+
+    if (next_state != detector->state) {
+        detector->state = next_state;
+        detector->state_changed_ms = now_ms;
     }
 
     return events;
