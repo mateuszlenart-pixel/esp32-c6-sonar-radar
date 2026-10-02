@@ -9,6 +9,7 @@
 
 #include "app_config.h"
 #include "logic.h"
+#include "scan_control.h"
 #include "sonar_task.h"
 #include "servo.h"
 
@@ -26,15 +27,17 @@ static void radar_task(void *arg)
     while (true) {
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(RADAR_STEP_PERIOD_MS));
 
-        if (has_scanned && !logic_is_target_locked()) {
-            angle += direction * RADAR_STEP_DEGREES;
-            if (angle >= RADAR_MAX_ANGLE_DEG) {
-                angle = RADAR_MAX_ANGLE_DEG;
-                direction = -1;
+        if (has_scanned) {
+            const int previous_angle = angle;
+            angle = radar_scan_advance(angle,
+                                       &direction,
+                                       logic_is_target_locked(),
+                                       RADAR_MIN_ANGLE_DEG,
+                                       RADAR_MAX_ANGLE_DEG,
+                                       RADAR_STEP_DEGREES);
+            if (angle == RADAR_MAX_ANGLE_DEG && angle != previous_angle) {
                 ESP_LOGI(TAG, "Patrol reached %d degrees", angle);
-            } else if (angle <= RADAR_MIN_ANGLE_DEG) {
-                angle = RADAR_MIN_ANGLE_DEG;
-                direction = 1;
+            } else if (angle == RADAR_MIN_ANGLE_DEG && angle != previous_angle) {
                 ESP_LOGI(TAG, "Patrol reached %d degrees", angle);
             }
         }
