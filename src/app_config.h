@@ -34,11 +34,13 @@
 #define SONAR_REQUEST_QUEUE_LENGTH 1
 #define RADAR_UI_TASK_STACK_SIZE 4096
 #define RADAR_UI_TASK_PRIORITY 3
-#define RADAR_UI_REFRESH_MS 200
+#define RADAR_UI_REFRESH_MS 50
 #define OLED_I2C_PORT 0
 #define OLED_I2C_ADDRESS 0x3C
 #define OLED_I2C_FREQUENCY_HZ 100000
 #define MAX7219_INTENSITY 2
+#define BUZZER_PWM_FREQUENCY_HZ 2000
+#define BUZZER_PWM_RESOLUTION_BITS 10
 
 // Verify against the exact board revision and wiring before connecting hardware.
 #define GPIO_SERVO 4
@@ -49,4 +51,5 @@
 #define GPIO_MAX7219_CS 19
 #define GPIO_OLED_SDA 20
 #define GPIO_OLED_SCL 21
+// PWM output for a transistor driver; do not connect an unknown buzzer directly.
 #define GPIO_BUZZER 22

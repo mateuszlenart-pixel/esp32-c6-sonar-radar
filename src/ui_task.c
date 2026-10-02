@@ -7,6 +7,7 @@
 #include "freertos/task.h"
 
 #include "app_config.h"
+#include "buzzer.h"
 #include "logic.h"
 #include "matrix.h"
 #include "oled.h"
@@ -14,6 +15,7 @@
 static const char *TAG = "UI";
 static bool s_oled_ready;
 static bool s_matrix_ready;
+static bool s_buzzer_ready;
 
 static bool status_changed(const radar_status_t *left, const radar_status_t *right)
 {
@@ -28,34 +30,47 @@ static void ui_task(void *arg)
     (void)arg;
 
     TickType_t last_wake = xTaskGetTickCount();
-    radar_status_t previous = {0};
-    bool has_previous = false;
+    radar_status_t previous_oled_status = {0};
+    uint32_t last_oled_update_ms = 0;
+    bool has_oled_status = false;
 
     while (true) {
         radar_status_t current;
         if (logic_get_status(&current)) {
+            const uint32_t now_ms = (uint32_t)(xTaskGetTickCount() *
+                                               portTICK_PERIOD_MS);
+            if (s_buzzer_ready) {
+                const esp_err_t err = buzzer_update(&current, now_ms);
+                if (err != ESP_OK) {
+                    ESP_LOGE(TAG, "Buzzer update failed: %s", esp_err_to_name(err));
+                    buzzer_deinit();
+                    s_buzzer_ready = false;
+                }
+            }
+
             if (s_oled_ready &&
-                (!has_previous || status_changed(&current, &previous))) {
+                (!has_oled_status ||
+                 ((uint32_t)(now_ms - last_oled_update_ms) >= 200U &&
+                  status_changed(&current, &previous_oled_status)))) {
                 const esp_err_t err = oled_show_status(&current);
                 if (err != ESP_OK) {
                     ESP_LOGE(TAG, "OLED update failed: %s", esp_err_to_name(err));
                     oled_deinit();
                     s_oled_ready = false;
+                } else {
+                    previous_oled_status = current;
+                    last_oled_update_ms = now_ms;
+                    has_oled_status = true;
                 }
             }
 
             if (s_matrix_ready) {
-                const uint32_t now_ms = (uint32_t)(xTaskGetTickCount() *
-                                                   portTICK_PERIOD_MS);
                 const esp_err_t err = matrix_render_status(&current, now_ms);
                 if (err != ESP_OK) {
                     ESP_LOGE(TAG, "Matrix update failed: %s", esp_err_to_name(err));
                     s_matrix_ready = false;
                 }
             }
-
-            previous = current;
-            has_previous = true;
         }
 
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(RADAR_UI_REFRESH_MS));
@@ -80,7 +95,15 @@ esp_err_t ui_task_start(void)
                  esp_err_to_name(matrix_err));
     }
 
-    if (!s_oled_ready && !s_matrix_ready) {
+    const esp_err_t buzzer_err = buzzer_init();
+    s_buzzer_ready = buzzer_err == ESP_OK;
+    if (!s_buzzer_ready) {
+        ESP_LOGW(TAG,
+                 "Buzzer unavailable; radar will continue silently: %s",
+                 esp_err_to_name(buzzer_err));
+    }
+
+    if (!s_oled_ready && !s_matrix_ready && !s_buzzer_ready) {
         return ESP_OK;
     }
 
@@ -93,6 +116,10 @@ esp_err_t ui_task_start(void)
         if (s_oled_ready) {
             oled_deinit();
             s_oled_ready = false;
+        }
+        if (s_buzzer_ready) {
+            buzzer_deinit();
+            s_buzzer_ready = false;
         }
         ESP_LOGE(TAG, "Failed to create UI task");
         return ESP_ERR_NO_MEM;
