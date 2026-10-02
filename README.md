@@ -55,3 +55,10 @@ Plik `src/wifi_credentials.h` jest ignorowany przez Git. Nie umieszczaj danych s
 ## Test sprzętowy
 
 Kompilacja i testy hostowe nie sprawdzają płytki, serwa ani czujników. Przed pierwszym testem sprzętowym należy osobno zweryfikować zasilanie, poziomy napięć i połączenia dla dokładnych modeli modułów. Plik `src/app_config.h` zawiera przypisania GPIO, ale sam w sobie nie jest schematem bezpiecznego okablowania.
+
+### Poziomy napięć do sprawdzenia
+
+- ESP32-C6 pracuje z GPIO w domenie 3,3 V. Jego wejście nie może przekroczyć 3,6 V ([datasheet Espressif, tabele 5-1 i 5-4](https://documentation.espressif.com/esp32-c6_datasheet_en.html)). Nie podłączaj bezpośrednio wyjścia ECHO typowego modułu HC-SR04 zasilanego z 5 V; obniż poziom sygnału przed GPIO. Dokładne wersje HC-SR04 mogą się różnić ([przykładowa dokumentacja modułu Elecfreaks](https://elecfreaks.com/download/EF03085-HC-SR04_Ultrasonic_Module_User_Guide.pdf)).
+- Jeśli sam układ MAX7219 jest zasilany napięciem 5 V, jego datasheet wymaga co najmniej 3,5 V na wejściu logicznym. ESP32-C6 gwarantuje dla wyjścia logicznego wysokiego co najmniej 0,8 × 3,3 V = 2,64 V, więc bezpośrednia współpraca nie jest gwarantowana. Trzeba sprawdzić, czy konkretny moduł ma właściwy translator poziomów ([datasheet Analog Devices MAX7219, tabela na stronie 2](https://www.analog.com/media/en/technical-documentation/data-sheets/max7219-max7221.pdf)).
+
+Te uwagi nie zastępują sprawdzenia oznaczeń i schematów dokładnych modułów. Nie podłączaj serwa do zasilania, dopóki jego napięcie i wydajność prądowa nie zostaną potwierdzone dla użytej płytki zasilającej.
