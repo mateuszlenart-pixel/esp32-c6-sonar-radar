@@ -3,6 +3,7 @@
 
 #include "app_config.h"
 #include "logic.h"
+#include "network.h"
 #include "radar.h"
 #include "sonar.h"
 #include "sonar_task.h"
@@ -26,5 +27,11 @@ void app_main(void)
     ESP_ERROR_CHECK(logic_start());
     ESP_ERROR_CHECK(sonar_task_start());
     ESP_ERROR_CHECK(ui_task_start());
+
+    const esp_err_t network_err = network_start();
+    if (network_err != ESP_OK) {
+        ESP_LOGW(TAG, "Network unavailable; local radar functions remain active");
+    }
+
     radar_start();
 }

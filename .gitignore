@@ -6,3 +6,4 @@ sdkconfig.*
 !sdkconfig.defaults
 managed_components/
 .vscode/
+/src/wifi_credentials.h
