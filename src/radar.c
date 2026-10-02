@@ -63,15 +63,17 @@ static void radar_task(void *arg)
             ESP_LOGI(TAG, "Target lost");
         }
 
-        angle += direction * RADAR_STEP_DEGREES;
-        if (angle >= RADAR_MAX_ANGLE_DEG) {
-            angle = RADAR_MAX_ANGLE_DEG;
-            direction = -1;
-            ESP_LOGI(TAG, "Patrol reached %d degrees", angle);
-        } else if (angle <= RADAR_MIN_ANGLE_DEG) {
-            angle = RADAR_MIN_ANGLE_DEG;
-            direction = 1;
-            ESP_LOGI(TAG, "Patrol reached %d degrees", angle);
+        if (!detector.target_active) {
+            angle += direction * RADAR_STEP_DEGREES;
+            if (angle >= RADAR_MAX_ANGLE_DEG) {
+                angle = RADAR_MAX_ANGLE_DEG;
+                direction = -1;
+                ESP_LOGI(TAG, "Patrol reached %d degrees", angle);
+            } else if (angle <= RADAR_MIN_ANGLE_DEG) {
+                angle = RADAR_MIN_ANGLE_DEG;
+                direction = 1;
+                ESP_LOGI(TAG, "Patrol reached %d degrees", angle);
+            }
         }
     }
 }
