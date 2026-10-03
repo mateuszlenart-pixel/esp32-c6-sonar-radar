@@ -40,7 +40,9 @@ static void ui_task(void *arg)
             const uint32_t now_ms = (uint32_t)(xTaskGetTickCount() *
                                                portTICK_PERIOD_MS);
             if (s_buzzer_ready) {
-                const esp_err_t err = buzzer_update(&current, now_ms);
+                const esp_err_t err = logic_is_buzzer_enabled()
+                    ? buzzer_update(&current, now_ms)
+                    : buzzer_silence();
                 if (err != ESP_OK) {
                     ESP_LOGE(TAG, "Buzzer update failed: %s", esp_err_to_name(err));
                     buzzer_deinit();

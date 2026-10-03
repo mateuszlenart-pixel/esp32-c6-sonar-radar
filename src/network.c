@@ -13,6 +13,7 @@
 #include "nvs_flash.h"
 
 #include "app_config.h"
+#include "mqtt_bridge.h"
 
 #if __has_include("wifi_credentials.h")
 #include "wifi_credentials.h"
@@ -46,6 +47,10 @@ static void wifi_event_handler(void *arg,
         ESP_LOGI(TAG, "Connected; IP address: " IPSTR, IP2STR(&event->ip_info.ip));
         xEventGroupClearBits(s_wifi_events, WIFI_RECONNECT_BIT);
         xEventGroupSetBits(s_wifi_events, WIFI_CONNECTED_BIT);
+        const esp_err_t mqtt_err = mqtt_bridge_start();
+        if (mqtt_err != ESP_OK) {
+            ESP_LOGW(TAG, "MQTT bridge unavailable: %s", esp_err_to_name(mqtt_err));
+        }
     }
 }
 
@@ -74,12 +79,7 @@ static esp_err_t init_wifi(void)
 {
     const size_t ssid_length = strlen(RADAR_WIFI_SSID);
     const size_t password_length = strlen(RADAR_WIFI_PASSWORD);
-    esp_err_t err = nvs_flash_init();
-    if (err != ESP_OK) {
-        return err;
-    }
-
-    err = esp_netif_init();
+    esp_err_t err = esp_netif_init();
     if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) {
         return err;
     }

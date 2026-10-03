@@ -27,6 +27,10 @@ static void radar_task(void *arg)
     while (true) {
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(RADAR_STEP_PERIOD_MS));
 
+        if (!logic_is_patrol_enabled()) {
+            continue;
+        }
+
         if (has_scanned) {
             const int previous_angle = angle;
             angle = radar_scan_advance(angle,

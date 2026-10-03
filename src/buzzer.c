@@ -39,7 +39,7 @@ static esp_err_t set_tone(uint32_t frequency_hz)
     return err;
 }
 
-static esp_err_t silence(void)
+esp_err_t buzzer_silence(void)
 {
     if (!s_is_on) {
         return ESP_OK;
@@ -102,13 +102,13 @@ esp_err_t buzzer_update(const radar_status_t *status, uint32_t now_ms)
 
     if (!status->distance_valid || status->state == RADAR_STATE_PATROL ||
         status->state == RADAR_STATE_TARGET_LOST) {
-        return silence();
+        return buzzer_silence();
     }
 
     if (status->state == RADAR_STATE_CRITICAL_ALERT) {
         const uint32_t phase_ms = now_ms % 300U;
         if (phase_ms >= 240U) {
-            return silence();
+            return buzzer_silence();
         }
         return set_tone(phase_ms < 120U ? 2600U : 1800U);
     }
@@ -121,7 +121,7 @@ esp_err_t buzzer_update(const radar_status_t *status, uint32_t now_ms)
     }
 
     if (now_ms % interval_ms >= 80U) {
-        return silence();
+        return buzzer_silence();
     }
     return set_tone(1400U);
 }
@@ -132,7 +132,7 @@ void buzzer_deinit(void)
         return;
     }
 
-    silence();
+    buzzer_silence();
     ledc_stop(LEDC_LOW_SPEED_MODE, BUZZER_PWM_CHANNEL, 0);
     s_initialized = false;
     s_is_on = false;

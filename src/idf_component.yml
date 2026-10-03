@@ -1,0 +1,3 @@
+dependencies:
+  espressif/esp-zigbee-lib: "~2.0.4"
+  espressif/mqtt: "~1.1.0"

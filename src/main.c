@@ -1,5 +1,6 @@
 #include "esp_app_desc.h"
 #include "esp_log.h"
+#include "nvs_flash.h"
 
 #include "app_config.h"
 #include "logic.h"
@@ -9,6 +10,7 @@
 #include "sonar_task.h"
 #include "servo.h"
 #include "ui_task.h"
+#include "zigbee_bridge.h"
 
 static const char *TAG = "RADAR";
 
@@ -21,6 +23,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Configured scan range: %d-%d degrees",
              RADAR_MIN_ANGLE_DEG, RADAR_MAX_ANGLE_DEG);
 
+    ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(servo_init());
     ESP_ERROR_CHECK(sonar_init());
     ESP_ERROR_CHECK(logic_init());
@@ -31,6 +34,11 @@ void app_main(void)
     const esp_err_t network_err = network_start();
     if (network_err != ESP_OK) {
         ESP_LOGW(TAG, "Network unavailable; local radar functions remain active");
+    }
+
+    const esp_err_t zigbee_err = zigbee_bridge_start();
+    if (zigbee_err != ESP_OK) {
+        ESP_LOGW(TAG, "Zigbee unavailable; local radar functions remain active");
     }
 
     radar_start();

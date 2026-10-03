@@ -11,6 +11,24 @@ void radar_detector_init(radar_detector_t *detector)
     }
 
     *detector = (radar_detector_t){0};
+    radar_detector_set_distance_thresholds(detector,
+                                           RADAR_TARGET_DISTANCE_CM,
+                                           RADAR_CRITICAL_DISTANCE_CM);
+}
+
+void radar_detector_set_distance_thresholds(radar_detector_t *detector,
+                                           uint32_t target_cm,
+                                           uint32_t critical_cm)
+{
+    if (detector == NULL || critical_cm >= target_cm) {
+        return;
+    }
+    detector->target_distance_cm = target_cm;
+    detector->critical_distance_cm = critical_cm;
+    detector->target_release_distance_cm = target_cm +
+        (RADAR_TARGET_RELEASE_DISTANCE_CM - RADAR_TARGET_DISTANCE_CM);
+    detector->critical_release_distance_cm = critical_cm +
+        (RADAR_CRITICAL_RELEASE_DISTANCE_CM - RADAR_CRITICAL_DISTANCE_CM);
 }
 
 radar_detector_events_t radar_detector_update(radar_detector_t *detector,
@@ -31,7 +49,7 @@ radar_detector_events_t radar_detector_update(radar_detector_t *detector,
     }
 
     if (!detector->target_active) {
-        if (measurement_valid && distance_cm <= RADAR_TARGET_DISTANCE_CM) {
+        if (measurement_valid && distance_cm <= detector->target_distance_cm) {
             if (detector->target_confirm_count < RADAR_TARGET_CONFIRM_COUNT) {
                 detector->target_confirm_count++;
             }
@@ -47,7 +65,7 @@ radar_detector_events_t radar_detector_update(radar_detector_t *detector,
     }
 
     if (detector->target_active) {
-        if (measurement_valid && distance_cm <= RADAR_TARGET_RELEASE_DISTANCE_CM) {
+        if (measurement_valid && distance_cm <= detector->target_release_distance_cm) {
             detector->last_target_seen_ms = now_ms;
         } else if ((uint32_t)(now_ms - detector->last_target_seen_ms) >=
                    RADAR_TARGET_LOST_TIMEOUT_MS) {
@@ -65,7 +83,7 @@ radar_detector_events_t radar_detector_update(radar_detector_t *detector,
             return events;
         }
 
-        if (measurement_valid && distance_cm <= RADAR_CRITICAL_DISTANCE_CM) {
+        if (measurement_valid && distance_cm <= detector->critical_distance_cm) {
             detector->critical_clear_count = 0;
             if (!detector->critical_active) {
                 if (detector->critical_confirm_count < RADAR_CRITICAL_CONFIRM_COUNT) {
@@ -77,7 +95,7 @@ radar_detector_events_t radar_detector_update(radar_detector_t *detector,
                     events |= RADAR_EVENT_CRITICAL_ENTERED;
                 }
             }
-        } else if (measurement_valid && distance_cm > RADAR_CRITICAL_RELEASE_DISTANCE_CM) {
+        } else if (measurement_valid && distance_cm > detector->critical_release_distance_cm) {
             detector->critical_confirm_count = 0;
             if (detector->critical_active) {
                 if (detector->critical_clear_count < RADAR_CRITICAL_CLEAR_COUNT) {

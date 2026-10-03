@@ -119,12 +119,37 @@ static void test_timeout_across_clock_wrap(void)
           "target expires at the timeout across the millisecond counter wrap");
 }
 
+static void test_adjustable_distance_thresholds(void)
+{
+    radar_detector_t detector;
+    radar_detector_init(&detector);
+    radar_detector_set_distance_thresholds(&detector, 30, 10);
+    check(detector.target_distance_cm == 30 &&
+          detector.target_release_distance_cm == 35,
+          "updated target threshold retains the five-centimeter release margin");
+    check(detector.critical_distance_cm == 10 &&
+          detector.critical_release_distance_cm == 15,
+          "updated critical threshold retains the five-centimeter release margin");
+
+    radar_detector_set_distance_thresholds(&detector, 20, 20);
+    check(detector.target_distance_cm == 30 && detector.critical_distance_cm == 10,
+          "invalid threshold order leaves the previous settings intact");
+    check(sample(&detector, true, 30, 0) == RADAR_EVENT_NONE &&
+          sample(&detector, true, 30, 80) == RADAR_EVENT_NONE &&
+          sample(&detector, true, 30, 160) == RADAR_EVENT_TARGET_ACQUIRED,
+          "target is acquired at the configured target distance");
+    check(sample(&detector, true, 10, 240) == RADAR_EVENT_NONE &&
+          sample(&detector, true, 10, 320) == RADAR_EVENT_CRITICAL_ENTERED,
+          "critical alert uses the configured critical distance");
+}
+
 int main(void)
 {
     test_target_confirmation_and_invalid_sample();
     test_target_hysteresis_and_lost_state();
     test_critical_alert_hysteresis();
     test_timeout_across_clock_wrap();
+    test_adjustable_distance_thresholds();
 
     if (s_failures != 0) {
         fprintf(stderr, "%u of %u checks failed\n", s_failures, s_checks);

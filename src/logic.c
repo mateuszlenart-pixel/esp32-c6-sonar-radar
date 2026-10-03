@@ -9,8 +9,11 @@
 #include "freertos/task.h"
 
 #include "app_config.h"
+#include "mqtt_bridge.h"
 
 #define RADAR_TARGET_LOCKED_BIT (1U << 0)
+#define RADAR_PATROL_ENABLED_BIT (1U << 1)
+#define RADAR_BUZZER_ENABLED_BIT (1U << 2)
 
 typedef struct {
     int angle_deg;
@@ -22,6 +25,7 @@ typedef struct {
 static const char *TAG = "LOGIC";
 static QueueHandle_t s_measurement_queue;
 static QueueHandle_t s_status_queue;
+static QueueHandle_t s_threshold_queue;
 static EventGroupHandle_t s_control_events;
 
 static void logic_task(void *arg)
@@ -30,9 +34,14 @@ static void logic_task(void *arg)
 
     radar_detector_t detector;
     radar_detector_init(&detector);
+    radar_thresholds_t thresholds;
     radar_measurement_t measurement;
 
     while (xQueueReceive(s_measurement_queue, &measurement, portMAX_DELAY) == pdTRUE) {
+        if (xQueuePeek(s_threshold_queue, &thresholds, 0) == pdTRUE) {
+            radar_detector_set_distance_thresholds(&detector,
+                thresholds.target_distance_cm, thresholds.critical_distance_cm);
+        }
         const radar_detector_events_t events = radar_detector_update(
             &detector,
             measurement.distance_valid,
@@ -73,16 +82,19 @@ static void logic_task(void *arg)
 
 esp_err_t logic_init(void)
 {
-    if (s_measurement_queue != NULL || s_status_queue != NULL || s_control_events != NULL) {
+    if (s_measurement_queue != NULL || s_status_queue != NULL ||
+        s_threshold_queue != NULL || s_control_events != NULL) {
         return ESP_ERR_INVALID_STATE;
     }
 
     s_measurement_queue = xQueueCreate(RADAR_MEASUREMENT_QUEUE_LENGTH,
                                        sizeof(radar_measurement_t));
     s_status_queue = xQueueCreate(1, sizeof(radar_status_t));
+    s_threshold_queue = xQueueCreate(1, sizeof(radar_thresholds_t));
     s_control_events = xEventGroupCreate();
 
-    if (s_measurement_queue == NULL || s_status_queue == NULL || s_control_events == NULL) {
+    if (s_measurement_queue == NULL || s_status_queue == NULL ||
+        s_threshold_queue == NULL || s_control_events == NULL) {
         if (s_measurement_queue != NULL) {
             vQueueDelete(s_measurement_queue);
             s_measurement_queue = NULL;
@@ -90,6 +102,10 @@ esp_err_t logic_init(void)
         if (s_status_queue != NULL) {
             vQueueDelete(s_status_queue);
             s_status_queue = NULL;
+        }
+        if (s_threshold_queue != NULL) {
+            vQueueDelete(s_threshold_queue);
+            s_threshold_queue = NULL;
         }
         if (s_control_events != NULL) {
             vEventGroupDelete(s_control_events);
@@ -104,12 +120,20 @@ esp_err_t logic_init(void)
         .distance_valid = false,
     };
     xQueueOverwrite(s_status_queue, &initial_status);
+    const radar_thresholds_t initial_thresholds = {
+        .target_distance_cm = RADAR_TARGET_DISTANCE_CM,
+        .critical_distance_cm = RADAR_CRITICAL_DISTANCE_CM,
+    };
+    xQueueOverwrite(s_threshold_queue, &initial_thresholds);
+    xEventGroupSetBits(s_control_events,
+                       RADAR_PATROL_ENABLED_BIT | RADAR_BUZZER_ENABLED_BIT);
     return ESP_OK;
 }
 
 esp_err_t logic_start(void)
 {
-    if (s_measurement_queue == NULL || s_status_queue == NULL || s_control_events == NULL) {
+    if (s_measurement_queue == NULL || s_status_queue == NULL ||
+        s_threshold_queue == NULL || s_control_events == NULL) {
         return ESP_ERR_INVALID_STATE;
     }
 
@@ -141,7 +165,11 @@ bool logic_submit_measurement(int angle_deg,
         .timestamp_ms = timestamp_ms,
         .distance_valid = distance_valid,
     };
-    return xQueueSend(s_measurement_queue, &measurement, 0) == pdTRUE;
+    const bool queued = xQueueSend(s_measurement_queue, &measurement, 0) == pdTRUE;
+    if (queued) {
+        mqtt_bridge_publish_scan(angle_deg, distance_valid, distance_cm, timestamp_ms);
+    }
+    return queued;
 }
 
 bool logic_is_target_locked(void)
@@ -154,4 +182,60 @@ bool logic_get_status(radar_status_t *status)
 {
     return status != NULL && s_status_queue != NULL &&
            xQueuePeek(s_status_queue, status, 0) == pdTRUE;
+}
+
+void logic_set_patrol_enabled(bool enabled)
+{
+    if (s_control_events == NULL) {
+        return;
+    }
+    if (enabled) {
+        xEventGroupSetBits(s_control_events, RADAR_PATROL_ENABLED_BIT);
+    } else {
+        xEventGroupClearBits(s_control_events, RADAR_PATROL_ENABLED_BIT);
+    }
+}
+
+bool logic_is_patrol_enabled(void)
+{
+    return s_control_events != NULL &&
+           (xEventGroupGetBits(s_control_events) & RADAR_PATROL_ENABLED_BIT) != 0;
+}
+
+void logic_set_buzzer_enabled(bool enabled)
+{
+    if (s_control_events == NULL) {
+        return;
+    }
+    if (enabled) {
+        xEventGroupSetBits(s_control_events, RADAR_BUZZER_ENABLED_BIT);
+    } else {
+        xEventGroupClearBits(s_control_events, RADAR_BUZZER_ENABLED_BIT);
+    }
+}
+
+bool logic_is_buzzer_enabled(void)
+{
+    return s_control_events != NULL &&
+           (xEventGroupGetBits(s_control_events) & RADAR_BUZZER_ENABLED_BIT) != 0;
+}
+
+bool logic_get_thresholds(radar_thresholds_t *thresholds)
+{
+    return thresholds != NULL && s_threshold_queue != NULL &&
+           xQueuePeek(s_threshold_queue, thresholds, 0) == pdTRUE;
+}
+
+bool logic_set_thresholds(uint32_t target_distance_cm, uint32_t critical_distance_cm)
+{
+    if (s_threshold_queue == NULL || critical_distance_cm >= target_distance_cm ||
+        critical_distance_cm < 5U || critical_distance_cm > 300U ||
+        target_distance_cm < 10U || target_distance_cm > 400U) {
+        return false;
+    }
+    const radar_thresholds_t thresholds = {
+        .target_distance_cm = target_distance_cm,
+        .critical_distance_cm = critical_distance_cm,
+    };
+    return xQueueOverwrite(s_threshold_queue, &thresholds) == pdPASS;
 }

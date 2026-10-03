@@ -51,6 +51,43 @@ Plik `src/wifi_credentials.h` jest ignorowany przez Git. Nie umieszczaj danych s
 - `detector.c` wykrywa cel i alarm krytyczny na podstawie kolejnych pomiarów.
 - `ui_task.c`, `oled.c`, `matrix.c` i `buzzer.c` obsługują ekran, matrycę i sygnał dźwiękowy.
 - `network.c` obsługuje połączenie Wi-Fi oraz ponawianie połączenia.
+- `zigbee_bridge.c` udostępnia czujniki i przełączniki przez Zigbee.
+- `mqtt_bridge.c` publikuje stan radaru oraz każdy kolejny pomiar po MQTT.
+
+## Home Assistant, Zigbee2MQTT i MQTT
+
+ESP32-C6 działa jako urządzenie Zigbee typu End Device. Połączenie Wi-Fi i Zigbee
+korzysta z tej samej anteny 2,4 GHz, więc End Device ogranicza ryzyko problemów
+ze współpracą obu sieci. Koordynator SONOFF Dongle-PMG24 pozostaje podłączony do
+Zigbee2MQTT; nie trzeba zmieniać jego firmware.
+
+### Encje Zigbee
+
+Plik `zigbee2mqtt/radar_converter.mjs` opisuje encje dla Zigbee2MQTT. Skopiuj go
+do folderu `external_converters` w katalogu danych Zigbee2MQTT i dodaj nazwę
+pliku do `advanced.external_converters` w konfiguracji Zigbee2MQTT. W nowych
+instalacjach Zigbee2MQTT 2.11 lub nowszym włącz też `advanced.enable_external_js`.
+Po restarcie Zigbee2MQTT włącz dozwolone dołączanie urządzeń i uruchom radar.
+Po wykryciu w Zigbee2MQTT zaakceptuj nowe urządzenie.
+
+Zigbee udostępnia wykrycie celu, alarm krytyczny, odległość, kąt, dwa progi
+odległości oraz przełączniki patrolu i buzzera. Próg celu można ustawić w zakresie
+10–400 cm, a krytyczny w zakresie 5–300 cm. Próg krytyczny musi być mniejszy od
+progu celu. Po dołączeniu Z2M konfiguruje raportowanie zmian.
+
+### MQTT i Home Assistant
+
+Skopiuj `src/wifi_credentials.example.h` do lokalnego pliku
+`src/wifi_credentials.h`. W tym lokalnym pliku wpisz dane Wi-Fi i adres brokera
+MQTT; jeśli broker wymaga logowania, wpisz je tam. Nie wysyłaj tych wartości na
+czat i nie dodawaj lokalnego pliku do Git. MQTT Discovery automatycznie tworzy
+encje w Home Assistant. Topic `esp32-c6-sonar-radar/<identyfikator>/state`
+zawiera aktualny stan, a topic `.../scan` przekazuje kolejne pomiary z kątem,
+odległością i informacją, czy pomiar był prawidłowy.
+
+W tej wersji testowano kompilację i logikę programową. Dołączenie urządzenia,
+raportowanie Zigbee, encje Home Assistant i fizyczne pomiary wymagają późniejszego
+testu z płytką oraz działającym Zigbee2MQTT i brokerem MQTT.
 
 ## Test sprzętowy
 
