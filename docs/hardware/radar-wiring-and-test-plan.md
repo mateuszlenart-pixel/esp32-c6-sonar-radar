@@ -31,8 +31,13 @@ i system Zigbee2MQTT/Home Assistant.
   ochronnych. OLED w tym planie zasilamy z 3,3 V, nie z 5 V.
 - Dla zakupionego zasilacza uniwersalnego instrukcja potwierdza polaryzację
   końcówki beczkowej: plus w środku, minus na zewnątrz. Nadal nie potwierdza to
-  rzeczywistego napięcia ani prądu przy ustawieniu 5 V; przed użyciem trzeba je
-  sprawdzić multimetrem. Zasilacz pozostaje niezatwierdzony do testu radaru.
+  rzeczywistego napięcia ani prądu przy ustawieniu 5 V. Co ważniejsze, zdjęcia
+  opakowania pasują do opisu modelu „Universal Adapter 30W / 12W” w raporcie
+  bezpieczeństwa brytyjskiego OPSS nr 2207-0381. Raport opisuje ryzyko porażenia
+  prądem z powodu dostępnych części pod napięciem i informuje o wycofaniu
+  produktu ze sprzedaży. Dopóki nie potwierdzimy, że to inny produkt, nie używać
+  ani nie podłączać tego adaptera do gniazdka. Do projektu wybrać inny,
+  sprawdzony zasilacz 5 V o odpowiedniej wydajności prądowej.
 - Buzzer nie ma znanego numeru części. Dlatego jego końcowy obwód jest oznaczony
   jako do potwierdzenia: nie podłączamy nieznanego buzzera bezpośrednio do GPIO.
 
@@ -109,9 +114,9 @@ lub spadki napięcia, trzeba dobrać zasilacz i przewody po pomiarze.
 
 1. Spisać rewizję DevKitC-1 oraz zrobić czytelne zdjęcia przodu i tyłu OLED,
    MAX7219, buzzera i Power MB V2. Sprawdzić nazwy i polaryzację złącz.
-2. Dla zasilacza uniwersalnego ustawić 5 V i bez podłączonych modułów zmierzyć
-   napięcie oraz polaryzację końcówki. Potwierdzić z etykiety, że wyjście DC ma
-   odpowiedni prąd; obecne zdjęcia tego nie rozstrzygają. 9 V/1 A nie podłączamy
+2. Nie używać sfotografowanego adaptera uniwersalnego ze względu na możliwe
+   dopasowanie do ostrzeżenia OPSS. Dobrać inny, regulowany i zabezpieczony
+   zasilacz 5 V o wydajności co najmniej 3 A. Zasilacza 9 V/1 A nie podłączać
    do żadnego pinu ESP32 ani bezpośrednio do serwa.
 3. Ustawić firmware na GPIO10/11 (zrobione w `src/app_config.h`) i skompilować
    poleceniem `$HOME/.platformio/penv/bin/pio run`. Przejść testy hostowe detektora
@@ -183,5 +188,6 @@ Dokumenty producenta i dodatkowe odniesienia online:
 - [HC-SR04, ogólna karta modułu](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf) — nie potwierdza konkretnego klona.
 - [SH1106, przykładowy moduł Waveshare 1,3 cala](https://www.waveshare.com/wiki/1.3inch_OLED_%28A%29) — dokument dotyczy modułu Waveshare, nie potwierdza pinoutu ani zasilania posiadanego modułu.
 - [MB-V2, arkusz danych kopii CircuitAttic](https://pgccphy.net/1020/datasheets/ELEGOO%20Breadboard%20Power%20Supply%20Module.pdf) — nie znaleziono aktualnej oficjalnej karty Elegoo; wartość 700 mA traktujemy zachowawczo jako granicę, nie jako gwarancję każdego klona.
+- [Raport bezpieczeństwa OPSS 2207-0381, Universal Adapter 30W / 12W](https://assets.publishing.service.gov.uk/media/64c01f1590b54500143e82f2/2207-0381-product-safety-report-ac-dc-charger.pdf) — podobieństwo oznaczeń i opakowania wskazuje na możliwe dopasowanie; dokładny egzemplarz użytkownika nie został niezależnie zidentyfikowany.
 
 Rewizja płytki oraz producent modułów poza DevKitC-1 nie są jeszcze potwierdzone.
