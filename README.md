@@ -63,12 +63,17 @@ Zigbee2MQTT; nie trzeba zmieniać jego firmware.
 
 ### Encje Zigbee
 
-Plik `zigbee2mqtt/radar_converter.mjs` opisuje encje dla Zigbee2MQTT. Skopiuj go
-do folderu `external_converters` w katalogu danych Zigbee2MQTT i dodaj nazwę
-pliku do `advanced.external_converters` w konfiguracji Zigbee2MQTT. W nowych
-instalacjach Zigbee2MQTT 2.11 lub nowszym włącz też `advanced.enable_external_js`.
-Po restarcie Zigbee2MQTT włącz dozwolone dołączanie urządzeń i uruchom radar.
-Po wykryciu w Zigbee2MQTT zaakceptuj nowe urządzenie.
+Plik `zigbee2mqtt/radar_converter.mjs` opisuje encje dla Zigbee2MQTT. Umieść go
+w folderze `external_converters` obok `configuration.yaml` w katalogu danych
+Zigbee2MQTT. W dodatku Home Assistanta domyślny katalog danych to
+`/config/zigbee2mqtt`, więc pełna ścieżka pliku to
+`/config/zigbee2mqtt/external_converters/radar_converter.mjs`.
+
+W Zigbee2MQTT 2.11 lub nowszym włącz `advanced.enable_external_js`. Konwerter
+można też dodać lub zmienić w interfejsie Zigbee2MQTT w **Settings → Dev console
+→ External converters**. Po dodaniu pliku uruchom ponownie Zigbee2MQTT. Następnie
+włącz dozwolone dołączanie urządzeń i uruchom radar. Po wykryciu radaru zaakceptuj
+nowe urządzenie.
 
 Zigbee udostępnia wykrycie celu, alarm krytyczny, odległość, kąt, dwa progi
 odległości oraz przełączniki patrolu i buzzera. Próg celu można ustawić w zakresie
