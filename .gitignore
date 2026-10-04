@@ -7,3 +7,4 @@ sdkconfig.*
 managed_components/
 .vscode/
 /src/wifi_credentials.h
+docs/hardware/references/*.pdf

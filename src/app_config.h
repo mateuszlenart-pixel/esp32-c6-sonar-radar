@@ -45,9 +45,9 @@
 #define BUZZER_PWM_FREQUENCY_HZ 2000
 #define BUZZER_PWM_RESOLUTION_BITS 10
 
-// Verify against the exact board revision and wiring before connecting hardware.
-#define GPIO_SERVO 4
-#define GPIO_SONAR_TRIG 5
+// Avoid the GPIO4/GPIO5 strapping pins on ESP32-C6-DevKitC-1.
+#define GPIO_SERVO 10
+#define GPIO_SONAR_TRIG 11
 #define GPIO_SONAR_ECHO 6
 #define GPIO_MAX7219_DIN 7
 #define GPIO_MAX7219_CLK 18

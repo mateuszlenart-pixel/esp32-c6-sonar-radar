@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1100" viewBox="0 0 1500 1100" role="img" aria-labelledby="title desc">
+  <title id="title">Wstępny schemat połączeń radaru</title>
+  <desc id="desc">ESP32-C6 steruje serwem i pomiarami. ECHO z HC-SR04 jest obniżane dzielnikiem rezystorowym, a sygnały 3,3 V są podnoszone układem SN74AHCT125 do modułów 5 V.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.card{fill:#fff;stroke:#334155;stroke-width:2;rx:16}.warning{fill:#fff7ed;stroke:#ea580c;stroke-width:2;rx:14}.title{font:700 30px sans-serif;fill:#0f172a}.h{font:700 21px sans-serif;fill:#0f172a}.t{font:16px sans-serif;fill:#1e293b}.small{font:14px sans-serif;fill:#475569}.blue{stroke:#2563eb;stroke-width:4;fill:none}.purple{stroke:#7c3aed;stroke-width:4;fill:none}.red{stroke:#dc2626;stroke-width:4;fill:none}.dark{stroke:#475569;stroke-width:4;fill:none}.label{font:700 15px sans-serif;fill:#1e293b}
+    </style>
+    <marker id="ab" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker>
+    <marker id="ap" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#7c3aed"/></marker>
+  </defs>
+  <rect class="bg" width="1500" height="1100"/>
+  <text x="50" y="58" class="title">Radar ESP32-C6 — szkic połączeń do prototypu</text>
+  <text x="50" y="88" class="small">Połączenia są propozycją opartą na dostępnych kartach katalogowych. Wszystkie przewody wkładamy przy wyłączonym zasilaniu.</text>
+
+  <rect x="50" y="130" width="405" height="605" class="card"/>
+  <text x="80" y="174" class="h">ESP32-C6-DevKitC-1</text>
+  <text x="80" y="204" class="small">Płytka zasilana z USB-C</text>
+  <text x="80" y="258" class="t">GPIO10 → sygnał serwa</text>
+  <text x="80" y="296" class="t">GPIO11 → TRIG przez AHCT</text>
+  <text x="80" y="334" class="t">GPIO6 ← ECHO przez dzielnik</text>
+  <text x="80" y="372" class="t">GPIO7 → DIN przez AHCT</text>
+  <text x="80" y="410" class="t">GPIO18 → CLK przez AHCT</text>
+  <text x="80" y="448" class="t">GPIO19 → CS/LOAD przez AHCT</text>
+  <text x="80" y="486" class="t">GPIO20 SDA / GPIO21 SCL → OLED</text>
+  <text x="80" y="524" class="t">GPIO22 → sterownik buzzera*</text>
+  <line x1="80" y1="554" x2="420" y2="554" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="80" y="590" class="small">3V3 z ESP32 → VCC OLED</text>
+  <text x="80" y="620" class="small">GND ESP32 łączy się z GND 5 V</text>
+  <text x="80" y="650" class="small">Nie łącz zewnętrznego +5 V z pinem</text>
+  <text x="80" y="674" class="small">5V płytki, gdy ESP32 jest na USB.</text>
+  <text x="80" y="710" class="small">GPIO4/5 pozostają wolne (piny startowe).</text>
+
+  <rect x="535" y="220" width="380" height="350" class="card"/>
+  <text x="570" y="264" class="h">Bufor SN74AHCT125</text>
+  <text x="570" y="300" class="t">VCC = 5 V; GND = masa wspólna</text>
+  <text x="570" y="340" class="t">A1 GPIO11 → Y1 TRIG</text>
+  <text x="570" y="378" class="t">A2 GPIO7 → Y2 MAX DIN</text>
+  <text x="570" y="416" class="t">A3 GPIO18 → Y3 MAX CLK</text>
+  <text x="570" y="454" class="t">A4 GPIO19 → Y4 MAX CS</text>
+  <text x="570" y="500" class="small">/OE użytych kanałów → GND</text>
+  <text x="570" y="528" class="small">100 nF między VCC i GND przy układzie</text>
+  <text x="570" y="552" class="small">47 kΩ z A1–A4 do GND</text>
+
+  <rect x="1035" y="130" width="410" height="170" class="card"/>
+  <text x="1065" y="170" class="h">MAX7219</text>
+  <text x="1065" y="204" class="t">VCC = 5 V; GND wspólna</text>
+  <text x="1065" y="238" class="t">DIN / CLK / CS z Y2 / Y3 / Y4</text>
+  <text x="1065" y="272" class="small">Nie łącz tych wejść wprost z GPIO 3,3 V.</text>
+
+  <rect x="1035" y="340" width="410" height="170" class="card"/>
+  <text x="1065" y="380" class="h">HC-SR04</text>
+  <text x="1065" y="414" class="t">VCC = 5 V; GND wspólna</text>
+  <text x="1065" y="448" class="t">TRIG z wyjścia Y1 bufora AHCT</text>
+  <text x="1065" y="482" class="small">ECHO 5 V przechodzi przez dzielnik poniżej.</text>
+
+  <rect x="1035" y="550" width="410" height="150" class="card"/>
+  <text x="1065" y="590" class="h">OLED SH1106 I2C</text>
+  <text x="1065" y="624" class="t">VCC = 3V3; GND wspólna</text>
+  <text x="1065" y="658" class="t">SDA = GPIO20; SCL = GPIO21</text>
+
+  <rect x="535" y="630" width="380" height="150" class="card"/>
+  <text x="570" y="670" class="h">Serwo SG90</text>
+  <text x="570" y="704" class="t">Sygnał GPIO10; V+ z osobnych 5 V</text>
+  <text x="570" y="738" class="small">GND wspólna; start bez orczyka i obciążenia.</text>
+
+  <rect x="1035" y="740" width="410" height="125" class="warning"/>
+  <text x="1065" y="780" class="h">Buzzer — wstrzymać podłączenie</text>
+  <text x="1065" y="814" class="t">GPIO22 dopiero przez dobrany tranzystor.</text>
+  <text x="1065" y="842" class="small">Najpierw potwierdzić typ i oznaczenia elementu.</text>
+
+  <rect x="50" y="800" width="865" height="245" class="card"/>
+  <text x="80" y="842" class="h">Dzielnik ECHO — obowiązkowy dla HC-SR04 5 V</text>
+  <text x="80" y="890" class="t">HC-SR04 ECHO ──[ 10 kΩ ]──●──→ GPIO6</text>
+  <text x="80" y="928" class="t">                                      │</text>
+  <text x="80" y="966" class="t">                                   [ 15 kΩ ]</text>
+  <text x="80" y="1004" class="t">                                      │</text>
+  <text x="80" y="1032" class="t">                                     GND</text>
+  <text x="560" y="890" class="small">Przy ECHO=5 V na GPIO jest ok. 3,0 V.</text>
+  <text x="560" y="922" class="small">10 kΩ w szeregu od ECHO do węzła;</text>
+  <text x="560" y="948" class="small">15 kΩ od węzła do wspólnej masy.</text>
+
+  <rect x="1035" y="900" width="410" height="145" class="warning"/>
+  <text x="1065" y="940" class="h">Szyna peryferiów</text>
+  <text x="1065" y="974" class="t">Regulowane 5 V, zalecane ≥3 A</text>
+  <text x="1065" y="1008" class="small">Nie z zasilacza 9 V/1 A + MB-V2.</text>
+  <text x="1065" y="1034" class="small">Wszystkie GND łączymy razem.</text>
+
+  <!-- conceptual direction arrows only; exact point-to-point links are in the table -->
+  <path d="M455 392 H535" class="blue" marker-end="url(#ab)"/>
+  <text x="458" y="378" class="label">3,3 V sygnały</text>
+  <path d="M915 390 H1035" class="purple" marker-end="url(#ap)"/>
+  <text x="923" y="374" class="label">logika 5 V</text>
+  <path d="M455 700 H535" class="blue" marker-end="url(#ab)"/>
+  <text x="463" y="686" class="label">PWM</text>
+  <text x="80" y="1080" class="small">Schemat blokowy, nie rozmieszczenie pinów modułów. Sprawdź rewizję płytki i nadruki konkretnych breakoutów przed zasileniem.</text>
+</svg>
