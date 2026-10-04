@@ -48,7 +48,9 @@ sprzętowym. Należy sprawdzić nadruki i napięcia przed podaniem zasilania.
 
 - stabilizowany, zabezpieczony zasilacz 5 V, co najmniej 3 A, do serwa i modułów
   5 V; nie łącz jego plusa z pinem 5V ESP32, gdy płytka jest zasilana z USB;
-- układ/breakout SN74AHCT125 (nie 74HC125), zasilany z tej samej szyny 5 V;
+- **Kupione, dostawa w czwartek:** układ Texas Instruments SN74AHCT125N
+  w obudowie DIP-14 i podstawka DIP-14. Układ zasilamy z tej samej szyny 5 V;
+- kondensator ceramiczny 100 nF przy układzie SN74AHCT125N;
 - rezystory 10 kΩ i 15 kΩ do dzielnika ECHO (zalecana tolerancja 5% lub lepsza);
 - cztery rezystory 47 kΩ do utrzymania wejść AHCT w stanie niskim przy
   wyłączonym ESP32;
@@ -92,9 +94,10 @@ lub spadki napięcia, trzeba dobrać zasilacz i przewody po pomiarze.
    15 kΩ → GND. Masa sonaru i ESP32 musi być wspólna. Nie pomijamy dzielnika.
 5. Cztery kanały SN74AHCT125 mogą podać poprawną logikę 5 V na TRIG i trzy
    wejścia matrycy. Zasilanie układu: VCC=5 V, GND=wspólna masa, wszystkie cztery
-   wejścia `/OE` w stanie niskim. Każde wejście A1–A4 połącz przez 47 kΩ do GND,
-   aby nie wisiało w powietrzu, gdy ESP32 jest wyłączone. Umieść kondensator
-   100 nF blisko VCC/GND układu.
+   wejścia `/OE` podłącz do GND, żeby bufory były stale włączone. `/OE` jest
+   aktywne stanem niskim, więc podciągnięcie go do plusa wyłączyłoby wyjście.
+   Każde wejście A1–A4 połącz przez 47 kΩ do GND, aby nie wisiało w powietrzu,
+   gdy ESP32 jest wyłączone. Umieść kondensator 100 nF blisko VCC/GND układu.
    Piny niewykorzystane, jeśli breakout różni się od wariantu 14-pinowego,
    podłącz zgodnie z kartą konkretnego układu.
 6. Matryca MAX7219 dostaje 5 V i GND z zewnętrznej szyny. Jej DIN/CLK/CS dostają
