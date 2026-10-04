@@ -38,6 +38,10 @@ i system Zigbee2MQTT/Home Assistant.
   produktu ze sprzedaży. Dopóki nie potwierdzimy, że to inny produkt, nie używać
   ani nie podłączać tego adaptera do gniazdka. Do projektu wybrać inny,
   sprawdzony zasilacz 5 V o odpowiedniej wydajności prądowej.
+- Kupiony zasilacz MW Power EB2005 ma stałe wyjście 5 V / 4 A / 20 W, wtyk
+  5,5 × 2,1 mm i plus w środku. Karta katalogowa potwierdza 20 W; spotykany
+  w tytule oferty zapis 24 W jest niespójny z 5 V × 4 A. Użyjemy go tylko do
+  zasilania peryferiów, a ESP32 podczas programowania pozostanie zasilane z USB.
 - Buzzer nie ma znanego numeru części. Dlatego jego końcowy obwód jest oznaczony
   jako do potwierdzenia: nie podłączamy nieznanego buzzera bezpośrednio do GPIO.
 
@@ -46,22 +50,26 @@ sprzętowym. Należy sprawdzić nadruki i napięcia przed podaniem zasilania.
 
 ## Potrzebne elementy do bezpiecznego prototypu
 
-- stabilizowany, zabezpieczony zasilacz 5 V, co najmniej 3 A, do serwa i modułów
-  5 V; nie łącz jego plusa z pinem 5V ESP32, gdy płytka jest zasilana z USB;
+- **Kupione:** zasilacz MW Power EB2005, 5 V / 4 A / 20 W, wtyk 5,5 × 2,1 mm,
+  plus w środku. Zasila zewnętrzną szynę peryferiów; nie podłączaj jego plusa
+  do pinu 5V ESP32, gdy płytka jest zasilana z USB;
 - **Kupione, dostawa w czwartek:** układ Texas Instruments SN74AHCT125N
   w obudowie DIP-14 i podstawka DIP-14. Układ zasilamy z tej samej szyny 5 V;
 - kondensator ceramiczny 100 nF przy układzie SN74AHCT125N;
 - rezystory 10 kΩ i 15 kΩ do dzielnika ECHO (zalecana tolerancja 5% lub lepsza);
 - cztery rezystory 47 kΩ do utrzymania wejść AHCT w stanie niskim przy
   wyłączonym ESP32;
+- gniazdo DC 5,5 × 2,1 mm z wyjściem śrubowym lub inny pewny rozdzielacz do
+  przewodów; sprawdzić jego obciążalność i nie prowadzić prądu serwa przez
+  delikatne styki breadboardu;
 - multimetr; opcjonalnie oscyloskop lub analizator logiczny do obserwacji ECHO,
   spadków zasilania i zakłóceń;
 - jumpery i breadboard o dobrym styku; przed włączeniem sprawdzić, że szyny
   zasilania na breadboardzie nie są przerwane w połowie.
 
-Zasilacz 5 V/3 A jest propozycją z zapasem dla serwa, matrycy i sonaru, nie
-potwierdzeniem poboru konkretnego egzemplarza. Jeśli pomiar pokaże większe piki
-lub spadki napięcia, trzeba dobrać zasilacz i przewody po pomiarze.
+EB2005 ma zapas względem wstępnego wymagania 5 V / 3 A. Rzeczywiste napięcie
+i spadki podczas ruchu serwa sprawdzimy multimetrem przy testach; zasilacz
+podłączymy przez właściwe gniazdo/rozdzielacz DC, nie bezpośrednio do GPIO.
 
 ## Przypisanie sygnałów
 
@@ -84,9 +92,10 @@ lub spadki napięcia, trzeba dobrać zasilacz i przewody po pomiarze.
 1. ESP32 zasilaj z USB-C podczas programowania. Nie podawaj zewnętrznego 5 V na
    pin 5V płytki, kiedy jest podłączona do USB. Instrukcja Espressifa opisuje te
    metody jako wzajemnie wykluczające się.
-2. Zewnętrzny zasilacz 5 V zasila serwo, HC-SR04, moduł MAX7219 i SN74AHCT125.
-   Łączymy wspólnie GND zasilacza 5 V i GND ESP32. Nie łączymy plusa 5 V zasilacza
-   peryferiów z pinem 5V DevKitC-1 w konfiguracji z USB.
+2. EB2005 zasila serwo, HC-SR04, moduł MAX7219 i SN74AHCT125; połącz wspólnie
+   GND zasilacza i GND ESP32. Nie podłączaj plusa EB2005 do pinu 5V DevKitC-1,
+   kiedy płytka jest zasilana z USB. Nie podłączaj EB2005 do wejścia Elegoo
+   Power MB V2, które wymaga wyższego napięcia wejściowego.
 3. OLED podłączamy do 3V3, GND, GPIO20/SDA i GPIO21/SCL. Zasilenie typowego
    modułu OLED napięciem 5 V może podciągnąć SDA/SCL do 5 V i uszkodzić ESP32.
    Trzeba potwierdzić, że moduł działa przy 3,3 V i ma właściwy interfejs I2C.
@@ -118,9 +127,9 @@ lub spadki napięcia, trzeba dobrać zasilacz i przewody po pomiarze.
 1. Spisać rewizję DevKitC-1 oraz zrobić czytelne zdjęcia przodu i tyłu OLED,
    MAX7219, buzzera i Power MB V2. Sprawdzić nazwy i polaryzację złącz.
 2. Nie używać sfotografowanego adaptera uniwersalnego ze względu na możliwe
-   dopasowanie do ostrzeżenia OPSS. Dobrać inny, regulowany i zabezpieczony
-   zasilacz 5 V o wydajności co najmniej 3 A. Zasilacza 9 V/1 A nie podłączać
-   do żadnego pinu ESP32 ani bezpośrednio do serwa.
+   dopasowanie do ostrzeżenia OPSS. Użyj kupionego EB2005 jako osobnego zasilania
+   peryferiów. Zasilacza 9 V/1 A nie podłączać do żadnego pinu ESP32 ani
+   bezpośrednio do serwa.
 3. Ustawić firmware na GPIO10/11 (zrobione w `src/app_config.h`) i skompilować
    poleceniem `$HOME/.platformio/penv/bin/pio run`. Przejść testy hostowe detektora
    i sterowania skanowaniem:
@@ -191,6 +200,7 @@ Dokumenty producenta i dodatkowe odniesienia online:
 - [HC-SR04, ogólna karta modułu](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf) — nie potwierdza konkretnego klona.
 - [SH1106, przykładowy moduł Waveshare 1,3 cala](https://www.waveshare.com/wiki/1.3inch_OLED_%28A%29) — dokument dotyczy modułu Waveshare, nie potwierdza pinoutu ani zasilania posiadanego modułu.
 - [MB-V2, arkusz danych kopii CircuitAttic](https://pgccphy.net/1020/datasheets/ELEGOO%20Breadboard%20Power%20Supply%20Module.pdf) — nie znaleziono aktualnej oficjalnej karty Elegoo; wartość 700 mA traktujemy zachowawczo jako granicę, nie jako gwarancję każdego klona.
+- [MW Power EB2005, karta katalogowa](https://techniczne.mplpower.pl/repository/inne/techniczne/ZASILACZE/EB%20series/EB2005/EB2005%20ver.3/EB2005-spec-PL-R1.pdf) — podaje 5 V, 4 A, 20 W oraz parametry stabilizacji i zabezpieczeń.
 - [Raport bezpieczeństwa OPSS 2207-0381, Universal Adapter 30W / 12W](https://assets.publishing.service.gov.uk/media/64c01f1590b54500143e82f2/2207-0381-product-safety-report-ac-dc-charger.pdf) — podobieństwo oznaczeń i opakowania wskazuje na możliwe dopasowanie; dokładny egzemplarz użytkownika nie został niezależnie zidentyfikowany.
 
 Rewizja płytki oraz producent modułów poza DevKitC-1 nie są jeszcze potwierdzone.
