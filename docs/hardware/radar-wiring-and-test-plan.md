@@ -29,6 +29,10 @@ i system Zigbee2MQTT/Home Assistant.
   na obu stronach konkretnego modułu nie można potwierdzić ich zasilania,
   rozmieszczenia pinów ani obecności rezystorów podciągających/elementów
   ochronnych. OLED w tym planie zasilamy z 3,3 V, nie z 5 V.
+- Dla zakupionego zasilacza uniwersalnego instrukcja potwierdza polaryzację
+  końcówki beczkowej: plus w środku, minus na zewnątrz. Nadal nie potwierdza to
+  rzeczywistego napięcia ani prądu przy ustawieniu 5 V; przed użyciem trzeba je
+  sprawdzić multimetrem. Zasilacz pozostaje niezatwierdzony do testu radaru.
 - Buzzer nie ma znanego numeru części. Dlatego jego końcowy obwód jest oznaczony
   jako do potwierdzenia: nie podłączamy nieznanego buzzera bezpośrednio do GPIO.
 
@@ -105,8 +109,10 @@ lub spadki napięcia, trzeba dobrać zasilacz i przewody po pomiarze.
 
 1. Spisać rewizję DevKitC-1 oraz zrobić czytelne zdjęcia przodu i tyłu OLED,
    MAX7219, buzzera i Power MB V2. Sprawdzić nazwy i polaryzację złącz.
-2. Sprawdzić, czy dostępny zasilacz 5 V jest stabilizowany i ma odpowiedni prąd.
-   9 V/1 A nie podłączamy do żadnego pinu ESP32 ani bezpośrednio do serwa.
+2. Dla zasilacza uniwersalnego ustawić 5 V i bez podłączonych modułów zmierzyć
+   napięcie oraz polaryzację końcówki. Potwierdzić z etykiety, że wyjście DC ma
+   odpowiedni prąd; obecne zdjęcia tego nie rozstrzygają. 9 V/1 A nie podłączamy
+   do żadnego pinu ESP32 ani bezpośrednio do serwa.
 3. Ustawić firmware na GPIO10/11 (zrobione w `src/app_config.h`) i skompilować
    poleceniem `$HOME/.platformio/penv/bin/pio run`. Przejść testy hostowe detektora
    i sterowania skanowaniem:
