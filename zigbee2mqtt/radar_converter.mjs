@@ -10,7 +10,7 @@ const radarMeasurements = {
     type: ['attributeReport', 'readResponse'],
     convert: (model, msg) => {
         if (msg.endpoint.ID === 3 && msg.data.presentValue !== undefined) {
-            return {angle: msg.data.presentValue};
+            return {scan_angle: msg.data.presentValue};
         }
         if (msg.endpoint.ID === 4) {
             const result = {};
@@ -69,7 +69,8 @@ export default {
         e.binary('critical', access.STATE, true, false),
         e.numeric('distance', access.STATE).withUnit('cm'),
         e.binary('distance_valid', access.STATE, true, false),
-        e.numeric('angle', access.STATE).withUnit('°'),
+        e.numeric('scan_angle', access.STATE).withUnit('°')
+            .withHomeAssistant({icon: 'mdi:angle-acute'}),
         e.numeric('target_threshold', access.STATE_SET).withUnit('cm')
             .withValueMin(10).withValueMax(400).withValueStep(1),
         e.numeric('critical_threshold', access.STATE_SET).withUnit('cm')
