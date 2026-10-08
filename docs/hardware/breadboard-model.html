@@ -1,0 +1,602 @@
+<title>Breadboard Radaru ESP32</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Układ: plansza breadboardu po lewej, panel z etapami, kontrolami i szczegółami po prawej; na telefonie panel pod planszą. */
+:root{
+  --bg:#f1f4f6; --panel:#ffffff; --ink:#14202b; --muted:#566673; --line:#d3dce3;
+  --board:#e8edf1; --board-edge:#b4c0ca; --hole:#6f7f8d; --chan:#cdd6de;
+  --accent:#0b7a75; --accent-ink:#ffffff;
+  --ok:#1b7f45; --warn:#9a6212; --err:#bf2f2f; --okbg:#e3f3ea; --warnbg:#faf0dc; --errbg:#fbe5e5;
+  --w-vcc:#d4352c; --w-gnd:#1c2833; --w-echo:#7a4cd4; --w-trig:#d8801f; --w-gpio:#1e9a52; --w-g11:#0f8cd0; --w-sig:#0e8f8a;
+  --part:#dcc497; --part-ink:#46300f; --cap:#f0a93c; --ic:#222d37; --ic-ink:#e9eff4; --mod:#fbfcfd; --pin:#2a3743; --pin-ink:#f2f6f9;
+  --sel:#0b7a75;
+  --f-ui:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e141a; --panel:#161f28; --ink:#e5ecf2; --muted:#92a3b2; --line:#283643;
+  --board:#1c2731; --board-edge:#3a4a59; --hole:#8a9cad; --chan:#101820;
+  --accent:#3cc4bb; --accent-ink:#06211f;
+  --ok:#5ad08a; --warn:#e3b05c; --err:#ff8a84; --okbg:#173326; --warnbg:#3a2e14; --errbg:#40191a;
+  --w-vcc:#ff6a5f; --w-gnd:#b4c3d1; --w-echo:#b490ff; --w-trig:#ffa64d; --w-gpio:#4fd98a; --w-g11:#55bdf5; --w-sig:#3ed6cf;
+  --part:#9b8458; --part-ink:#fff3dc; --cap:#e09a2c; --ic:#0a1016; --ic-ink:#e9eff4; --mod:#1a2530; --pin:#3a4b5b; --pin-ink:#f2f6f9;
+  --sel:#3cc4bb; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e141a; --panel:#161f28; --ink:#e5ecf2; --muted:#92a3b2; --line:#283643;
+  --board:#1c2731; --board-edge:#3a4a59; --hole:#8a9cad; --chan:#101820;
+  --accent:#3cc4bb; --accent-ink:#06211f;
+  --ok:#5ad08a; --warn:#e3b05c; --err:#ff8a84; --okbg:#173326; --warnbg:#3a2e14; --errbg:#40191a;
+  --w-vcc:#ff6a5f; --w-gnd:#b4c3d1; --w-echo:#b490ff; --w-trig:#ffa64d; --w-gpio:#4fd98a; --w-g11:#55bdf5; --w-sig:#3ed6cf;
+  --part:#9b8458; --part-ink:#fff3dc; --cap:#e09a2c; --ic:#0a1016; --ic-ink:#e9eff4; --mod:#1a2530; --pin:#3a4b5b; --pin-ink:#f2f6f9;
+  --sel:#3cc4bb; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:20px}
+*{box-sizing:border-box}
+.wrap{max-width:1560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+h1{margin:0;font-size:22px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:2px 0 0;color:var(--muted);max-width:68ch}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{font:inherit;border:0;background:transparent;color:var(--muted);padding:7px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:500}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:0}
+.boardcard{padding:10px}
+.scroll{overflow-x:auto}
+svg{display:block;min-width:900px;width:100%;height:auto}
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.sec{padding:14px 16px}
+.sec h2{margin:0 0 8px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.grp{display:flex;align-items:center;gap:8px;padding:5px 0}
+.grp input{margin:0;width:16px;height:16px;accent-color:var(--accent)}
+.grp label{flex:1;min-width:0;cursor:pointer}
+.grp .prog{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:6px;margin-bottom:4px;font-size:13px}
+.chk.ok{background:var(--okbg);color:var(--ok)} .chk.warn{background:var(--warnbg);color:var(--warn)} .chk.err{background:var(--errbg);color:var(--err)}
+.chk b{font-family:var(--f-mono);font-size:11px;min-width:34px;padding-top:2px}
+.chk span{color:var(--ink)}
+.det h3{margin:0;font-size:16px;font-weight:600}
+.det .meta{color:var(--muted);font-size:13px;margin:2px 0 8px}
+.det dl{margin:8px 0;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px}
+.det dt{color:var(--muted)} .det dd{margin:0;font-family:var(--f-mono);overflow-wrap:anywhere}
+.det .note{margin:8px 0;font-size:13px}
+.det h4{margin:14px 0 6px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.edit{display:flex;flex-direction:column;gap:6px}
+.edit label{font-size:12px;color:var(--muted)}
+.er{display:flex;gap:6px;flex-wrap:wrap}
+.er input{font:inherit;font-family:var(--f-mono);flex:1;min-width:90px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.er button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer}
+.er button.pri,.er button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.er button:disabled{opacity:.45;cursor:default}
+.msg{margin:8px 0 0;padding:6px 8px;border-radius:6px;font-size:13px}
+.msg.err{background:var(--errbg);color:var(--err)} .msg.pick{background:var(--warnbg);color:var(--warn)}
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:2px 2px 10px}
+.tools button,.tools select,.io button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer}
+.tools button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tools .st{font-size:13px;color:var(--muted);flex:1;min-width:200px}
+.io{display:flex;flex-direction:column;gap:8px}
+.io textarea{width:100%;min-height:96px;resize:vertical;font-family:var(--f-mono);font-size:11px;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.io .bar{display:flex;gap:6px;flex-wrap:wrap}
+.io button.danger{border-color:var(--err);color:var(--err)}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.steps button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:5px 10px;border-radius:6px;cursor:pointer}
+.steps button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+details.lst{border-top:1px solid var(--line);padding:8px 0}
+details.lst summary{cursor:pointer;font-weight:500}
+.row{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:4px 0;font-size:13px;cursor:pointer;border:0;background:none;width:100%;text-align:left;color:var(--ink);font-family:inherit}
+.row:hover .rn{text-decoration:underline}
+.row .dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--muted)}
+.row .dot.built{background:var(--accent);border-color:var(--accent)}
+.row .dot.measured{background:var(--ok);border-color:var(--ok)}
+.row .rt{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);padding:6px 12px 2px}
+.legend i{display:inline-block;width:22px;height:0;border-top:4px solid;vertical-align:middle;margin-right:6px;border-radius:2px}
+.legend i.d{border-top-style:dashed}
+.future{font-size:13px;color:var(--muted);margin:0;padding-left:18px}
+.future li{margin:2px 0}
+/* SVG */
+.hole{fill:var(--hole);cursor:pointer}
+.hole:hover{r:6}
+.hole.hl{fill:var(--sel);r:5.5}
+.dim{opacity:.22}
+.item{cursor:pointer}
+.item .hit{stroke:transparent;stroke-width:14;fill:none}
+.item.sel .shape{filter:drop-shadow(0 0 3px var(--sel))}
+.w{fill:none;stroke-width:4;stroke-linecap:round}
+.w.todo{stroke-dasharray:2 7;stroke-width:4.5}
+.endc{stroke:var(--panel);stroke-width:1.5}
+.txt{font-family:var(--f-ui);fill:var(--muted);font-size:11px}
+.txtm{font-family:var(--f-mono);font-size:10px}
+.pinlbl{font-family:var(--f-mono);font-size:9px;fill:var(--ic-ink);text-anchor:middle}
+.pinnum{fill:var(--chan);opacity:.8;font-size:9px}
+.modt{font-family:var(--f-ui);font-size:13px;font-weight:600;fill:var(--ink)}
+.mpin{cursor:pointer}
+.mpin rect{fill:var(--pin)} .mpin text{font-family:var(--f-mono);font-size:11px;fill:var(--pin-ink);text-anchor:middle}
+.mpin.hl rect{fill:var(--sel)} .mpin.hl text{fill:var(--accent-ink)}
+.railsign{font-family:var(--f-mono);font-size:13px;font-weight:600}
+@media (max-width:1060px){.main{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:no-preference){.w,.hole{transition:opacity .15s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Breadboard radaru ESP32-C6</h1>
+      <p class="sub">Model połączeń sonaru. Kliknij dziurę, przewód, element albo pin modułu, żeby zobaczyć, co jest z czym połączone. Stan montażu zaznaczasz w panelu obok.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Widok">
+      <button id="m-plan" type="button" aria-pressed="true">Plan</button>
+      <button id="m-built" type="button" aria-pressed="false">Tylko zbudowane</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="card boardcard">
+      <div class="tools">
+        <button id="add" type="button" aria-pressed="false">Dodaj przewód</button>
+        <label for="addcolor" class="hint">Kolor</label>
+        <select id="addcolor" aria-label="Kolor nowego przewodu">
+          <option value="sig">sygnał (turkus)</option><option value="vcc">+5 V (czerwony)</option><option value="gnd">GND (czarny)</option>
+          <option value="echo">ECHO (fiolet)</option><option value="trig">TRIG (pomarańcz)</option><option value="gpio">GPIO (zielony)</option><option value="g11">GPIO 3,3 V (niebieski)</option>
+        </select>
+        <span class="st" id="addmsg" aria-live="polite">Kliknij „Dodaj przewód”, potem dwa punkty: dziurę, szynę albo pin modułu.</span>
+      </div>
+      <div class="scroll"><svg id="svg" viewBox="20 100 1146 622" role="img" aria-label="Widok z góry na breadboard z przewodami i modułami"></svg></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <aside class="side">
+      <section class="card sec" id="sel"></section>
+      <section class="card sec"><h2>Kontrole</h2><div id="checks"></div></section>
+      <section class="card sec"><h2>Etapy i lista montażu</h2><div id="groups"></div></section>
+      <section class="card sec"><h2>Zapis stanu</h2>
+        <div class="io">
+          <p class="hint" style="margin:0">Własne przewody, poprawki położenia i stany montażu. Skopiuj tekst do pliku, żeby przenieść go na inny komputer, i wklej tam w to samo pole.</p>
+          <textarea id="io" spellcheck="false" aria-label="Zapis stanu w formacie JSON"></textarea>
+          <div class="bar"><button type="button" id="io-exp">Pokaż i skopiuj</button><button type="button" id="io-imp">Wczytaj z pola</button><button type="button" id="io-reset" class="danger">Przywróć domyślne</button></div>
+          <p class="msg" id="io-msg" hidden></p>
+        </div>
+      </section>
+      <section class="card sec"><h2>Do dodania w modelu</h2>
+        <ul class="future">
+          <li>Matryca MAX7219: DIN GPIO7, CLK GPIO18, CS GPIO19 (kanały 2–4 AHCT)</li>
+          <li>OLED: SDA GPIO20, SCL GPIO21, zasilanie 3,3 V</li>
+          <li>Serwo: sygnał GPIO10, zasilanie 5 V</li>
+          <li>Buzzer: GPIO22 przez tranzystor, po identyfikacji typu</li>
+        </ul>
+        <p class="hint" style="margin-top:8px">Nowe urządzenie to wpisy w obiektach <code>MODULES</code>, <code>PARTS</code> i <code>WIRES</code> na początku skryptu.</p>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* ===== DANE MODELU. Tu dopisujemy kolejne urządzenia. =====
+   Końce przewodów i elementów:
+   - dziura breadboardu: "c14" (litery a–e dolna połowa, f–j górna; kolumna łączy tylko jedną połowę)
+   - punkt na szynie:    "B-@20" (T/B = górna/dolna szyna, +/−, po @ kolumna do narysowania)
+   - pin modułu:         "SR04.ECHO"
+   status: todo | built | measured     net (przy pinie): nazwa sygnału oczekiwana w tym miejscu */
+const COLS = 30;
+const GROUPS = [
+  {id:'power',   name:'Zasilanie 5 V',        note:'EB2005 → gniazdo DC → szyny breadboardu'},
+  {id:'divider', name:'Dzielnik ECHO',        note:'10 kΩ + 15 kΩ obniża ECHO z 5 V do ok. 3,1 V'},
+  {id:'buffer',  name:'Bufor TRIG (AHCT125)', note:'SN74AHCT125N podnosi GPIO11 z 3,3 V do 5 V dla TRIG'},
+  {id:'sonar',   name:'Sonar HC-SR04',        note:'zasilanie 5 V, ECHO przez dzielnik, TRIG przez bufor'},
+  {id:'esp',     name:'ESP32-C6',             note:'zasilany z USB-C, obok płytki; wspólna masa z szyną −'},
+  {id:'custom',  name:'Własne przewody',      note:'dodane w przeglądarce; zapisz je w „Zapis stanu”'}
+];
+const MODULES = [
+  {id:'PSU',  name:'Zasilacz EB2005', x:40,  pitch:70, pins:[{id:'+',label:'+',net:'+5V'},{id:'-',label:'−',net:'GND'}]},
+  {id:'SR04', name:'HC-SR04',                       x:260, pitch:70, pins:[{id:'VCC',net:'+5V'},{id:'TRIG',net:'TRIG'},{id:'ECHO',net:'ECHO'},{id:'GND',net:'GND'}]},
+  {id:'ESP',  name:'ESP32-C6-DevKitC-1',            x:620, pitch:90, pins:[{id:'GPIO6',net:'GPIO6'},{id:'GPIO11',net:'GPIO11'},{id:'GND',net:'GND'}]}
+];
+const U1_PINS = [ // numer pinu = indeks+1
+  {n:'/1OE',net:'GND',need:1},{n:'1A',net:'GPIO11',need:1},{n:'1Y',net:'TRIG'},{n:'/2OE',net:'GND',need:1},
+  {n:'2A',net:'GND',need:1},{n:'2Y'},{n:'GND',net:'GND',need:1},
+  {n:'3Y'},{n:'3A',net:'GND',need:1},{n:'/3OE',net:'GND',need:1},{n:'4Y'},{n:'4A',net:'GND',need:1},{n:'/4OE',net:'GND',need:1},{n:'VCC',net:'+5V',need:1}
+];
+const PARTS = [
+  {id:'R1', group:'divider', type:'res', val:'10 kΩ', a:'a10', b:'a14', status:'measured', note:'Zmierzone: 9,77 kΩ (−2,3%). Od strony ECHO.'},
+  {id:'R2', group:'divider', type:'res', val:'15 kΩ', a:'b14', b:'b18', status:'measured', note:'Zmierzone: 14,71 kΩ (−1,9%). Przy 5,13 V węzeł GPIO6 ma ok. 3,08 V (limit 3,3 V).'},
+  {id:'U1', group:'buffer', type:'ic', at:22, name:'SN74AHCT125N', status:'todo', note:'Dostawa w czwartek. Zatrzask po lewej, pin 1 w e22, pin 14 w f22. Wstawić przy odłączonym zasilaniu.'},
+  {id:'C1', group:'buffer', type:'cap', val:'100 nF', a:'h22', b:'T-@20.6', status:'todo', note:'Odsprzęganie, blisko VCC i GND układu.'},
+  {id:'R3', group:'buffer', type:'res', val:'47 kΩ', a:'a23', b:'B-@23.4', status:'todo', note:'Pull-down na wejściu 1A, żeby nie wisiało w powietrzu przy wyłączonym ESP32. Zakup 47 kΩ niepotwierdzony.'}
+];
+const WIRES = [
+  {id:'W1',  group:'power',   a:'PSU.+',   b:'B+@3',   color:'vcc',  status:'measured', label:'+ zasilacza → szyna dolna +', note:'5,13 V zmierzone na obu końcach szyny.'},
+  {id:'W2',  group:'power',   a:'PSU.-',   b:'B-@4',   color:'gnd',  status:'measured', label:'− zasilacza → szyna dolna −'},
+  {id:'W3',  group:'power',   a:'B+@29',   b:'T+@29',  color:'vcc',  status:'todo',     label:'Mostek szyn +', note:'Szyna górna nie jest jeszcze zasilana. Po zrobieniu zmierz 5 V.'},
+  {id:'W4',  group:'power',   a:'B-@30',   b:'T-@30',  color:'gnd',  status:'todo',     label:'Mostek szyn −'},
+  {id:'W5',  group:'divider', a:'a18',     b:'B-@18',  color:'gnd',  status:'built',    label:'Koniec dzielnika → GND'},
+  {id:'W6',  group:'buffer',  a:'b22',     b:'B-@22',  color:'gnd',  status:'todo',     label:'Pin 1 (/1OE) → GND', note:'/OE jest aktywne stanem niskim, więc do GND bufor jest włączony.'},
+  {id:'W7',  group:'buffer',  a:'b28',     b:'B-@28',  color:'gnd',  status:'todo',     label:'Pin 7 (GND) → GND'},
+  {id:'W8',  group:'buffer',  a:'j22',     b:'T+@22',  color:'vcc',  status:'todo',     label:'Pin 14 (VCC) → szyna górna +'},
+  {id:'W9',  group:'buffer',  a:'b25',     b:'B-@25',  color:'gnd',  status:'todo',     label:'Pin 4 (/2OE) → GND', note:'Nieużywany kanał 2. Zmienić, gdy podłączymy MAX7219.'},
+  {id:'W10', group:'buffer',  a:'b26',     b:'B-@26',  color:'gnd',  status:'todo',     label:'Pin 5 (2A) → GND'},
+  {id:'W11', group:'buffer',  a:'g23',     b:'T-@23',  color:'gnd',  status:'todo',     label:'Pin 13 (/4OE) → GND'},
+  {id:'W12', group:'buffer',  a:'g24',     b:'T-@24',  color:'gnd',  status:'todo',     label:'Pin 12 (4A) → GND'},
+  {id:'W13', group:'buffer',  a:'g26',     b:'T-@26',  color:'gnd',  status:'todo',     label:'Pin 10 (/3OE) → GND'},
+  {id:'W14', group:'buffer',  a:'g27',     b:'T-@27',  color:'gnd',  status:'todo',     label:'Pin 9 (3A) → GND'},
+  {id:'W15', group:'sonar',   a:'SR04.VCC',  b:'B+@20', color:'vcc',  status:'todo', label:'VCC sonaru → szyna dolna +'},
+  {id:'W16', group:'sonar',   a:'SR04.GND',  b:'B-@19', color:'gnd',  status:'todo', label:'GND sonaru → szyna dolna −'},
+  {id:'W17', group:'sonar',   a:'SR04.ECHO', b:'a10',   color:'echo', status:'todo', label:'ECHO → a10', note:'Sygnał 5 V. Wchodzi tylko do dzielnika, nigdy bezpośrednio do GPIO6.'},
+  {id:'W18', group:'sonar',   a:'SR04.TRIG', b:'c24',   color:'trig', status:'todo', label:'TRIG ← c24 (wyjście 1Y)'},
+  {id:'W19', group:'esp',     a:'ESP.GND',   b:'B-@27', color:'gnd',  status:'todo', label:'GND ESP32 → szyna dolna −', note:'Wspólna masa z zasilaczem peryferiów. Nie łącz +5 V zasilacza z pinem 5V ESP32.'},
+  {id:'W20', group:'esp',     a:'ESP.GPIO6', b:'c14',   color:'gpio', status:'todo', label:'GPIO6 ← c14 (węzeł dzielnika)'},
+  {id:'W21', group:'esp',     a:'ESP.GPIO11',b:'c23',   color:'g11',  status:'todo', label:'GPIO11 → c23 (wejście 1A)'}
+];
+/* ===== KONIEC DANYCH ===== */
+
+const NS='http://www.w3.org/2000/svg';
+const X=c=>100+(c-1)*34;
+const ROWY={j:214,i:236,h:258,g:280,f:302,e:366,d:388,c:410,b:432,a:454};
+const RAILY={'T-':150,'T+':172,'B-':496,'B+':518};
+const RAILN={'T-':'szyna górna −','T+':'szyna górna +','B-':'szyna dolna −','B+':'szyna dolna +'};
+const MOD_Y=600;
+const ST={todo:'do zrobienia',built:'zbudowane',measured:'zmierzone'};
+const NETNAME={'+5V':'+5 V','GND':'GND','3V3':'3,3 V'};
+const $=id=>document.getElementById(id);
+
+/* ---- stan widoku ---- */
+const KEY='breadboard-radaru-v1';
+let over={}; try{over=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){over={}}
+const view={mode:'plan',hidden:{},sel:null,pick:null,msg:'',add:null};
+function saveOver(){try{localStorage.setItem(KEY,JSON.stringify(over))}catch(e){}}
+const stat=it=>over[it.id]||it.status;
+const included=it=>!view.hidden[it.group]&&(view.mode==='plan'||stat(it)!=='todo');
+
+/* ---- geometria ---- */
+const pinPos={};
+MODULES.forEach(m=>m.pins.forEach((p,i)=>{pinPos[m.id+'.'+p.id]={x:m.x+40+i*m.pitch,y:MOD_Y,mod:m,pin:p}}));
+function icPin(u,p){ // p=1..14
+  return p<=7?{x:X(u.at+p-1),y:ROWY.e,half:'L'}:{x:X(u.at+(14-p)),y:ROWY.f,half:'U'};
+}
+function regIc(u){
+  Object.keys(pinPos).filter(k=>k.startsWith(u.id+'.')).forEach(k=>delete pinPos[k]);
+  u.pins=U1_PINS;
+  U1_PINS.forEach((pp,i)=>{const q=icPin(u,i+1);pinPos[u.id+'.'+(i+1)]={x:q.x,y:q.y,pin:{id:String(i+1),net:pp.net,need:pp.need,ic:u,name:pp.n},ic:u,col:u.at+(i<7?i:13-i),half:q.half}});
+}
+PARTS.filter(p=>p.type==='ic').forEach(u=>{u.at0=u.at;regIc(u)});
+function parseEnd(s){
+  let m;
+  if((m=/^([a-j])(\d+)$/.exec(s))){const c=+m[2],h='abcde'.includes(m[1])?'L':'U';return{kind:'hole',key:'S:'+c+h,x:X(c),y:ROWY[m[1]],label:s}}
+  if((m=/^([TB][+-])@([\d.]+)$/.exec(s))){return{kind:'rail',key:'R:'+m[1],x:X(+m[2]),y:RAILY[m[1]],label:RAILN[m[1]]}}
+  const pp=pinPos[s]; if(pp) return{kind:'pin',key:'P:'+s,x:pp.x,y:pp.y,label:s.replace('.',' ')+(pp.pin.name?' ('+pp.pin.name+')':'')};
+  throw new Error('Nieznany koniec: '+s);
+}
+
+/* ---- własne poprawki położenia (zapisywane w tej przeglądarce) ---- */
+const KEY2='breadboard-radaru-ends-v1';
+let ends={}; try{ends=JSON.parse(localStorage.getItem(KEY2)||'{}')||{}}catch(e){ends={}}
+function saveEnds(){try{localStorage.setItem(KEY2,JSON.stringify(ends))}catch(e){}}
+const COLORS=['vcc','gnd','echo','trig','gpio','g11','sig'];
+const KEY3='breadboard-radaru-custom-v1';
+let customs=[]; try{customs=JSON.parse(localStorage.getItem(KEY3)||'[]')||[]}catch(e){customs=[]}
+function saveCustoms(){try{localStorage.setItem(KEY3,JSON.stringify(customs))}catch(e){}}
+function validWire(w){try{return w&&typeof w.id==='string'&&COLORS.includes(w.color)&&w.a!==w.b&&parseEnd(w.a)&&parseEnd(w.b)}catch(e){return false}}
+function loadCustoms(){
+  for(let i=WIRES.length-1;i>=0;i--)if(WIRES[i].custom)WIRES.splice(i,1);
+  customs=customs.filter(validWire);
+  customs.forEach(w=>WIRES.push({id:w.id,group:'custom',a:w.a,b:w.b,a0:w.a,b0:w.b,color:w.color,status:'todo',custom:true,label:'Własny przewód: '+w.a+' → '+w.b}));
+}
+function nextCustomId(){let n=1;while(WIRES.some(w=>w.id==='X'+n))n++;return 'X'+n}
+loadCustoms();
+[...PARTS,...WIRES].forEach(it=>{
+  if(it.custom)return;
+  if(it.type==='ic'){ if(ends[it.id]&&Number.isInteger(ends[it.id].at)&&ends[it.id].at>=1&&ends[it.id].at+6<=COLS){it.at=ends[it.id].at;regIc(it)} return }
+  it.a0=it.a;it.b0=it.b;
+  const e=ends[it.id]; if(e){try{parseEnd(e.a);parseEnd(e.b);it.a=e.a;it.b=e.b}catch(x){}}
+});
+function setEnds(it,a,b){
+  try{parseEnd(a);parseEnd(b)}catch(x){return 'Nieprawidłowy punkt. Użyj np. b18, SR04.ECHO albo B-@20.'}
+  if(a===b)return 'Oba końce nie mogą być w tym samym miejscu.';
+  it.a=a;it.b=b;
+  if(it.custom){const c=customs.find(x=>x.id===it.id);if(c){c.a=a;c.b=b}it.a0=a;it.b0=b;it.label='Własny przewód: '+a+' → '+b;saveCustoms();return ''}
+  if(a===it.a0&&b===it.b0)delete ends[it.id]; else ends[it.id]={a,b}; saveEnds(); return '';
+}
+function setAt(u,at){
+  if(!Number.isInteger(at)||at<1||at+6>COLS)return 'Kolumna startowa musi być od 1 do '+(COLS-6)+'.';
+  u.at=at;regIc(u); if(at===u.at0)delete ends[u.id]; else ends[u.id]={at}; saveEnds(); return '';
+}
+/* ---- sieci elektryczne ---- */
+function buildNets(){
+  const par={}; const f=x=>{if(!(x in par))par[x]=x;while(par[x]!==x){par[x]=par[par[x]];x=par[x]}return x};
+  const u=(a,b)=>{a=f(a);b=f(b);if(a!==b)par[a]=b};
+  const items=[...WIRES,...PARTS].filter(included);
+  items.filter(i=>i.type==='ic').forEach(ic=>{
+    for(let p=1;p<=14;p++){const pp=pinPos[ic.id+'.'+p];u('P:'+ic.id+'.'+p,'S:'+pp.col+pp.half)}
+  });
+  items.filter(i=>!i.type).forEach(w=>u(parseEnd(w.a).key,parseEnd(w.b).key));
+  // dodaj piny modułów, żeby miały swoje węzły
+  Object.keys(pinPos).forEach(k=>f('P:'+k));
+  return{f,items};
+}
+function netInfo(nets,root){
+  const hints=new Set(),keys=[];
+  const all=[];
+  Object.keys(pinPos).forEach(k=>all.push('P:'+k));
+  all.forEach(k=>{if(nets.f(k)===root){keys.push(k);const h=pinPos[k.slice(2)].pin.net;if(h)hints.add(h)}});
+  return{hints:[...hints],pins:keys.map(k=>k.slice(2))};
+}
+function netTouched(nets,root){ // czy sieć ma jakiekolwiek połączenie (przewód lub element) poza sobą
+  return nets.items.some(it=>{
+    if(it.type==='ic')return false;
+    const ends=it.type?[it.a,it.b]:[it.a,it.b];
+    return ends.some(e=>nets.f(parseEnd(e).key)===root);
+  });
+}
+function runChecks(nets){
+  const out=[]; const seen=new Set();
+  const roots=new Set(Object.keys(pinPos).map(k=>nets.f('P:'+k)));
+  // zwarcia / konflikty nazw sygnałów
+  let bad=0;
+  roots.forEach(r=>{
+    const ni=netInfo(nets,r);
+    if(ni.hints.length>1){bad++;out.push(['err','ZWARCIE','W jednej sieci są: '+ni.hints.map(h=>NETNAME[h]||h).join(' i ')+' (piny: '+ni.pins.join(', ')+').'])}
+  });
+  if(!bad)out.push(['ok','OK','Brak zwarć między sygnałami (+5 V, GND, ECHO, GPIO6, TRIG, GPIO11).']);
+  // zasilanie / masa dla pinów podłączonych
+  const psuP=nets.f('P:PSU.+'),psuN=nets.f('P:PSU.-');
+  let pw=0,pwBad=0;
+  Object.keys(pinPos).forEach(k=>{
+    const pp=pinPos[k],h=pp.pin.net; if(k.startsWith('PSU.'))return;
+    if(h!=='+5V'&&h!=='GND')return;
+    const r=nets.f('P:'+k); if(!netTouched(nets,r))return;
+    pw++;
+    const want=h==='+5V'?psuP:psuN;
+    if(r!==want){pwBad++;out.push(['warn','ZASIL.','Pin '+k.replace('.',' ')+' ma być na '+(h==='+5V'?'+5 V':'GND')+', ale nie łączy się z zasilaczem.'])}
+  });
+  if(pw&&!pwBad)out.push(['ok','OK','Zasilanie i masa: '+pw+' pinów połączonych z zasilaczem.']);
+  // piny wejściowe w powietrzu
+  const fl=[];
+  Object.keys(pinPos).forEach(k=>{
+    const pp=pinPos[k]; if(!pp.pin.need)return;
+    const ic=pp.ic; if(!nets.items.includes(ic))return;
+    if(!netTouched(nets,nets.f('P:'+k)))fl.push(k.replace('.',' pin '));
+  });
+  if(fl.length)out.push(['warn','WISI','Niepodłączone piny układu: '+fl.join(', ')+'.']);
+  else if(nets.items.some(i=>i.type==='ic'))out.push(['ok','OK','Wszystkie wymagane piny SN74AHCT125N są podłączone.']);
+  // dzielnik ECHO: czy ECHO dociera do GPIO6 tylko przez rezystor
+  const echo=nets.f('P:SR04.ECHO'),g6=nets.f('P:ESP.GPIO6');
+  if(nets.items.some(i=>i.id==='W17')&&nets.items.some(i=>i.id==='W20')){
+    if(echo===g6)out.push(['err','ECHO','ECHO sonaru (5 V) jest połączone bezpośrednio z GPIO6.']);
+    else{
+      const r1=PARTS.find(p=>p.id==='R1'),r2=PARTS.find(p=>p.id==='R2');
+      const ok=nets.items.includes(r1)&&nets.items.includes(r2)&&nets.f(parseEnd(r1.a).key)===echo&&nets.f(parseEnd(r1.b).key)===g6&&nets.f(parseEnd(r2.a).key)===g6&&nets.f(parseEnd(r2.b).key)===psuN;
+      out.push(ok?['ok','OK','ECHO → 10 kΩ → GPIO6 → 15 kΩ → GND. W węźle ok. 3,1 V.']:['warn','ECHO','Dzielnik ECHO nie jest kompletny.']);
+    }
+  }
+  return out;
+}
+
+/* ---- rysowanie ---- */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function wirePath(p,q){
+  const dx=q.x-p.x,dy=q.y-p.y;
+  if(Math.abs(dy)>=110){const m=dy/2;return `M${p.x},${p.y} C${p.x},${p.y+m} ${q.x},${q.y-m} ${q.x},${q.y}`}
+  const h=Math.max(26,Math.min(60,Math.abs(dx)/3+22));
+  return `M${p.x},${p.y} C${p.x},${p.y-h} ${q.x},${q.y-h} ${q.x},${q.y}`;
+}
+function render(){
+  const nets=buildNets(); view.nets=nets;
+  const sel=view.sel; let hlRoot=null;
+  if(sel&&sel.type==='node')hlRoot=nets.f(sel.key);
+  if(sel&&sel.type==='item'){const it=[...WIRES,...PARTS].find(i=>i.id===sel.id);if(it&&!it.type&&included(it))hlRoot=nets.f(parseEnd(it.a).key)}
+  const inNet=key=>hlRoot&&nets.f(key)===hlRoot;
+  const itemInNet=it=>{if(!hlRoot)return true;if(it.type==='ic')return Object.keys(pinPos).some(k=>k.startsWith(it.id+'.')&&nets.f('P:'+k)===hlRoot);
+    return [it.a,it.b].some(e=>nets.f(parseEnd(e).key)===hlRoot)};
+  const s=[];
+  // płytka
+  s.push(`<rect x="40" y="118" width="1106" height="430" rx="12" fill="var(--board)" stroke="var(--board-edge)" stroke-width="2"/>`);
+  s.push(`<rect x="62" y="324" width="1062" height="20" rx="4" fill="var(--chan)"/>`);
+  s.push(`<text class="txt" x="70" y="338">rowek środkowy</text>`);
+  Object.keys(RAILY).forEach(k=>{
+    const col=k[1]==='+'?'var(--w-vcc)':'var(--w-gnd)';
+    s.push(`<text class="railsign" x="52" y="${RAILY[k]+5}" fill="${col}">${k[1]==='-'?'−':'+'}</text>`);
+    s.push(`<line x1="${X(1)-14}" x2="${X(COLS)+14}" y1="${RAILY[k]-13}" y2="${RAILY[k]-13}" stroke="${col}" stroke-width="1" opacity=".5"/>`);
+    for(let c=1;c<=COLS;c++){if(c%6===0)continue;const x=X(c)-(c>1?2:0);
+      s.push(`<circle class="hole${inNet('R:'+k)?' hl':''}${hlRoot&&!inNet('R:'+k)?' dim':''}" data-node="R:${k}" data-hole="${k}@${c}" cx="${x}" cy="${RAILY[k]}" r="4.2"><title>${RAILN[k]}</title></circle>`)}
+  });
+  s.push(`<text class="txt" x="${X(1)-14}" y="136">szyna górna</text><text class="txt" x="${X(1)-14}" y="541">szyna dolna</text>`);
+  Object.keys(ROWY).forEach(r=>{
+    s.push(`<text class="txt" x="${X(1)-34}" y="${ROWY[r]+4}">${r}</text>`);
+    for(let c=1;c<=COLS;c++){
+      const key='S:'+c+('abcde'.includes(r)?'L':'U');const on=inNet(key);
+      s.push(`<circle class="hole${on?' hl':''}${hlRoot&&!on?' dim':''}" data-node="${key}" data-hole="${r}${c}" cx="${X(c)}" cy="${ROWY[r]}" r="4.2"><title>${r}${c}</title></circle>`);
+    }
+  });
+  for(let c=1;c<=COLS;c++)if(c===1||c%5===0){
+    s.push(`<text class="txt" style="text-anchor:middle" x="${X(c)}" y="198">${c}</text><text class="txt" style="text-anchor:middle" x="${X(c)}" y="480">${c}</text>`);
+  }
+  // elementy
+  const items=[...PARTS,...WIRES].filter(included);
+  const dimOf=it=>hlRoot&&!itemInNet(it)?' dim':'';
+  PARTS.filter(p=>included(p)&&p.type==='ic').forEach(u=>{
+    const x0=X(u.at)-22,x1=X(u.at+6)+22,y0=ROWY.f-20,y1=ROWY.e+20;
+    const sl=view.sel&&view.sel.type==='item'&&view.sel.id===u.id;
+    let g=`<g class="item${sl?' sel':''}${dimOf(u)}" data-item="${u.id}"><title>${esc(u.name)} (${ST[stat(u)]})</title>`;
+    g+=`<rect class="shape" x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" rx="6" fill="var(--ic)" ${stat(u)==='todo'?'stroke="var(--sel)" stroke-dasharray="6 4" stroke-width="2"':''}/>`;
+    g+=`<path d="M${x0},${(y0+y1)/2-9} q12,9 0,18" fill="var(--chan)"/>`;
+    g+=`<text x="${(x0+x1)/2+8}" y="${(y0+y1)/2+4}" class="pinlbl" style="font-size:12px;font-weight:600">${esc(u.name)}</text>`;
+    for(let p=1;p<=14;p++){const q=icPin(u,p);const lbl=U1_PINS[p-1].n;
+      g+=`<text class="pinlbl" x="${q.x}" y="${p<=7?q.y-9:q.y+16}">${esc(lbl)}</text>`;
+      g+=`<text class="pinlbl pinnum" x="${q.x}" y="${p<=7?q.y+15:q.y-8}">${p}</text>`;
+      g+=`<circle cx="${q.x}" cy="${q.y}" r="4.2" fill="var(--ic-ink)" data-node="P:${u.id}.${p}"/>`}
+    g+='</g>';s.push(g);
+  });
+  PARTS.filter(p=>included(p)&&p.type!=='ic').forEach(p=>{
+    const a=parseEnd(p.a),b=parseEnd(p.b),mx=(a.x+b.x)/2,my=(a.y+b.y)/2,ang=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI;
+    const sl=view.sel&&view.sel.type==='item'&&view.sel.id===p.id;const todo=stat(p)==='todo';
+    let g=`<g class="item${sl?' sel':''}${dimOf(p)}" data-item="${p.id}"><title>${p.id}: ${esc(p.val)} (${ST[stat(p)]})</title>`;
+    g+=`<line class="hit" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`;
+    g+=`<line class="shape" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--part-ink)" stroke-width="2" ${todo?'stroke-dasharray="3 4"':''}/>`;
+    if(p.type==='res')g+=`<g transform="translate(${mx},${my}) rotate(${ang})"><rect x="-26" y="-8" width="52" height="16" rx="6" fill="var(--part)" stroke="var(--part-ink)" stroke-width="1.5" ${todo?'stroke-dasharray="3 3"':''}/><text class="txtm" style="text-anchor:middle;fill:var(--part-ink)" y="3.5">${esc(p.val)}</text></g>`;
+    else g+=`<g transform="translate(${mx},${my}) rotate(${ang})"><rect x="-24" y="-8" width="48" height="16" rx="4" fill="var(--cap)" stroke="var(--part-ink)" stroke-width="1.5" ${todo?'stroke-dasharray="3 3"':''}/><text class="txtm" style="text-anchor:middle;fill:var(--part-ink)" y="3.5">${esc(p.val)}</text></g>`;
+    [a,b].forEach(e=>g+=`<circle class="endc" cx="${e.x}" cy="${e.y}" r="4.5" fill="var(--part-ink)"/>`);
+    g+='</g>';s.push(g);
+  });
+  // moduły
+  MODULES.forEach(m=>{
+    const w=40+m.pins.length*m.pitch-20;
+    s.push(`<rect x="${m.x}" y="${MOD_Y-4}" width="${w}" height="110" rx="10" fill="var(--mod)" stroke="var(--board-edge)" stroke-width="1.5"/>`);
+    s.push(`<text class="modt" x="${m.x+16}" y="${MOD_Y+72}">${esc(m.name)}</text>`);
+    const sub={PSU:'5,14 V, plus w środku',SR04:'piny od lewej: VCC, TRIG, ECHO, GND',ESP:'zasilanie z USB-C, nie z szyny 5 V'}[m.id]||'';
+    s.push(`<text class="txt" x="${m.x+16}" y="${MOD_Y+92}">${esc(sub)}</text>`);
+    m.pins.forEach((p,i)=>{
+      const key='P:'+m.id+'.'+p.id,on=inNet(key);const x=m.x+40+i*m.pitch;
+      s.push(`<g class="mpin${on?' hl':''}${hlRoot&&!on?' dim':''}" data-node="${key}"><rect x="${x-26}" y="${MOD_Y-4}" width="52" height="26" rx="5"/><text x="${x}" y="${MOD_Y+14}">${esc(p.label||p.id)}</text></g>`);
+    });
+  });
+  // przewody na wierzchu
+  WIRES.filter(included).forEach(w=>{
+    const a=parseEnd(w.a),b=parseEnd(w.b),d=wirePath(a,b),todo=stat(w)==='todo';
+    const sl=view.sel&&view.sel.type==='item'&&view.sel.id===w.id;
+    const col=`var(--w-${w.color})`;
+    s.push(`<g class="item${sl?' sel':''}${dimOf(w)}" data-item="${w.id}"><title>${esc(w.label)} (${ST[stat(w)]})</title><path class="hit" d="${d}"/><path class="w shape${todo?' todo':''}" d="${d}" stroke="${col}"/>`+
+      [a,b].map(e=>`<circle class="endc" cx="${e.x}" cy="${e.y}" r="5.5" fill="${todo?'var(--panel)':col}" stroke="${col}" stroke-width="2"/>`).join('')+'</g>');
+  });
+  if(view.add&&view.add.first){const q=parseEnd(view.add.first);s.push(`<circle cx="${q.x}" cy="${q.y}" r="9" fill="none" stroke="var(--sel)" stroke-width="3"/>`)}
+  $('svg').innerHTML=s.join('');
+  $('add').setAttribute('aria-pressed',!!view.add);
+  $('addmsg').textContent=view.add?(view.add.first?'Punkt A: '+view.add.first+'. Kliknij punkt B (Esc anuluje).':'Kliknij punkt A: dziurę, szynę albo pin modułu (Esc anuluje).'):(view.addNote||'Kliknij „Dodaj przewód”, potem dwa punkty: dziurę, szynę albo pin modułu.');
+  renderSide(nets);
+}
+
+/* ---- panel boczny ---- */
+function endTxt(e){return parseEnd(e).label}
+function renderSide(nets){
+  // legenda
+  $('legend').innerHTML=[['vcc','+5 V'],['gnd','GND'],['echo','ECHO (5 V)'],['trig','TRIG (5 V)'],['gpio','GPIO6 (3,1 V)'],['g11','GPIO11 (3,3 V)'],['sig','własny sygnał']]
+    .map(([c,t])=>`<span><i style="border-color:var(--w-${c})"></i>${t}</span>`).join('')+`<span><i class="d" style="border-color:var(--muted)"></i>przerywana: do zrobienia</span>`;
+  // etapy
+  $('groups').innerHTML=GROUPS.map(g=>{
+    const its=[...PARTS,...WIRES].filter(i=>i.group===g.id);
+    const done=its.filter(i=>stat(i)!=='todo').length;
+    const rows=its.map(i=>`<button type="button" class="row" data-item="${i.id}"><span class="dot ${stat(i)}"></span><span class="rn">${esc(i.type?(i.id+' '+(i.val||i.name)):i.label)}</span><span class="rt">${i.type?(i.type==='ic'?'e22–f28':i.a+' – '+i.b.replace(/@.*/,'')):i.a.replace('.',' ')+' → '+i.b.replace(/@.*/,'')}</span></button>`).join('');
+    return `<div><div class="grp"><input type="checkbox" id="g-${g.id}" data-grp="${g.id}" ${view.hidden[g.id]?'':'checked'}><label for="g-${g.id}"><b>${esc(g.name)}</b><br><span class="hint">${esc(g.note)}</span></label><span class="prog">${done}/${its.length}</span></div><details class="lst"><summary>Lista (${its.length})</summary>${rows}</details></div>`;
+  }).join('');
+  // kontrole
+  $('checks').innerHTML=runChecks(nets).map(([k,t,x])=>`<div class="chk ${k}"><b>${t}</b><span>${esc(x)}</span></div>`).join('')||'<p class="hint">Brak elementów do sprawdzenia.</p>';
+  // szczegóły
+  const el=$('sel'),sel=view.sel;
+  if(!sel){el.innerHTML=`<h2>Zaznaczenie</h2><p class="hint">Kliknij dziurę lub pin, żeby podświetlić całą sieć. Kliknij przewód lub element, żeby zobaczyć szczegóły i zmienić jego stan.</p>`;return}
+  if(sel.type==='node'){
+    const root=nets.f(sel.key),ni=netInfo(nets,root);
+    const name=ni.hints.length?ni.hints.map(h=>NETNAME[h]||h).join(' + '):'bez nazwy';
+    const parts=[...PARTS,...WIRES].filter(i=>included(i)&&i.type!=='ic'&&[i.a,i.b].some(e=>nets.f(parseEnd(e).key)===root));
+    el.innerHTML=`<h2>Sieć</h2><div class="det"><h3>${esc(name)}</h3><div class="meta">${esc(sel.key.slice(2).replace(/^(\d+)([LU])$/,(m,c,h)=>'kolumna '+c+(h==='L'?' (a–e)':' (f–j)')).replace(/^([TB][+-])$/,m=>RAILN[m]))}</div>
+    <dl><dt>Piny</dt><dd>${ni.pins.filter(p=>!/^U1\./.test(p)||true).map(esc).join(', ')||'brak'}</dd><dt>Elementy</dt><dd>${parts.map(p=>p.id).join(', ')||'brak'}</dd></dl></div>`;return}
+  const it=[...PARTS,...WIRES].find(i=>i.id===sel.id); if(!it){view.sel=null;return renderSide(nets)}
+  const g=GROUPS.find(x=>x.id===it.group);
+  const title=it.type?(it.id+' '+(it.val||it.name)):it.id+' '+it.label;
+  el.innerHTML=`<h2>Zaznaczenie</h2><div class="det"><h3>${esc(title)}</h3><div class="meta">${esc(g.name)}</div>
+   <dl><dt>Stan</dt><dd>${ST[stat(it)]}</dd></dl>
+   ${it.note?`<p class="note">${esc(it.note)}</p>`:''}
+   <div class="steps" role="group" aria-label="Stan montażu">${Object.keys(ST).map(k=>`<button type="button" data-set="${k}" aria-pressed="${stat(it)===k}">${ST[k]}</button>`).join('')}</div>
+   <h4>Położenie na płytce</h4>
+   ${it.type==='ic'?`<div class="edit"><label for="e-at">Kolumna pinu 1 (pin 14 jest w tej samej kolumnie)</label><div class="er"><input id="e-at" type="number" min="1" max="${COLS-6}" value="${it.at}"><button type="button" data-apply="1">Zastosuj</button></div></div>`
+   :`<div class="edit"><label for="e-a">Koniec A</label><div class="er"><input id="e-a" type="text" value="${esc(it.a)}" autocapitalize="off" autocomplete="off" spellcheck="false"><button type="button" data-pick="a" aria-pressed="${view.pick&&view.pick.end==='a'}">Wskaż</button></div>
+     <label for="e-b">Koniec B</label><div class="er"><input id="e-b" type="text" value="${esc(it.b)}" autocapitalize="off" autocomplete="off" spellcheck="false"><button type="button" data-pick="b" aria-pressed="${view.pick&&view.pick.end==='b'}">Wskaż</button></div>
+     <div class="er"><button type="button" data-apply="1" class="pri">Zastosuj</button><button type="button" data-reset="1" ${(it.a===it.a0&&it.b===it.b0)?'disabled':''}>Przywróć domyślne</button></div></div>`}
+   ${it.custom?`<div class="er" style="margin-top:8px"><button type="button" data-del="1" style="border-color:var(--err);color:var(--err)">Usuń ten przewód</button></div>`:''}
+   ${view.pick?`<p class="msg pick">Kliknij dziurę na płytce${it.type?'':' lub pin modułu'}, żeby ustawić koniec ${view.pick.end.toUpperCase()}.</p>`:''}
+   ${view.msg?`<p class="msg err">${esc(view.msg)}</p>`:''}
+   <p class="hint" style="margin-top:8px">Zmiany stanu i położenia zapisują się tylko w tej przeglądarce. Dziury podajesz jak na płytce (b18), punkt na szynie jako B-@20 (T/B = górna/dolna, +/−, kolumna).</p></div>`;
+}
+
+/* ---- zdarzenia ---- */
+function endFromClick(e){
+  const h=e.target.closest('[data-hole]'); if(h)return h.dataset.hole;
+  const n=e.target.closest('[data-node]'); const m=n&&/^P:((?!U1\.).+)$/.exec(n.dataset.node);
+  return m?m[1]:null;
+}
+function railPoint(e){ // klik w szynę daje dziurę B-@kolumna, już zwracane przez data-hole
+  return endFromClick(e);
+}
+$('svg').addEventListener('click',e=>{
+  if(view.add){
+    const v=railPoint(e); if(!v)return;
+    if(!view.add.first){view.add.first=v;render();return}
+    if(v===view.add.first){view.add.first=null;render();return}
+    const w={id:nextCustomId(),a:view.add.first,b:v,color:$('addcolor').value};
+    if(!validWire(w)){view.addNote='Nie udało się dodać przewodu.';view.add=null;render();return}
+    customs.push(w);saveCustoms();loadCustoms();
+    view.addNote='Dodano '+w.id+': '+w.a+' → '+w.b+'.';view.add=null;view.sel={type:'item',id:w.id};render();return;
+  }
+  if(view.pick){
+    const it=[...PARTS,...WIRES].find(i=>i.id===view.pick.id);
+    const h=e.target.closest('[data-hole]'); let v=h&&h.dataset.hole;
+    if(!v){const n=e.target.closest('[data-node]');const m=n&&/^P:((?!U1\.).+)$/.exec(n.dataset.node);if(m&&it&&!it.type)v=m[1]}
+    if(it&&v){const a=view.pick.end==='a'?v:it.a,b=view.pick.end==='b'?v:it.b;view.msg=setEnds(it,a,b);view.pick=null;render();return}
+    if(!e.target.closest('[data-item]')){view.pick=null;render();return}
+  }
+  view.msg='';
+  const it=e.target.closest('[data-item]');
+  if(it){view.pick=null;view.sel={type:'item',id:it.dataset.item};render();return}
+  const n=e.target.closest('[data-node]');
+  if(n){view.sel={type:'node',key:n.dataset.node};render();return}
+  view.sel=null;render();
+});
+document.addEventListener('click',e=>{
+  const r=e.target.closest('.row'); if(r){view.pick=null;view.msg='';view.sel={type:'item',id:r.dataset.item};render();return}
+  const cur=view.sel&&view.sel.type==='item'?[...PARTS,...WIRES].find(i=>i.id===view.sel.id):null;
+  const s=e.target.closest('[data-set]'); if(s&&cur){over[cur.id]=s.dataset.set;saveOver();render();return}
+  const pk=e.target.closest('[data-pick]'); if(pk&&cur){view.pick=view.pick&&view.pick.end===pk.dataset.pick?null:{id:cur.id,end:pk.dataset.pick};view.msg='';render();return}
+  if(e.target.closest('[data-apply]')&&cur){applyEdit(cur);return}
+  if(e.target.closest('[data-del]')&&cur&&cur.custom){customs=customs.filter(c=>c.id!==cur.id);saveCustoms();loadCustoms();delete over[cur.id];saveOver();view.sel=null;view.addNote='Usunięto '+cur.id+'.';render();return}
+  if(e.target.closest('[data-reset]')&&cur){view.msg=setEnds(cur,cur.a0,cur.b0);view.pick=null;render()}
+});
+function applyEdit(cur){
+  view.pick=null;
+  if(cur.type==='ic')view.msg=setAt(cur,parseInt($('e-at').value,10));
+  else view.msg=setEnds(cur,$('e-a').value.trim(),$('e-b').value.trim());
+  render();
+}
+$('add').onclick=()=>{view.add=view.add?null:{first:null};view.pick=null;view.addNote='';render()};
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&view.add){view.add=null;render();return}
+  if(e.key==='Enter'&&e.target.closest&&e.target.closest('.edit')&&view.sel&&view.sel.type==='item'){
+    const cur=[...PARTS,...WIRES].find(i=>i.id===view.sel.id); if(cur){e.preventDefault();applyEdit(cur)}
+  }
+  if(e.key==='Escape'&&view.pick){view.pick=null;render()}
+});
+document.addEventListener('change',e=>{
+  const g=e.target.closest('[data-grp]'); if(g){view.hidden[g.dataset.grp]=!g.checked;render()}
+});
+function setMode(m){view.mode=m;$('m-plan').setAttribute('aria-pressed',m==='plan');$('m-built').setAttribute('aria-pressed',m==='built');render()}
+$('m-plan').onclick=()=>setMode('plan');$('m-built').onclick=()=>setMode('built');
+/* ---- zapis / wczytanie stanu ---- */
+function ioMsg(t,err){const m=$('io-msg');m.hidden=!t;m.textContent=t;m.className='msg '+(err?'err':'pick')}
+function snapshot(){return JSON.stringify({app:'breadboard-radaru',version:1,customWires:customs,ends,status:over},null,1)}
+$('io-exp').onclick=()=>{
+  const ta=$('io');ta.value=snapshot();ta.focus();ta.select();
+  const ok=()=>ioMsg('Skopiowano do schowka. Możesz też zaznaczyć i skopiować tekst ręcznie.');
+  try{navigator.clipboard.writeText(ta.value).then(ok,()=>ioMsg('Zaznaczono tekst. Skopiuj go skrótem Ctrl+C.'))}catch(e){ioMsg('Zaznaczono tekst. Skopiuj go skrótem Ctrl+C.')}
+};
+$('io-imp').onclick=()=>{
+  let d; try{d=JSON.parse($('io').value)}catch(e){ioMsg('To nie jest poprawny JSON.',true);return}
+  if(!d||d.app!=='breadboard-radaru'||d.version!==1){ioMsg('Brak rozpoznawalnego zapisu stanu (pole app/version).',true);return}
+  const cw=Array.isArray(d.customWires)?d.customWires:[];
+  if(cw.some(w=>!validWire(w))){ioMsg('Zapis zawiera nieprawidłowy własny przewód. Nic nie zmieniono.',true);return}
+  customs=cw.map(w=>({id:w.id,a:w.a,b:w.b,color:w.color})); saveCustoms(); loadCustoms();
+  [...PARTS,...WIRES].forEach(it=>{if(it.type==='ic'){it.at=it.at0;regIc(it)}else if(!it.custom){it.a=it.a0;it.b=it.b0}});
+  ends={};
+  Object.entries(d.ends||{}).forEach(([id,e])=>{const it=[...PARTS,...WIRES].find(i=>i.id===id);if(!it||it.custom)return;
+    if(it.type==='ic'){if(e&&Number.isInteger(e.at)&&!setAt(it,e.at)){}}else if(e){setEnds(it,e.a,e.b)}});
+  over={};Object.entries(d.status||{}).forEach(([id,v])=>{if(ST[v])over[id]=v}); saveOver();
+  view.sel=null;ioMsg('Wczytano stan: '+customs.length+' własnych przewodów.');render();
+};
+let resetArm=false;
+$('io-reset').onclick=()=>{
+  if(!resetArm){resetArm=true;$('io-reset').textContent='Na pewno? Kliknij jeszcze raz';setTimeout(()=>{resetArm=false;$('io-reset').textContent='Przywróć domyślne'},4000);return}
+  resetArm=false;$('io-reset').textContent='Przywróć domyślne';
+  customs=[];saveCustoms();loadCustoms();
+  [...PARTS,...WIRES].forEach(it=>{if(it.type==='ic'){it.at=it.at0;regIc(it)}else{it.a=it.a0;it.b=it.b0}});
+  ends={};saveEnds();over={};saveOver();view.sel=null;ioMsg('Przywrócono domyślny model.');render();
+};
+render();
+</script>

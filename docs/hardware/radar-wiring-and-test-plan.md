@@ -38,10 +38,21 @@ i system Zigbee2MQTT/Home Assistant.
   produktu ze sprzedaży. Dopóki nie potwierdzimy, że to inny produkt, nie używać
   ani nie podłączać tego adaptera do gniazdka. Do projektu wybrać inny,
   sprawdzony zasilacz 5 V o odpowiedniej wydajności prądowej.
-- Kupiony zasilacz MW Power EB2005 ma stałe wyjście 5 V / 4 A / 20 W, wtyk
-  5,5 × 2,1 mm i plus w środku. Karta katalogowa potwierdza 20 W; spotykany
-  w tytule oferty zapis 24 W jest niespójny z 5 V × 4 A. Użyjemy go tylko do
+- Kupiony zasilacz MW Power EB2005 ma stałe wyjście 5 V / 4 A / 20 W
+  i plus w środku. Oryginalny wtyk 5,5 × 2,1 mm nie pasował do kupionego gniazda,
+  więc wymieniono go na wtyk 5,5 × 2,5 mm z innego zasilacza (polaryzację i brak
+  zwarcia sprawdzono multimetrem; szczegóły w uwadze przy zakupach poniżej). Karta
+  katalogowa potwierdza 20 W; spotykany w tytule oferty zapis 24 W jest niespójny z 5 V × 4 A. Użyjemy go tylko do
   zasilania peryferiów, a ESP32 podczas programowania pozostanie zasilane z USB.
+- **Do sprawdzenia przy zakupach:** wtyk zasilacza i gniazdo DC muszą mieć ten sam
+  rozmiar (średnica zewnętrzna × otwór środkowego pinu, np. 5,5 × 2,1 albo
+  5,5 × 2,5 mm). Opis oferty i etykieta zasilacza go nie zawsze podają, a wtyk
+  2,1 mm może luźno siedzieć w gnieździe 2,5 mm. Kupiony EB2005 miał wtyk, który nie
+  pasował do gniazda 2,5 mm, więc podmieniono go na wtyk ze starego zasilacza.
+  Po takiej wymianie zawsze zmierzyć: brak zwarcia między środkiem a obudową,
+  napięcie i polaryzację na zaciskach gniazda (dla EB2005: 5,14 V bez obciążenia,
+  plus w środku). Wymieniony wtyk pochodzi z adaptera oznaczonego do weryfikacji
+  (ostrzeżenie OPSS), tylko wtyk jest używany, nie sam adapter.
 - Buzzer nie ma znanego numeru części. Dlatego jego końcowy obwód jest oznaczony
   jako do potwierdzenia: nie podłączamy nieznanego buzzera bezpośrednio do GPIO.
 
@@ -50,16 +61,16 @@ sprzętowym. Należy sprawdzić nadruki i napięcia przed podaniem zasilania.
 
 ## Potrzebne elementy do bezpiecznego prototypu
 
-- **Kupione:** zasilacz MW Power EB2005, 5 V / 4 A / 20 W, wtyk 5,5 × 2,1 mm,
-  plus w środku. Zasila zewnętrzną szynę peryferiów; nie podłączaj jego plusa
-  do pinu 5V ESP32, gdy płytka jest zasilana z USB;
+- **Kupione:** zasilacz MW Power EB2005, 5 V / 4 A / 20 W, wtyk 5,5 × 2,5 mm
+  (po wymianie), plus w środku. Zasila zewnętrzną szynę peryferiów; nie podłączaj
+  jego plusa do pinu 5V ESP32, gdy płytka jest zasilana z USB;
 - **Kupione, dostawa w czwartek:** układ Texas Instruments SN74AHCT125N
   w obudowie DIP-14 i podstawka DIP-14. Układ zasilamy z tej samej szyny 5 V;
 - kondensator ceramiczny 100 nF przy układzie SN74AHCT125N;
 - rezystory 10 kΩ i 15 kΩ do dzielnika ECHO (zalecana tolerancja 5% lub lepsza);
 - cztery rezystory 47 kΩ do utrzymania wejść AHCT w stanie niskim przy
   wyłączonym ESP32;
-- gniazdo DC 5,5 × 2,1 mm z wyjściem śrubowym lub inny pewny rozdzielacz do
+- **Kupione:** gniazdo DC 5,5 × 2,5 mm z wyjściem śrubowym lub inny pewny rozdzielacz do
   przewodów; sprawdzić jego obciążalność i nie prowadzić prądu serwa przez
   delikatne styki breadboardu;
 - multimetr; opcjonalnie oscyloskop lub analizator logiczny do obserwacji ECHO,
@@ -86,6 +97,37 @@ podłączymy przez właściwe gniazdo/rozdzielacz DC, nie bezpośrednio do GPIO.
 | Buzzer | GPIO22 | Tylko przez odpowiedni stopień tranzystorowy po identyfikacji buzzera |
 
 ![Szkic sygnałów i zasilania](radar-wiring.svg)
+
+### Układ na breadboardzie: sonar i bufor TRIG (plan, niepotwierdzony sprzętowo)
+
+![Układ na breadboardzie](breadboard-sonar-layout.png)
+
+Wersja wektorowa: `breadboard-sonar-layout.svg`. Litery a–e to dolna połowa
+płytki, f–j górna; kolumna o danym numerze jest połączona tylko w obrębie połowy.
+SN74AHCT125N stoi okrakiem nad rowkiem: pin 1 w e22, pin 7 w e28, pin 8 w f28,
+pin 14 w f22 (zatrzask po lewej).
+
+| Połączenie | Dziura / miejsce | Status |
+|---|---|---|
+| R1 10 kΩ | a10 – a14 | złożone |
+| R2 15 kΩ | b14 – b18 | złożone |
+| Koniec dzielnika | a18 → szyna dolna − | złożone |
+| ECHO z HC-SR04 | a10 | do zrobienia |
+| GPIO6 z ESP32 | c14 (węzeł dzielnika) | do zrobienia |
+| GPIO11 z ESP32 | c23 (pin 2, 1A) | po dostawie AHCT |
+| TRIG do HC-SR04 | c24 (pin 3, 1Y) | po dostawie AHCT |
+| /1OE (pin 1) | b22 → szyna dolna − | po dostawie AHCT |
+| GND układu (pin 7) | b28 → szyna dolna − | po dostawie AHCT |
+| VCC układu (pin 14) | j22 → szyna górna + | po dostawie AHCT |
+| 100 nF | h22 → szyna górna − | po dostawie AHCT |
+| 47 kΩ na 1A | a23 → szyna dolna − | po dostawie AHCT |
+| Nieużywane kanały 2–4 | b25, b26, g23, g24, g26, g27 → GND | po dostawie AHCT |
+| Mostki szyn | dolna + → górna +, dolna − → górna − | po dostawie AHCT |
+| VCC i GND sonaru | szyna dolna + i − | do zrobienia |
+| GND ESP32 | szyna dolna − | do zrobienia |
+
+Podczas montażu: najpierw układ bez zasilania, potem multimetrem sprawdzić brak
+zwarcia 5 V ↔ GND i dopiero włączyć zasilacz. Szyna górna nie była jeszcze mierzona.
 
 ### Szczegóły połączeń i zasilania
 
@@ -181,6 +223,32 @@ podłączymy przez właściwe gniazdo/rozdzielacz DC, nie bezpośrednio do GPIO.
    wyłączyć wszystkie zasilania i odłączyć USB.
 
 Testy opisane powyżej nie zostały jeszcze wykonane na fizycznym sprzęcie.
+
+## Dziennik pomiarów sprzętowych
+
+Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
+
+### 2026-10-07: zasilanie peryferiów i dzielnik ECHO
+
+- **Zasilacz EB2005:** 5,14 V DC bez obciążenia (multimetr UNI-T UT33B+,
+  zakres 20 V DC). Plus w środku wtyku, minus na obudowie.
+- **Wtyk:** wymieniony na 5,5 × 2,5 mm (patrz uwaga przy zakupach powyżej).
+  Test ciągłości środek–obudowa: krótki pisk przy ładowaniu kondensatorów
+  zasilacza, potem stale OL, czyli brak zwarcia.
+- **Gniazdo DC 5,5 × 2,5 mm z zaciskami śrubowymi:** podpisy + i − na zaciskach
+  zgodne z pomiarem polaryzacji multimetrem.
+- **Szyna breadboardu:** zaciski gniazda połączone do bocznej szyny (+ czerwona,
+  − niebieska). Bez ESP32 i modułów: 5,13 V przy wejściu przewodów oraz 5,13 V na
+  drugim końcu szyny, czyli szyna jest ciągła.
+- **Dzielnik ECHO (częściowo złożony, bez zasilania):** zmierzone multimetrem:
+  R1 9,77 kΩ (−2,3%), R2 14,71 kΩ (−1,9%), a10–b18 razem 24,5 kΩ (suma 24,48 kΩ,
+  więc połączenie szeregowe przez kolumnę 14 jest poprawne). Obliczone napięcie
+  węzła GPIO6 przy 5,13 V: ok. 3,08 V (limit 3,3 V), nie zmierzone pod zasilaniem.
+  R1 10 kΩ: a10 – a14. R2 15 kΩ: b14 – b18 (poprawione 2026-10-08 według stanu faktycznego).
+  a18 podłączone do szyny −. Do dołączenia: ECHO HC-SR04 do a10, GPIO6 do kolumny 14
+  (c14 lub d14).
+- **Nie zrobiono jeszcze:** SN74AHCT125N (dostawa w czwartek), kondensator 100 nF,
+  podłączenie ESP32, HC-SR04, OLED, MAX7219, serwa i buzzera.
 
 ## Schematy i karty katalogowe
 

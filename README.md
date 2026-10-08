@@ -98,6 +98,9 @@ testu z płytką oraz działającym Zigbee2MQTT i brokerem MQTT.
 
 Szczegółowy plan testów i szkic połączeń znajduje się w
 [`docs/hardware/radar-wiring-and-test-plan.md`](docs/hardware/radar-wiring-and-test-plan.md).
+Interaktywny model breadboardu (sieci, kontrola zwarć, edycja położenia elementów)
+uruchomisz, otwierając w przeglądarce plik
+[`docs/hardware/breadboard-model.html`](docs/hardware/breadboard-model.html).
 
 Kompilacja i testy hostowe nie sprawdzają płytki, serwa ani czujników. Przed pierwszym testem sprzętowym należy osobno zweryfikować zasilanie, poziomy napięć i połączenia dla dokładnych modeli modułów. Plik `src/app_config.h` zawiera przypisania GPIO, ale sam w sobie nie jest schematem bezpiecznego okablowania.
 
