@@ -9,7 +9,7 @@
   --board:#e8edf1; --board-edge:#b4c0ca; --hole:#6f7f8d; --chan:#cdd6de;
   --accent:#0b7a75; --accent-ink:#ffffff;
   --ok:#1b7f45; --warn:#9a6212; --err:#bf2f2f; --okbg:#e3f3ea; --warnbg:#faf0dc; --errbg:#fbe5e5;
-  --w-vcc:#d4352c; --w-gnd:#1c2833; --w-echo:#7a4cd4; --w-trig:#d8801f; --w-gpio:#1e9a52; --w-g11:#0f8cd0;
+  --w-vcc:#d4352c; --w-gnd:#1c2833; --w-echo:#7a4cd4; --w-trig:#d8801f; --w-gpio:#1e9a52; --w-g11:#0f8cd0; --w-sig:#0e8f8a;
   --part:#dcc497; --part-ink:#46300f; --cap:#f0a93c; --ic:#222d37; --ic-ink:#e9eff4; --mod:#fbfcfd; --pin:#2a3743; --pin-ink:#f2f6f9;
   --sel:#0b7a75;
   --f-ui:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -20,7 +20,7 @@
   --board:#1c2731; --board-edge:#3a4a59; --hole:#8a9cad; --chan:#101820;
   --accent:#3cc4bb; --accent-ink:#06211f;
   --ok:#5ad08a; --warn:#e3b05c; --err:#ff8a84; --okbg:#173326; --warnbg:#3a2e14; --errbg:#40191a;
-  --w-vcc:#ff6a5f; --w-gnd:#b4c3d1; --w-echo:#b490ff; --w-trig:#ffa64d; --w-gpio:#4fd98a; --w-g11:#55bdf5;
+  --w-vcc:#ff6a5f; --w-gnd:#b4c3d1; --w-echo:#b490ff; --w-trig:#ffa64d; --w-gpio:#4fd98a; --w-g11:#55bdf5; --w-sig:#3ed6cf;
   --part:#9b8458; --part-ink:#fff3dc; --cap:#e09a2c; --ic:#0a1016; --ic-ink:#e9eff4; --mod:#1a2530; --pin:#3a4b5b; --pin-ink:#f2f6f9;
   --sel:#3cc4bb; color-scheme:dark}}
 :root[data-theme="dark"]{
@@ -28,7 +28,7 @@
   --board:#1c2731; --board-edge:#3a4a59; --hole:#8a9cad; --chan:#101820;
   --accent:#3cc4bb; --accent-ink:#06211f;
   --ok:#5ad08a; --warn:#e3b05c; --err:#ff8a84; --okbg:#173326; --warnbg:#3a2e14; --errbg:#40191a;
-  --w-vcc:#ff6a5f; --w-gnd:#b4c3d1; --w-echo:#b490ff; --w-trig:#ffa64d; --w-gpio:#4fd98a; --w-g11:#55bdf5;
+  --w-vcc:#ff6a5f; --w-gnd:#b4c3d1; --w-echo:#b490ff; --w-trig:#ffa64d; --w-gpio:#4fd98a; --w-g11:#55bdf5; --w-sig:#3ed6cf;
   --part:#9b8458; --part-ink:#fff3dc; --cap:#e09a2c; --ic:#0a1016; --ic-ink:#e9eff4; --mod:#1a2530; --pin:#3a4b5b; --pin-ink:#f2f6f9;
   --sel:#3cc4bb; color-scheme:dark}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:20px}
@@ -72,6 +72,14 @@ svg{display:block;min-width:900px;width:100%;height:auto}
 .er button:disabled{opacity:.45;cursor:default}
 .msg{margin:8px 0 0;padding:6px 8px;border-radius:6px;font-size:13px}
 .msg.err{background:var(--errbg);color:var(--err)} .msg.pick{background:var(--warnbg);color:var(--warn)}
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:2px 2px 10px}
+.tools button,.tools select,.io button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer}
+.tools button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tools .st{font-size:13px;color:var(--muted);flex:1;min-width:200px}
+.io{display:flex;flex-direction:column;gap:8px}
+.io textarea{width:100%;min-height:96px;resize:vertical;font-family:var(--f-mono);font-size:11px;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.io .bar{display:flex;gap:6px;flex-wrap:wrap}
+.io button.danger{border-color:var(--err);color:var(--err)}
 .hint{color:var(--muted);font-size:13px;margin:0}
 .steps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .steps button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:5px 10px;border-radius:6px;cursor:pointer}
@@ -127,6 +135,15 @@ details.lst summary{cursor:pointer;font-weight:500}
 
   <div class="main">
     <div class="card boardcard">
+      <div class="tools">
+        <button id="add" type="button" aria-pressed="false">Dodaj przewód</button>
+        <label for="addcolor" class="hint">Kolor</label>
+        <select id="addcolor" aria-label="Kolor nowego przewodu">
+          <option value="sig">sygnał (turkus)</option><option value="vcc">+5 V (czerwony)</option><option value="gnd">GND (czarny)</option>
+          <option value="echo">ECHO (fiolet)</option><option value="trig">TRIG (pomarańcz)</option><option value="gpio">GPIO (zielony)</option><option value="g11">GPIO 3,3 V (niebieski)</option>
+        </select>
+        <span class="st" id="addmsg" aria-live="polite">Kliknij „Dodaj przewód”, potem dwa punkty: dziurę, szynę albo pin modułu.</span>
+      </div>
       <div class="scroll"><svg id="svg" viewBox="20 100 1146 622" role="img" aria-label="Widok z góry na breadboard z przewodami i modułami"></svg></div>
       <div class="legend" id="legend"></div>
     </div>
@@ -135,6 +152,14 @@ details.lst summary{cursor:pointer;font-weight:500}
       <section class="card sec" id="sel"></section>
       <section class="card sec"><h2>Kontrole</h2><div id="checks"></div></section>
       <section class="card sec"><h2>Etapy i lista montażu</h2><div id="groups"></div></section>
+      <section class="card sec"><h2>Zapis stanu</h2>
+        <div class="io">
+          <p class="hint" style="margin:0">Własne przewody, poprawki położenia i stany montażu. Skopiuj tekst do pliku, żeby przenieść go na inny komputer, i wklej tam w to samo pole.</p>
+          <textarea id="io" spellcheck="false" aria-label="Zapis stanu w formacie JSON"></textarea>
+          <div class="bar"><button type="button" id="io-exp">Pokaż i skopiuj</button><button type="button" id="io-imp">Wczytaj z pola</button><button type="button" id="io-reset" class="danger">Przywróć domyślne</button></div>
+          <p class="msg" id="io-msg" hidden></p>
+        </div>
+      </section>
       <section class="card sec"><h2>Do dodania w modelu</h2>
         <ul class="future">
           <li>Matryca MAX7219: DIN GPIO7, CLK GPIO18, CS GPIO19 (kanały 2–4 AHCT)</li>
@@ -161,7 +186,8 @@ const GROUPS = [
   {id:'divider', name:'Dzielnik ECHO',        note:'10 kΩ + 15 kΩ obniża ECHO z 5 V do ok. 3,1 V'},
   {id:'buffer',  name:'Bufor TRIG (AHCT125)', note:'SN74AHCT125N podnosi GPIO11 z 3,3 V do 5 V dla TRIG'},
   {id:'sonar',   name:'Sonar HC-SR04',        note:'zasilanie 5 V, ECHO przez dzielnik, TRIG przez bufor'},
-  {id:'esp',     name:'ESP32-C6',             note:'zasilany z USB-C, obok płytki; wspólna masa z szyną −'}
+  {id:'esp',     name:'ESP32-C6',             note:'zasilany z USB-C, obok płytki; wspólna masa z szyną −'},
+  {id:'custom',  name:'Własne przewody',      note:'dodane w przeglądarce; zapisz je w „Zapis stanu”'}
 ];
 const MODULES = [
   {id:'PSU',  name:'Zasilacz EB2005', x:40,  pitch:70, pins:[{id:'+',label:'+',net:'+5V'},{id:'-',label:'−',net:'GND'}]},
@@ -218,7 +244,7 @@ const $=id=>document.getElementById(id);
 /* ---- stan widoku ---- */
 const KEY='breadboard-radaru-v1';
 let over={}; try{over=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){over={}}
-const view={mode:'plan',hidden:{},sel:null,pick:null,msg:''};
+const view={mode:'plan',hidden:{},sel:null,pick:null,msg:'',add:null};
 function saveOver(){try{localStorage.setItem(KEY,JSON.stringify(over))}catch(e){}}
 const stat=it=>over[it.id]||it.status;
 const included=it=>!view.hidden[it.group]&&(view.mode==='plan'||stat(it)!=='todo');
@@ -247,7 +273,20 @@ function parseEnd(s){
 const KEY2='breadboard-radaru-ends-v1';
 let ends={}; try{ends=JSON.parse(localStorage.getItem(KEY2)||'{}')||{}}catch(e){ends={}}
 function saveEnds(){try{localStorage.setItem(KEY2,JSON.stringify(ends))}catch(e){}}
+const COLORS=['vcc','gnd','echo','trig','gpio','g11','sig'];
+const KEY3='breadboard-radaru-custom-v1';
+let customs=[]; try{customs=JSON.parse(localStorage.getItem(KEY3)||'[]')||[]}catch(e){customs=[]}
+function saveCustoms(){try{localStorage.setItem(KEY3,JSON.stringify(customs))}catch(e){}}
+function validWire(w){try{return w&&typeof w.id==='string'&&COLORS.includes(w.color)&&w.a!==w.b&&parseEnd(w.a)&&parseEnd(w.b)}catch(e){return false}}
+function loadCustoms(){
+  for(let i=WIRES.length-1;i>=0;i--)if(WIRES[i].custom)WIRES.splice(i,1);
+  customs=customs.filter(validWire);
+  customs.forEach(w=>WIRES.push({id:w.id,group:'custom',a:w.a,b:w.b,a0:w.a,b0:w.b,color:w.color,status:'todo',custom:true,label:'Własny przewód: '+w.a+' → '+w.b}));
+}
+function nextCustomId(){let n=1;while(WIRES.some(w=>w.id==='X'+n))n++;return 'X'+n}
+loadCustoms();
 [...PARTS,...WIRES].forEach(it=>{
+  if(it.custom)return;
   if(it.type==='ic'){ if(ends[it.id]&&Number.isInteger(ends[it.id].at)&&ends[it.id].at>=1&&ends[it.id].at+6<=COLS){it.at=ends[it.id].at;regIc(it)} return }
   it.a0=it.a;it.b0=it.b;
   const e=ends[it.id]; if(e){try{parseEnd(e.a);parseEnd(e.b);it.a=e.a;it.b=e.b}catch(x){}}
@@ -255,7 +294,9 @@ function saveEnds(){try{localStorage.setItem(KEY2,JSON.stringify(ends))}catch(e)
 function setEnds(it,a,b){
   try{parseEnd(a);parseEnd(b)}catch(x){return 'Nieprawidłowy punkt. Użyj np. b18, SR04.ECHO albo B-@20.'}
   if(a===b)return 'Oba końce nie mogą być w tym samym miejscu.';
-  it.a=a;it.b=b; if(a===it.a0&&b===it.b0)delete ends[it.id]; else ends[it.id]={a,b}; saveEnds(); return '';
+  it.a=a;it.b=b;
+  if(it.custom){const c=customs.find(x=>x.id===it.id);if(c){c.a=a;c.b=b}it.a0=a;it.b0=b;it.label='Własny przewód: '+a+' → '+b;saveCustoms();return ''}
+  if(a===it.a0&&b===it.b0)delete ends[it.id]; else ends[it.id]={a,b}; saveEnds(); return '';
 }
 function setAt(u,at){
   if(!Number.isInteger(at)||at<1||at+6>COLS)return 'Kolumna startowa musi być od 1 do '+(COLS-6)+'.';
@@ -418,7 +459,10 @@ function render(){
     s.push(`<g class="item${sl?' sel':''}${dimOf(w)}" data-item="${w.id}"><title>${esc(w.label)} (${ST[stat(w)]})</title><path class="hit" d="${d}"/><path class="w shape${todo?' todo':''}" d="${d}" stroke="${col}"/>`+
       [a,b].map(e=>`<circle class="endc" cx="${e.x}" cy="${e.y}" r="5.5" fill="${todo?'var(--panel)':col}" stroke="${col}" stroke-width="2"/>`).join('')+'</g>');
   });
+  if(view.add&&view.add.first){const q=parseEnd(view.add.first);s.push(`<circle cx="${q.x}" cy="${q.y}" r="9" fill="none" stroke="var(--sel)" stroke-width="3"/>`)}
   $('svg').innerHTML=s.join('');
+  $('add').setAttribute('aria-pressed',!!view.add);
+  $('addmsg').textContent=view.add?(view.add.first?'Punkt A: '+view.add.first+'. Kliknij punkt B (Esc anuluje).':'Kliknij punkt A: dziurę, szynę albo pin modułu (Esc anuluje).'):(view.addNote||'Kliknij „Dodaj przewód”, potem dwa punkty: dziurę, szynę albo pin modułu.');
   renderSide(nets);
 }
 
@@ -426,7 +470,7 @@ function render(){
 function endTxt(e){return parseEnd(e).label}
 function renderSide(nets){
   // legenda
-  $('legend').innerHTML=[['vcc','+5 V'],['gnd','GND'],['echo','ECHO (5 V)'],['trig','TRIG (5 V)'],['gpio','GPIO6 (3,1 V)'],['g11','GPIO11 (3,3 V)']]
+  $('legend').innerHTML=[['vcc','+5 V'],['gnd','GND'],['echo','ECHO (5 V)'],['trig','TRIG (5 V)'],['gpio','GPIO6 (3,1 V)'],['g11','GPIO11 (3,3 V)'],['sig','własny sygnał']]
     .map(([c,t])=>`<span><i style="border-color:var(--w-${c})"></i>${t}</span>`).join('')+`<span><i class="d" style="border-color:var(--muted)"></i>przerywana: do zrobienia</span>`;
   // etapy
   $('groups').innerHTML=GROUPS.map(g=>{
@@ -458,13 +502,31 @@ function renderSide(nets){
    :`<div class="edit"><label for="e-a">Koniec A</label><div class="er"><input id="e-a" type="text" value="${esc(it.a)}" autocapitalize="off" autocomplete="off" spellcheck="false"><button type="button" data-pick="a" aria-pressed="${view.pick&&view.pick.end==='a'}">Wskaż</button></div>
      <label for="e-b">Koniec B</label><div class="er"><input id="e-b" type="text" value="${esc(it.b)}" autocapitalize="off" autocomplete="off" spellcheck="false"><button type="button" data-pick="b" aria-pressed="${view.pick&&view.pick.end==='b'}">Wskaż</button></div>
      <div class="er"><button type="button" data-apply="1" class="pri">Zastosuj</button><button type="button" data-reset="1" ${(it.a===it.a0&&it.b===it.b0)?'disabled':''}>Przywróć domyślne</button></div></div>`}
+   ${it.custom?`<div class="er" style="margin-top:8px"><button type="button" data-del="1" style="border-color:var(--err);color:var(--err)">Usuń ten przewód</button></div>`:''}
    ${view.pick?`<p class="msg pick">Kliknij dziurę na płytce${it.type?'':' lub pin modułu'}, żeby ustawić koniec ${view.pick.end.toUpperCase()}.</p>`:''}
    ${view.msg?`<p class="msg err">${esc(view.msg)}</p>`:''}
    <p class="hint" style="margin-top:8px">Zmiany stanu i położenia zapisują się tylko w tej przeglądarce. Dziury podajesz jak na płytce (b18), punkt na szynie jako B-@20 (T/B = górna/dolna, +/−, kolumna).</p></div>`;
 }
 
 /* ---- zdarzenia ---- */
+function endFromClick(e){
+  const h=e.target.closest('[data-hole]'); if(h)return h.dataset.hole;
+  const n=e.target.closest('[data-node]'); const m=n&&/^P:((?!U1\.).+)$/.exec(n.dataset.node);
+  return m?m[1]:null;
+}
+function railPoint(e){ // klik w szynę daje dziurę B-@kolumna, już zwracane przez data-hole
+  return endFromClick(e);
+}
 $('svg').addEventListener('click',e=>{
+  if(view.add){
+    const v=railPoint(e); if(!v)return;
+    if(!view.add.first){view.add.first=v;render();return}
+    if(v===view.add.first){view.add.first=null;render();return}
+    const w={id:nextCustomId(),a:view.add.first,b:v,color:$('addcolor').value};
+    if(!validWire(w)){view.addNote='Nie udało się dodać przewodu.';view.add=null;render();return}
+    customs.push(w);saveCustoms();loadCustoms();
+    view.addNote='Dodano '+w.id+': '+w.a+' → '+w.b+'.';view.add=null;view.sel={type:'item',id:w.id};render();return;
+  }
   if(view.pick){
     const it=[...PARTS,...WIRES].find(i=>i.id===view.pick.id);
     const h=e.target.closest('[data-hole]'); let v=h&&h.dataset.hole;
@@ -485,6 +547,7 @@ document.addEventListener('click',e=>{
   const s=e.target.closest('[data-set]'); if(s&&cur){over[cur.id]=s.dataset.set;saveOver();render();return}
   const pk=e.target.closest('[data-pick]'); if(pk&&cur){view.pick=view.pick&&view.pick.end===pk.dataset.pick?null:{id:cur.id,end:pk.dataset.pick};view.msg='';render();return}
   if(e.target.closest('[data-apply]')&&cur){applyEdit(cur);return}
+  if(e.target.closest('[data-del]')&&cur&&cur.custom){customs=customs.filter(c=>c.id!==cur.id);saveCustoms();loadCustoms();delete over[cur.id];saveOver();view.sel=null;view.addNote='Usunięto '+cur.id+'.';render();return}
   if(e.target.closest('[data-reset]')&&cur){view.msg=setEnds(cur,cur.a0,cur.b0);view.pick=null;render()}
 });
 function applyEdit(cur){
@@ -493,7 +556,9 @@ function applyEdit(cur){
   else view.msg=setEnds(cur,$('e-a').value.trim(),$('e-b').value.trim());
   render();
 }
+$('add').onclick=()=>{view.add=view.add?null:{first:null};view.pick=null;view.addNote='';render()};
 document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&view.add){view.add=null;render();return}
   if(e.key==='Enter'&&e.target.closest&&e.target.closest('.edit')&&view.sel&&view.sel.type==='item'){
     const cur=[...PARTS,...WIRES].find(i=>i.id===view.sel.id); if(cur){e.preventDefault();applyEdit(cur)}
   }
@@ -504,5 +569,34 @@ document.addEventListener('change',e=>{
 });
 function setMode(m){view.mode=m;$('m-plan').setAttribute('aria-pressed',m==='plan');$('m-built').setAttribute('aria-pressed',m==='built');render()}
 $('m-plan').onclick=()=>setMode('plan');$('m-built').onclick=()=>setMode('built');
+/* ---- zapis / wczytanie stanu ---- */
+function ioMsg(t,err){const m=$('io-msg');m.hidden=!t;m.textContent=t;m.className='msg '+(err?'err':'pick')}
+function snapshot(){return JSON.stringify({app:'breadboard-radaru',version:1,customWires:customs,ends,status:over},null,1)}
+$('io-exp').onclick=()=>{
+  const ta=$('io');ta.value=snapshot();ta.focus();ta.select();
+  const ok=()=>ioMsg('Skopiowano do schowka. Możesz też zaznaczyć i skopiować tekst ręcznie.');
+  try{navigator.clipboard.writeText(ta.value).then(ok,()=>ioMsg('Zaznaczono tekst. Skopiuj go skrótem Ctrl+C.'))}catch(e){ioMsg('Zaznaczono tekst. Skopiuj go skrótem Ctrl+C.')}
+};
+$('io-imp').onclick=()=>{
+  let d; try{d=JSON.parse($('io').value)}catch(e){ioMsg('To nie jest poprawny JSON.',true);return}
+  if(!d||d.app!=='breadboard-radaru'||d.version!==1){ioMsg('Brak rozpoznawalnego zapisu stanu (pole app/version).',true);return}
+  const cw=Array.isArray(d.customWires)?d.customWires:[];
+  if(cw.some(w=>!validWire(w))){ioMsg('Zapis zawiera nieprawidłowy własny przewód. Nic nie zmieniono.',true);return}
+  customs=cw.map(w=>({id:w.id,a:w.a,b:w.b,color:w.color})); saveCustoms(); loadCustoms();
+  [...PARTS,...WIRES].forEach(it=>{if(it.type==='ic'){it.at=it.at0;regIc(it)}else if(!it.custom){it.a=it.a0;it.b=it.b0}});
+  ends={};
+  Object.entries(d.ends||{}).forEach(([id,e])=>{const it=[...PARTS,...WIRES].find(i=>i.id===id);if(!it||it.custom)return;
+    if(it.type==='ic'){if(e&&Number.isInteger(e.at)&&!setAt(it,e.at)){}}else if(e){setEnds(it,e.a,e.b)}});
+  over={};Object.entries(d.status||{}).forEach(([id,v])=>{if(ST[v])over[id]=v}); saveOver();
+  view.sel=null;ioMsg('Wczytano stan: '+customs.length+' własnych przewodów.');render();
+};
+let resetArm=false;
+$('io-reset').onclick=()=>{
+  if(!resetArm){resetArm=true;$('io-reset').textContent='Na pewno? Kliknij jeszcze raz';setTimeout(()=>{resetArm=false;$('io-reset').textContent='Przywróć domyślne'},4000);return}
+  resetArm=false;$('io-reset').textContent='Przywróć domyślne';
+  customs=[];saveCustoms();loadCustoms();
+  [...PARTS,...WIRES].forEach(it=>{if(it.type==='ic'){it.at=it.at0;regIc(it)}else{it.a=it.a0;it.b=it.b0}});
+  ends={};saveEnds();over={};saveOver();view.sel=null;ioMsg('Przywrócono domyślny model.');render();
+};
 render();
 </script>
