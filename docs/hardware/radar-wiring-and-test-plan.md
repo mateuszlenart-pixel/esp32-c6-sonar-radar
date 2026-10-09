@@ -149,11 +149,11 @@ pin 14 w f22 (zatrzask po lewej).
 | SN74AHCT125N | pin 1 w e22, pin 14 w f22 | złożone |
 | /1OE (pin 1) | b22 → szyna dolna − | złożone |
 | GND układu (pin 7) | b28 → szyna dolna − | złożone |
-| VCC układu (pin 14) | j22 → szyna górna + | złożone |
+| VCC układu (pin 14) | j22 → szyna górna + | zmierzone 5,12 V (pin 14 ↔ pin 7), 2026-10-09 |
 | 100 nF | h22 → szyna górna − | złożone |
 | 47 kΩ na 1A | a23 → szyna dolna − | złożone |
 | Nieużywane kanały 2–4 | b25, b26, g23, g24, g26, g27 → GND | złożone |
-| Mostki szyn | dolna + → górna +, dolna − → górna − | złożone, szyna górna niezmierzona |
+| Mostki szyn | dolna + → górna +, dolna − → górna − | zmierzone: szyna górna 5,13 V (2026-10-09) |
 | VCC sonaru | szyna dolna + | złożone |
 | GND sonaru | szyna dolna − w kolumnie 14 | złożone |
 | GND ESP32 | szyna dolna −, przewód Dupont | do zrobienia |
@@ -162,7 +162,7 @@ Stan „złożone” pochodzi z relacji użytkownika z 2026-10-09; nie był jesz
 sprawdzony pod napięciem ani multimetrem poza pozycjami opisanymi w dzienniku.
 
 Podczas montażu: najpierw układ bez zasilania, potem multimetrem sprawdzić brak
-zwarcia 5 V ↔ GND i dopiero włączyć zasilacz. Szyna górna nie była jeszcze mierzona (stan na 2026-10-09).
+zwarcia 5 V ↔ GND i dopiero włączyć zasilacz. Szyna górna zmierzona 2026-10-09: 5,13 V.
 
 ### Szczegóły połączeń i zasilania
 
@@ -298,6 +298,116 @@ Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
   zasilanie układu AHCT pod napięciem, brak zwarć 5 V ↔ GND po całym montażu.
 - **Nie testowano sprzętowo:** pomiar odległości, sygnał TRIG i ECHO, praca
   z firmware.
+
+### 2026-10-09: test zwarcia 5 V ↔ GND po montażu (bez zasilania)
+
+- **Wynik według relacji użytkownika:** multimetr w trybie ciągłości nie
+  zapiszczał we wszystkich trzech pomiarach, czyli brak zwarcia: (1) szyna dolna
+  + ↔ −, (2) szyna górna + ↔ −, (3) VCC ↔ GND układu AHCT (pin 14 ↔ pin 7).
+  Odczytu w omach nie podano. Zasilacz i USB odłączone (wg uzgodnionej procedury).
+
+### 2026-10-09: zasilanie płytki włączone (ESP32 i USB odłączone)
+
+- **Pomiary:** szyna górna + ↔ − **5,13 V**; szyna dolna + ↔ − **5,13 V**;
+  VCC układu AHCT, pin 14 ↔ pin 7, **5,12 V**.
+- **Obserwacja użytkownika:** nic niepokojącego (bez nagrzewania i zapachu).
+- **Wniosek:** mostki szyn przewodzą, układ AHCT dostaje 5 V. Zmierzone zostały
+  też W3, W4, W7 i W8 w modelu (pośrednio, przez napięcie).
+- **Nie testowano:** TRIG i ECHO, ESP32, pomiar odległości.
+
+### 2026-10-09: trzy przewody Dupont od ESP32 podłączone (bez zasilania)
+
+- **Stan według relacji użytkownika:** GND ESP32 → B-@15 (szyna dolna −),
+  GPIO6 → c14 (węzeł dzielnika ECHO), GPIO11 → a23 (kolumna 23: wejście 1A
+  bufora i rezystor 47 kΩ do GND; a23 i c23 to ta sama sieć). Plan zakładał
+  GND w B-@27 i GPIO11 w c23; zmiany nie wpływają na działanie.
+- **Zostało:** po sprawdzeniu połączeń włączyć USB-C, potem zasilacz zgodnie
+  z kolejnością z listy „Przy kompletnym okablowaniu” (najpierw 5 V, potem USB), i wykonać pomiar odległości.
+- **Pomiary przy wyłączonych zasilaczu i USB (ESP32 podpięte kablami):**
+  GND ESP32 ↔ szyna dolna −: ciągłość (OK). GND ESP32 ↔ szyna dolna +: brak
+  ciągłości (OK). GPIO6 ↔ GND: **14,7 kΩ** (zgodnie z R2 = 14,71 kΩ). GPIO11 ↔
+  GND: **50,6 kΩ**. GPIO6 ↔ szyna dolna +: **34,8 kΩ**.
+- **Interpretacja:** GPIO6 ↔ GND zgadza się z R2. GPIO11 ↔ GND jest wyższe niż
+  47 kΩ (R3 mógł być 51 kΩ albo wchodzi tolerancja i układ pomiarowy); dla
+  pull-downa na wejściu bufora każda wartość 10–100 kΩ jest wystarczająca.
+  Wartość 34,8 kΩ między GPIO6 a + jest mniejsza niż zakładałem. **Hipoteza
+  (niepotwierdzona):** to R1 (9,77 kΩ) plus rezystancja wewnętrzna wyjścia ECHO
+  sonaru do jego VCC (ok. 25 kΩ, typowy słaby pull-up klonów HC-SR04). Nie jest
+  to zwarcie, a przy 5 V węzeł GPIO6 zostaje w granicach dzielnika (ok. 3 V).
+- **Pomiary pod napięciem 5 V (zasilacz włączony, USB ESP32 odłączone):**
+  c14 (węzeł GPIO6/dzielnik) ↔ GND **0 V**; a23 (wejście TRIG bufora) ↔ GND
+  **0 V**; c24 (wyjście bufora do sonaru) ↔ GND **0 V**. To stan spoczynkowy
+  (ECHO nisko, TRIG nisko). Bez uwag użytkownika o grzaniu lub zapachu.
+- **Nie zmierzone / nie testowane:** napięcie w węźle GPIO6 podczas impulsu
+  ECHO, TRIG i ECHO w ruchu, pomiar odległości, praca z firmware.
+
+### 2026-10-09: pierwszy pomiar odległości HC-SR04 (program testowy, ESP32 z USB, 5 V z EB2005)
+
+- **Co uruchomiono:** minimalny program `hardware/firmware-tests/sonar-bench/`
+  (tylko TRIG GPIO11 i ECHO GPIO6, pomiar co 500 ms, bez serwa, OLED, matrycy i
+  sieci), wgrany z Asusa przez COM5 (esptool 5.5.0, `Hash of data verified`).
+- **Wynik:** odczyty 9–10 cm przy nieruchomym przedmiocie, kilka wartości
+  6–13 cm podczas jego ruchu i jeden `no echo (timeout)`. Według użytkownika
+  odczyt odpowiada odległości zmierzonej od czoła czujnika do przeszkody
+  (liczbowej wartości nie podano; dokładność nie jest zmierzona).
+- **Wniosek:** tor TRIG (ESP32 → AHCT → sonar) i tor ECHO (sonar → dzielnik →
+  ESP32) działają funkcjonalnie, a ESP32 przeżył pracę z dzielnikiem. Nie
+  zmierzono napięcia w węźle GPIO6 w trakcie impulsu ECHO (z rachunku ok. 3,1 V).
+- **Test dokładności (relacja użytkownika, miarka od czoła czujnika):**
+
+  | Sonar | Miarka | Różnica |
+  |---|---|---|
+  | 130 cm | 131 cm | −1 cm |
+  | 21 cm | 20 cm | +1 cm |
+  | 52 cm | 52 cm | 0 cm |
+  | 107 cm | 107 cm | 0 cm |
+
+  Różnice mieszczą się w ±1 cm, czyli w rozdzielczości programu (zaokrąglenie do
+  pełnych cm) i w niedokładności ustawienia miarki. Test czterech punktów na jednym
+  celu; nie jest to pełna charakterystyka (inne kąty, powierzchnie, temperatura).
+- **Nie testowano:** zasięgu poniżej 20 cm i powyżej 130 cm, odbić od skośnych
+  lub miękkich celów, OLED, MAX7219, serwa, buzzera, pełnego firmware.
+
+### 2026-10-09: oględziny modułu OLED (zdjęcia przodu i tyłu)
+
+- **Z nadruków:** moduł „1.30'' IIC V2.2”, cztery piny opisane od lewej strony
+  przodu (ekranem do góry): **1 VCC, 2 GND, 3 SCK (SCL), 4 SDA**. Kolejność
+  VCC-GND-SCL-SDA różni się od części modułów (np. GND-VCC), więc czytamy
+  nadruki, a nie zakładamy układu.
+- **Z zdjęcia tyłu (do potwierdzenia na sprzęcie):** dwa zestawy pól lutowniczych
+  „1(VDD)/1(GND)” i „2(VDD)/2(GND)” z rezystorem zworką, prawdopodobnie wybór
+  adresu I2C; rezystory R3, R4 i R6 z oznaczeniem „103” (10 kΩ), prawdopodobnie
+  podciągi SDA/SCL do VCC modułu; element Q1 w SOT-23 o niepotwierdzonej funkcji.
+  Kontroler (SSD1306 lub SH1106) nie jest potwierdzony nadrukiem; firmware zakłada
+  SH1106, adres 0x3C.
+- **Wniosek dla zasilania:** jeśli podciągi są do VCC modułu, zasilanie 5 V
+  podciągnęłoby SDA/SCL do 5 V i mogłoby uszkodzić ESP32, dlatego moduł zasilamy
+  wyłącznie z 3,3 V ESP32 (pin 3V3). Brak nadruku o napięciu zasilania.
+- **Opis sprzedawcy (do weryfikacji, nie zmierzone):** kontroler **SH1106**,
+  interfejs I2C, ekran 1,3" 128×64, białe piksele, zasilanie **3,3–5 V**,
+  rozmiar ekranu 29,42 × 14,7 mm, rozmiar modułu 33,5 × 35,5 mm, wlutowane
+  goldpiny. Zakres 3,3–5 V sugeruje regulator na module, ale nie potwierdza,
+  do jakiego napięcia są podciągnięte SDA/SCL, więc nadal zasilamy z 3,3 V
+  (mieści się w zakresie).
+- **Nie zmierzone / nie testowane:** napięcie pracy, adres I2C, pobór prądu,
+  obraz, wymiary suwmiarką.
+
+### 2026-10-09: OLED wpięty w płytkę, bez zasilania (relacja użytkownika)
+
+- **Połączenia:** moduł w f40–f43: VCC f40, GND f41, SCK f42, SDA f43 (górna
+  połowa płytki). Przewody do ESP32 (po pierwszym błędnym założeniu o rzędach
+  a–e wpięte w rząd g, ta sama połowa co moduł): 3V3 (J1 pin 1) → kolumna 40,
+  GND (J3 pin 1, obok TX) → kolumna 41, GPIO21 (SCL) → kolumna 42, GPIO20 (SDA)
+  → kolumna 43.
+- **Pomiary ciągłości (wszystko odłączone):** 3V3 ↔ szyna dolna +, 3V3 ↔ GND
+  i GPIO20 ↔ GPIO21: we wszystkich trzech brak pisku (OK).
+- **Test na sprzęcie (program `hardware/firmware-tests/oled-bench/`, wgrany z
+  Asusa na COM5, zasilanie modułu 3,3 V z ESP32):** według użytkownika wyświetlacz
+  działa i pokazuje przykładowe ekrany (RADAR, ANGLE, DIST, CRITICAL ALERT).
+  Inicjalizacja przeszła pod adresem 0x3C z firmware (SH1106).
+- **Nie zmierzone / nie testowane:** napięcie na VCC modułu i pobór prądu,
+  wypisy skanu I2C (log startowy nie został wklejony), położenie obrazu na
+  krawędziach i ewentualne przesunięcie, pełny firmware z OLED-em.
 
 ## Schematy i karty katalogowe
 

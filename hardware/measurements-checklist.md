@@ -20,8 +20,8 @@ wymiar potrzebny do obrysu/obudowy, **E** = potrzebny do schematu/elektroniki.
 - [ ] E odległość pinów wejścia od krawędzi, rozstaw 2,54 mm (potwierdzić)
 
 ## 3. OLED SH1106 1,3" I2C
-- [ ] W długość i szerokość płytki, wysokość całości
-- [ ] W wymiar i położenie okna ekranu (część aktywna) względem krawędzi płytki
+- [ ] W długość i szerokość płytki, wysokość całości (opis sprzedawcy: 33,5 × 35,5 mm, do weryfikacji)
+- [ ] W wymiar i położenie okna ekranu (opis sprzedawcy: 29,42 × 14,7 mm, do weryfikacji) (część aktywna) względem krawędzi płytki
 - [ ] W rozstaw otworów montażowych (jeśli są) i średnica
 - [ ] E kolejność i opis pinów (zdjęcie spodu), napięcie zasilania z opisu/zdjęcia
 
