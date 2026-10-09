@@ -53,6 +53,36 @@ i system Zigbee2MQTT/Home Assistant.
   napięcie i polaryzację na zaciskach gniazda (dla EB2005: 5,14 V bez obciążenia,
   plus w środku). Wymieniony wtyk pochodzi z adaptera oznaczonego do weryfikacji
   (ostrzeżenie OPSS), tylko wtyk jest używany, nie sam adapter.
+- **ESP32-C6-DevKitC-1(-N8) poza płytką stykową (decyzja 2026-10-08):** próba
+  wciśnięcia płytki w breadboard (63 kolumny) wymagała dużej siły przy 2 × 16
+  pinach (schemat v1.4: listwy J1 i J3 to `CON16X1_2P54`, nie 2 × 22), a
+  zniszczone styki płytki stykowej psułyby też już zbudowane zworki. ESP32 zostaje
+  obok, a do płytki idą tylko trzy przewody Dupont żeńsko-męskie: GPIO6, GPIO11
+  i GND. Rozstaw rzędów goldpinów sprawdzono przykładając płytkę, pasuje do
+  breadboardu.
+- **Adapter z zaciskami śrubowymi, zakup 2026-10-08:** „Adapter do ESP32 30 pin
+  Devkit V1 z zaciskami ARK terminal” (2 × 15 pinów, rozstaw rzędów wg opisu
+  24 mm). C6-DevKitC-1 ma 2 × 16 pinów, więc **nie pasuje bez sprawdzenia**:
+  na każdej stronie jeden pin wystaje poza gniazda, a zgodność rozstawu rzędów
+  trzeba zmierzyć na własnej płytce. Nadruki na spodzie płytki (zdjęcie
+  2026-10-09, rewizja **ESP32-C6-DevKitC-1 V1.2**) potwierdzają 16 pinów na
+  listwę, a pin **NC leży na końcu od strony USB-C na obu listwach**. Licząc od
+  końca z anteną: J1 pin 1 to 3V3, pin 5 to GPIO6, pin 11 to GPIO11, pin 15 to
+  G, pin 16 to NC; J3 pin 1 to G. Wszystkie potrzebne sygnały mieszczą się więc
+  w 15 pozycjach, jeśli płytkę ułoży się od strony anteny. Zmierzona długość
+  jednej listwy to 38 mm (15 rozstawów po 2,54 mm); **rozstaw między rzędami**
+  (środek do środka) nadal trzeba zmierzyć i porównać z 24 mm podanymi dla
+  adaptera. Pomiar płytki suwmiarką: **23,9 mm między zewnętrznymi krawędziami
+  pinów** obu rzędów (przy pinie ok. 0,64 mm to ok. 23,3 mm środek–środek).
+  **Temat adaptera zaparkowany (2026-10-09):** adapter jeszcze nie dotarł,
+  dostawa planowana na sobotę 2026-10-10. Po odbiorze zmierzyć odległość między
+  zewnętrznymi krawędziami obudów jego żeńskich listw i porównać z tą samą
+  wartością zmierzoną na płytce; różnica do ok. 0,3 mm jest bezpieczna, powyżej
+  ok. 0,6 mm nie wciskać na siłę i rozważyć zwrot.
+  **Nie wciskać ESP32 w adapter przed porównaniem układu bez nacisku** (nałożyć
+  płytkę nad gniazdami i sprawdzić, czy oba rzędy trafiają w gniazda).
+  **Przed zakupem adaptera zawsze sprawdzać:** liczbę pinów na stronę (C6: 16),
+  rozstaw rzędów i opis zgodności z konkretnym modelem płytki.
 - Buzzer nie ma znanego numeru części. Dlatego jego końcowy obwód jest oznaczony
   jako do potwierdzenia: nie podłączamy nieznanego buzzera bezpośrednio do GPIO.
 
@@ -98,7 +128,7 @@ podłączymy przez właściwe gniazdo/rozdzielacz DC, nie bezpośrednio do GPIO.
 
 ![Szkic sygnałów i zasilania](radar-wiring.svg)
 
-### Układ na breadboardzie: sonar i bufor TRIG (plan, niepotwierdzony sprzętowo)
+### Układ na breadboardzie: sonar i bufor TRIG (stan na 2026-10-09)
 
 ![Układ na breadboardzie](breadboard-sonar-layout.png)
 
@@ -112,22 +142,27 @@ pin 14 w f22 (zatrzask po lewej).
 | R1 10 kΩ | a10 – a14 | złożone |
 | R2 15 kΩ | b14 – b18 | złożone |
 | Koniec dzielnika | a18 → szyna dolna − | złożone |
-| ECHO z HC-SR04 | a10 | do zrobienia |
-| GPIO6 z ESP32 | c14 (węzeł dzielnika) | do zrobienia |
-| GPIO11 z ESP32 | c23 (pin 2, 1A) | po dostawie AHCT |
-| TRIG do HC-SR04 | c24 (pin 3, 1Y) | po dostawie AHCT |
-| /1OE (pin 1) | b22 → szyna dolna − | po dostawie AHCT |
-| GND układu (pin 7) | b28 → szyna dolna − | po dostawie AHCT |
-| VCC układu (pin 14) | j22 → szyna górna + | po dostawie AHCT |
-| 100 nF | h22 → szyna górna − | po dostawie AHCT |
-| 47 kΩ na 1A | a23 → szyna dolna − | po dostawie AHCT |
-| Nieużywane kanały 2–4 | b25, b26, g23, g24, g26, g27 → GND | po dostawie AHCT |
-| Mostki szyn | dolna + → górna +, dolna − → górna − | po dostawie AHCT |
-| VCC i GND sonaru | szyna dolna + i − | do zrobienia |
-| GND ESP32 | szyna dolna − | do zrobienia |
+| ECHO z HC-SR04 | a10 | złożone |
+| GPIO6 z ESP32 | c14 (węzeł dzielnika), przewód Dupont | do zrobienia |
+| GPIO11 z ESP32 | c23 (pin 2, 1A), przewód Dupont | do zrobienia |
+| TRIG do HC-SR04 | c24 (pin 3, 1Y) | złożone |
+| SN74AHCT125N | pin 1 w e22, pin 14 w f22 | złożone |
+| /1OE (pin 1) | b22 → szyna dolna − | złożone |
+| GND układu (pin 7) | b28 → szyna dolna − | złożone |
+| VCC układu (pin 14) | j22 → szyna górna + | złożone |
+| 100 nF | h22 → szyna górna − | złożone |
+| 47 kΩ na 1A | a23 → szyna dolna − | złożone |
+| Nieużywane kanały 2–4 | b25, b26, g23, g24, g26, g27 → GND | złożone |
+| Mostki szyn | dolna + → górna +, dolna − → górna − | złożone, szyna górna niezmierzona |
+| VCC sonaru | szyna dolna + | złożone |
+| GND sonaru | szyna dolna − w kolumnie 14 | złożone |
+| GND ESP32 | szyna dolna −, przewód Dupont | do zrobienia |
+
+Stan „złożone” pochodzi z relacji użytkownika z 2026-10-09; nie był jeszcze
+sprawdzony pod napięciem ani multimetrem poza pozycjami opisanymi w dzienniku.
 
 Podczas montażu: najpierw układ bez zasilania, potem multimetrem sprawdzić brak
-zwarcia 5 V ↔ GND i dopiero włączyć zasilacz. Szyna górna nie była jeszcze mierzona.
+zwarcia 5 V ↔ GND i dopiero włączyć zasilacz. Szyna górna nie była jeszcze mierzona (stan na 2026-10-09).
 
 ### Szczegóły połączeń i zasilania
 
@@ -249,6 +284,20 @@ Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
   (c14 lub d14).
 - **Nie zrobiono jeszcze:** SN74AHCT125N (dostawa w czwartek), kondensator 100 nF,
   podłączenie ESP32, HC-SR04, OLED, MAX7219, serwa i buzzera.
+
+### 2026-10-09: bufor TRIG i sonar złożone, bez ESP32
+
+- **Stan według relacji użytkownika:** wszystko z etapu „sonar i bufor TRIG” jest
+  złożone na płytce: SN74AHCT125N, kondensator 100 nF, rezystor 47 kΩ, przewody
+  GND i VCC układu, wszystkie przewody nieużywanych kanałów, mostki szyn,
+  VCC i GND sonaru, ECHO (a10) i TRIG (c24). GND sonaru jest wpięty w szynę
+  dolną − w kolumnie 14.
+- **Zostało z tego etapu:** podłączenie ESP32 trzema przewodami Dupont (GND,
+  GPIO6 do c14, GPIO11 do c23). ESP32 zostaje poza płytką stykową.
+- **Nie zmierzone:** napięcie szyny górnej po mostkach (oczekiwane ok. 5,1 V),
+  zasilanie układu AHCT pod napięciem, brak zwarć 5 V ↔ GND po całym montażu.
+- **Nie testowano sprzętowo:** pomiar odległości, sygnał TRIG i ECHO, praca
+  z firmware.
 
 ## Schematy i karty katalogowe
 
