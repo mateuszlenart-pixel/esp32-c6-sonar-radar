@@ -186,6 +186,7 @@ const GROUPS = [
   {id:'buffer',  name:'Bufor TRIG (AHCT125)', note:'SN74AHCT125N podnosi GPIO11 z 3,3 V do 5 V dla TRIG'},
   {id:'sonar',   name:'Sonar HC-SR04',        note:'zasilanie 5 V, ECHO przez dzielnik, TRIG przez bufor'},
   {id:'matrix',  name:'Matryca MAX7219',    note:'moduł Elegoo 8×8, zasilanie 5 V, DIN/CLK/CS z GPIO7/18/19 przez kanały 2–4 buforu AHCT'},
+  {id:'oled',    name:'OLED SH1106 1,3″',    note:'moduł podłączony bezpośrednio do ESP32 (nie w płytce): 3,3 V, I2C SDA GPIO20, SCL GPIO21'},
   {id:'esp',     name:'ESP32-C6',             note:'zasilany z USB-C, obok płytki; wspólna masa z szyną −'},
   {id:'custom',  name:'Własne przewody',      note:'dodane w przeglądarce; zapisz je w „Zapis stanu”'}
 ];
@@ -193,7 +194,8 @@ const MODULES = [
   {id:'PSU',  name:'Zasilacz EB2005', x:30,  pitch:56, pins:[{id:'+',label:'+',net:'+5V'},{id:'-',label:'−',net:'GND'}]},
   {id:'SR04', name:'HC-SR04',                       x:190, pitch:56, pins:[{id:'VCC',net:'+5V'},{id:'TRIG',net:'TRIG'},{id:'ECHO',net:'ECHO'},{id:'GND',net:'GND'}]},
   {id:'MAX',  name:'MAX7219 (Elegoo V02), wejście', x:450, pitch:56, pins:[{id:'VCC',net:'+5V'},{id:'GND',net:'GND'},{id:'DIN',net:'DIN'},{id:'CS',net:'CS'},{id:'CLK',net:'CLK'}]},
-  {id:'ESP',  name:'ESP32-C6-DevKitC-1',            x:770, pitch:56, pins:[{id:'GPIO6',net:'GPIO6'},{id:'GPIO11',net:'GPIO11'},{id:'GND',net:'GND'},{id:'GPIO7',net:'GPIO7'},{id:'GPIO18',net:'GPIO18'},{id:'GPIO19',net:'GPIO19'}]}
+  {id:'ESP',  name:'ESP32-C6-DevKitC-1',            x:770, pitch:56, pins:[{id:'GPIO6',net:'GPIO6'},{id:'GPIO11',net:'GPIO11'},{id:'GND',net:'GND'},{id:'GPIO7',net:'GPIO7'},{id:'GPIO18',net:'GPIO18'},{id:'GPIO19',net:'GPIO19'},{id:'3V3',net:'3V3'},{id:'GND2',label:'GND 2',net:'GND'},{id:'GPIO21',net:'SCL'},{id:'GPIO20',net:'SDA'}]},
+  {id:'OLED', name:'OLED SH1106 1,3″ (V2.2)',       x:1370, pitch:56, pins:[{id:'VCC',net:'3V3'},{id:'GND',net:'GND'},{id:'SCK',net:'SCL'},{id:'SDA',net:'SDA'}]}
 ];
 const U1_PINS = [ // numer pinu = indeks+1
   {n:'/1OE',net:'GND',need:1},{n:'1A',net:'GPIO11',need:1},{n:'1Y',net:'TRIG'},{n:'/2OE',net:'GND',need:1},
@@ -203,7 +205,7 @@ const U1_PINS = [ // numer pinu = indeks+1
 const PARTS = [
   {id:'R1', group:'divider', type:'res', val:'10 kΩ', a:'a10', b:'a14', status:'measured', note:'Zmierzone: 9,77 kΩ (−2,3%). Od strony ECHO.'},
   {id:'R2', group:'divider', type:'res', val:'15 kΩ', a:'b14', b:'b18', status:'measured', note:'Zmierzone: 14,71 kΩ (−1,9%). Przy 5,13 V węzeł GPIO6 ma ok. 3,08 V (limit 3,3 V).'},
-  {id:'U1', group:'buffer', type:'ic', at:22, name:'SN74AHCT125N', status:'measured', note:'Kanał 1 działa funkcjonalnie (test 2026-10-09: TRIG przechodzi do sonaru). Wstawiony (relacja użytkownika 2026-10-09). Zatrzask po lewej, pin 1 w e22, pin 14 w f22. Wstawić przy odłączonym zasilaniu.'},
+  {id:'U1', group:'buffer', type:'ic', pl:U1_PINS, span:7, at:22, name:'SN74AHCT125N', status:'measured', note:'Kanał 1 działa funkcjonalnie (test 2026-10-09: TRIG przechodzi do sonaru). Wstawiony (relacja użytkownika 2026-10-09). Zatrzask po lewej, pin 1 w e22, pin 14 w f22. Wstawić przy odłączonym zasilaniu.'},
   {id:'C1', group:'buffer', type:'cap', val:'100 nF', a:'h22', b:'T-@20.6', status:'built', note:'Odsprzęganie, blisko VCC i GND układu.'},
   {id:'R3', group:'buffer', type:'res', val:'47 kΩ', a:'a23', b:'B-@23.4', status:'measured', note:'Pull-down na wejściu 1A, żeby nie wisiało w powietrzu przy wyłączonym ESP32. Zakup 47 kΩ niepotwierdzony; w obwodzie zmierzono 50,6 kΩ (GPIO11 ↔ GND, 2026-10-09), co dla pull-downa wystarcza.'}
 ];
@@ -240,6 +242,13 @@ WIRES.push(
   {id:'W28', group:'matrix', a:'MAX.VCC',    b:'B+@8', color:'vcc',  status:'todo', label:'VCC modułu → szyna dolna +', note:'Krok 2. 5 V z zasilacza, nie z ESP32.'},
   {id:'W29', group:'matrix', a:'MAX.GND',    b:'B-@9', color:'gnd',  status:'todo', label:'GND modułu → szyna dolna −', note:'Krok 2.'}
 );
+WIRES.push(
+  {id:'W30', group:'oled', a:'ESP.3V3',    b:'OLED.VCC', color:'g11', status:'measured', label:'3V3 ESP32 (J1 pin 1) → VCC OLED', note:'Bezpośredni przewód Dupont, tylko 3,3 V. Test ciągłości 3V3 ↔ szyna 5 V: brak pisku (2026-10-09).'},
+  {id:'W31', group:'oled', a:'ESP.GND2',   b:'OLED.GND', color:'gnd', status:'measured', label:'GND ESP32 (J3 pin 1, obok TX) → GND OLED', note:'Druga masa ESP32. Obie masy płytki ESP32 są połączone wewnątrz (W34).'},
+  {id:'W32', group:'oled', a:'ESP.GPIO21', b:'OLED.SCK', color:'sig', status:'measured', label:'GPIO21 (J3 pin 7) → SCK/SCL OLED', note:'Bezpośredni przewód Dupont.'},
+  {id:'W33', group:'oled', a:'ESP.GPIO20', b:'OLED.SDA', color:'sig', status:'measured', label:'GPIO20 (J3 pin 8) → SDA OLED', note:'Bezpośredni przewód Dupont.'},
+  {id:'W34', group:'oled', a:'ESP.GND',    b:'ESP.GND2', color:'gnd', status:'measured', internal:true, label:'Obie masy ESP32 są połączone wewnątrz płytki (nie jest to przewód)', note:'Łącze modelowe, bez przewodu na płytce.'}
+);
 /* ===== KONIEC DANYCH ===== */
 
 const NS='http://www.w3.org/2000/svg';
@@ -264,12 +273,13 @@ const included=it=>!view.hidden[it.group]&&!(it.remove&&view.mode==='plan')&&(vi
 const pinPos={};
 MODULES.forEach(m=>m.pins.forEach((p,i)=>{pinPos[m.id+'.'+p.id]={x:m.x+40+i*m.pitch,y:MOD_Y,mod:m,pin:p}}));
 function icPin(u,p){ // p=1..14
+  if(u.layout==='sip')return{x:X(u.at+p-1),y:ROWY.f,half:'U'};
   return p<=7?{x:X(u.at+p-1),y:ROWY.e,half:'L'}:{x:X(u.at+(14-p)),y:ROWY.f,half:'U'};
 }
 function regIc(u){
   Object.keys(pinPos).filter(k=>k.startsWith(u.id+'.')).forEach(k=>delete pinPos[k]);
-  u.pins=U1_PINS;
-  U1_PINS.forEach((pp,i)=>{const q=icPin(u,i+1);pinPos[u.id+'.'+(i+1)]={x:q.x,y:q.y,pin:{id:String(i+1),net:pp.net,need:pp.need,ic:u,name:pp.n},ic:u,col:u.at+(i<7?i:13-i),half:q.half}});
+  u.pins=u.pl;
+  u.pl.forEach((pp,i)=>{const q=icPin(u,i+1);pinPos[u.id+'.'+(i+1)]={x:q.x,y:q.y,pin:{id:String(i+1),net:pp.net,need:pp.need,ic:u,name:pp.n},ic:u,col:u.layout==='sip'?u.at+i:u.at+(i<7?i:13-i),half:q.half}});
 }
 PARTS.filter(p=>p.type==='ic').forEach(u=>{u.at0=u.at;regIc(u)});
 function parseEnd(s){
@@ -298,7 +308,7 @@ function nextCustomId(){let n=1;while(WIRES.some(w=>w.id==='X'+n))n++;return 'X'
 loadCustoms();
 [...PARTS,...WIRES].forEach(it=>{
   if(it.custom)return;
-  if(it.type==='ic'){ if(ends[it.id]&&Number.isInteger(ends[it.id].at)&&ends[it.id].at>=1&&ends[it.id].at+6<=COLS){it.at=ends[it.id].at;regIc(it)} return }
+  if(it.type==='ic'){ if(ends[it.id]&&Number.isInteger(ends[it.id].at)&&ends[it.id].at>=1&&ends[it.id].at+it.span-1<=COLS){it.at=ends[it.id].at;regIc(it)} return }
   it.a0=it.a;it.b0=it.b;
   const e=ends[it.id]; if(e){try{parseEnd(e.a);parseEnd(e.b);it.a=e.a;it.b=e.b}catch(x){}}
 });
@@ -310,7 +320,7 @@ function setEnds(it,a,b){
   if(a===it.a0&&b===it.b0)delete ends[it.id]; else ends[it.id]={a,b}; saveEnds(); return '';
 }
 function setAt(u,at){
-  if(!Number.isInteger(at)||at<1||at+6>COLS)return 'Kolumna startowa musi być od 1 do '+(COLS-6)+'.';
+  if(!Number.isInteger(at)||at<1||at+u.span-1>COLS)return 'Kolumna startowa musi być od 1 do '+(COLS-u.span+1)+'.';
   u.at=at;regIc(u); if(at===u.at0)delete ends[u.id]; else ends[u.id]={at}; saveEnds(); return '';
 }
 /* ---- sieci elektryczne ---- */
@@ -319,7 +329,7 @@ function buildNets(){
   const u=(a,b)=>{a=f(a);b=f(b);if(a!==b)par[a]=b};
   const items=[...WIRES,...PARTS].filter(included);
   items.filter(i=>i.type==='ic').forEach(ic=>{
-    for(let p=1;p<=14;p++){const pp=pinPos[ic.id+'.'+p];u('P:'+ic.id+'.'+p,'S:'+pp.col+pp.half)}
+    for(let p=1;p<=ic.pl.length;p++){const pp=pinPos[ic.id+'.'+p];u('P:'+ic.id+'.'+p,'S:'+pp.col+pp.half)}
   });
   items.filter(i=>!i.type).forEach(w=>u(parseEnd(w.a).key,parseEnd(w.b).key));
   // dodaj piny modułów, żeby miały swoje węzły
@@ -370,7 +380,7 @@ function runChecks(nets){
     if(!netTouched(nets,nets.f('P:'+k)))fl.push(k.replace('.',' pin '));
   });
   if(fl.length)out.push(['warn','WISI','Niepodłączone piny układu: '+fl.join(', ')+'.']);
-  else if(nets.items.some(i=>i.type==='ic'))out.push(['ok','OK','Wszystkie wymagane piny SN74AHCT125N są podłączone.']);
+  else if(nets.items.some(i=>i.type==='ic'))out.push(['ok','OK','Wszystkie wymagane piny układów (AHCT, OLED) są podłączone.']);
   // dzielnik ECHO: czy ECHO dociera do GPIO6 tylko przez rezystor
   const echo=nets.f('P:SR04.ECHO'),g6=nets.f('P:ESP.GPIO6');
   if(nets.items.some(i=>i.id==='W17')&&nets.items.some(i=>i.id==='W20')){
@@ -402,8 +412,8 @@ function render(){
     return [it.a,it.b].some(e=>nets.f(parseEnd(e).key)===hlRoot)};
   const s=[];
   // płytka
-  s.push(`<rect x="40" y="118" width="1106" height="430" rx="12" fill="var(--board)" stroke="var(--board-edge)" stroke-width="2"/>`);
-  s.push(`<rect x="62" y="324" width="1062" height="20" rx="4" fill="var(--chan)"/>`);
+  s.push(`<rect x="40" y="118" width="${X(COLS)+20}" height="430" rx="12" fill="var(--board)" stroke="var(--board-edge)" stroke-width="2"/>`);
+  s.push(`<rect x="62" y="324" width="${X(COLS)-24}" height="20" rx="4" fill="var(--chan)"/>`);
   s.push(`<text class="txt" x="70" y="338">rowek środkowy</text>`);
   Object.keys(RAILY).forEach(k=>{
     const col=k[1]==='+'?'var(--w-vcc)':'var(--w-gnd)';
@@ -426,7 +436,18 @@ function render(){
   // elementy
   const items=[...PARTS,...WIRES].filter(included);
   const dimOf=it=>hlRoot&&!itemInNet(it)?' dim':'';
-  PARTS.filter(p=>included(p)&&p.type==='ic').forEach(u=>{
+  PARTS.filter(p=>included(p)&&p.type==='ic'&&p.layout==='sip').forEach(u=>{
+    const x0=X(u.at)-16,x1=X(u.at+u.span-1)+16,y0=ROWY.f-12,y1=ROWY.f+14;
+    const sl=view.sel&&view.sel.type==='item'&&view.sel.id===u.id;
+    let g=`<g class="item${sl?' sel':''}${dimOf(u)}" data-item="${u.id}"><title>${esc(u.name)} (${ST[stat(u)]})</title>`;
+    g+=`<rect class="shape" x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" rx="5" fill="var(--ic)" ${stat(u)==='todo'?'stroke="var(--sel)" stroke-dasharray="6 4" stroke-width="2"':''}/>`;
+    g+=`<text class="pinlbl" style="font-size:11px;font-weight:600;text-anchor:start" x="${x0}" y="${ROWY.e-10}">${esc(u.name)}</text>`;
+    u.pl.forEach((pp,i)=>{const q=icPin(u,i+1);
+      g+=`<text class="pinlbl" style="fill:var(--ink)" x="${q.x}" y="${q.y+27}">${esc(pp.n)}</text>`;
+      g+=`<circle cx="${q.x}" cy="${q.y}" r="4.2" fill="var(--ic-ink)" data-node="P:${u.id}.${i+1}"/>`});
+    g+='</g>';s.push(g);
+  });
+  PARTS.filter(p=>included(p)&&p.type==='ic'&&p.layout!=='sip').forEach(u=>{
     const x0=X(u.at)-22,x1=X(u.at+6)+22,y0=ROWY.f-20,y1=ROWY.e+20;
     const sl=view.sel&&view.sel.type==='item'&&view.sel.id===u.id;
     let g=`<g class="item${sl?' sel':''}${dimOf(u)}" data-item="${u.id}"><title>${esc(u.name)} (${ST[stat(u)]})</title>`;
@@ -455,7 +476,7 @@ function render(){
     const w=40+m.pins.length*m.pitch-20;
     s.push(`<rect x="${m.x}" y="${MOD_Y-4}" width="${w}" height="110" rx="10" fill="var(--mod)" stroke="var(--board-edge)" stroke-width="1.5"/>`);
     s.push(`<text class="modt" x="${m.x+16}" y="${MOD_Y+72}">${esc(m.name)}</text>`);
-    const sub={PSU:'5,14 V, plus w środku',SR04:'piny od lewej: VCC, TRIG, ECHO, GND',ESP:'zasilanie z USB-C, nie z szyny 5 V'}[m.id]||'';
+    const sub={OLED:'zasilanie 3,3 V z ESP32, bez płytki',PSU:'5,14 V, plus w środku',SR04:'piny od lewej: VCC, TRIG, ECHO, GND',ESP:'zasilanie z USB-C, nie z szyny 5 V'}[m.id]||'';
     s.push(`<text class="txt" x="${m.x+16}" y="${MOD_Y+92}">${esc(sub)}</text>`);
     m.pins.forEach((p,i)=>{
       const key='P:'+m.id+'.'+p.id,on=inNet(key);const x=m.x+40+i*m.pitch;
@@ -464,6 +485,7 @@ function render(){
   });
   // przewody na wierzchu
   WIRES.filter(included).forEach(w=>{
+    if(w.internal)return;
     const a=parseEnd(w.a),b=parseEnd(w.b),d=wirePath(a,b),todo=stat(w)==='todo';
     const sl=view.sel&&view.sel.type==='item'&&view.sel.id===w.id;
     const col=`var(--w-${w.color})`;
@@ -487,7 +509,7 @@ function renderSide(nets){
   $('groups').innerHTML=GROUPS.map(g=>{
     const its=[...PARTS,...WIRES].filter(i=>i.group===g.id);
     const done=its.filter(i=>stat(i)!=='todo').length;
-    const rows=its.map(i=>`<button type="button" class="row" data-item="${i.id}"><span class="dot ${stat(i)}"></span><span class="rn">${esc(i.type?(i.id+' '+(i.val||i.name)):i.label)}</span><span class="rt">${i.type?(i.type==='ic'?'e22–f28':i.a+' – '+i.b.replace(/@.*/,'')):i.a.replace('.',' ')+' → '+i.b.replace(/@.*/,'')}</span></button>`).join('');
+    const rows=its.map(i=>`<button type="button" class="row" data-item="${i.id}"><span class="dot ${stat(i)}"></span><span class="rn">${esc(i.type?(i.id+' '+(i.val||i.name)):i.label)}</span><span class="rt">${i.type?(i.type==='ic'?(i.layout==='sip'?'f'+i.at+'–f'+(i.at+i.span-1):'e22–f28'):i.a+' – '+i.b.replace(/@.*/,'')):i.a.replace('.',' ')+' → '+i.b.replace(/@.*/,'')}</span></button>`).join('');
     return `<div><div class="grp"><input type="checkbox" id="g-${g.id}" data-grp="${g.id}" ${view.hidden[g.id]?'':'checked'}><label for="g-${g.id}"><b>${esc(g.name)}</b><br><span class="hint">${esc(g.note)}</span></label><span class="prog">${done}/${its.length}</span></div><details class="lst"><summary>Lista (${its.length})</summary>${rows}</details></div>`;
   }).join('');
   // kontrole
@@ -509,7 +531,7 @@ function renderSide(nets){
    ${it.note?`<p class="note">${esc(it.note)}</p>`:''}
    <div class="steps" role="group" aria-label="Stan montażu">${Object.keys(ST).map(k=>`<button type="button" data-set="${k}" aria-pressed="${stat(it)===k}">${ST[k]}</button>`).join('')}</div>
    <h4>Położenie na płytce</h4>
-   ${it.type==='ic'?`<div class="edit"><label for="e-at">Kolumna pinu 1 (pin 14 jest w tej samej kolumnie)</label><div class="er"><input id="e-at" type="number" min="1" max="${COLS-6}" value="${it.at}"><button type="button" data-apply="1">Zastosuj</button></div></div>`
+   ${it.type==='ic'?`<div class="edit"><label for="e-at">Kolumna pinu 1</label><div class="er"><input id="e-at" type="number" min="1" max="${COLS-it.span+1}" value="${it.at}"><button type="button" data-apply="1">Zastosuj</button></div></div>`
    :`<div class="edit"><label for="e-a">Koniec A</label><div class="er"><input id="e-a" type="text" value="${esc(it.a)}" autocapitalize="off" autocomplete="off" spellcheck="false"><button type="button" data-pick="a" aria-pressed="${view.pick&&view.pick.end==='a'}">Wskaż</button></div>
      <label for="e-b">Koniec B</label><div class="er"><input id="e-b" type="text" value="${esc(it.b)}" autocapitalize="off" autocomplete="off" spellcheck="false"><button type="button" data-pick="b" aria-pressed="${view.pick&&view.pick.end==='b'}">Wskaż</button></div>
      <div class="er"><button type="button" data-apply="1" class="pri">Zastosuj</button><button type="button" data-reset="1" ${(it.a===it.a0&&it.b===it.b0)?'disabled':''}>Przywróć domyślne</button></div></div>`}
@@ -609,5 +631,6 @@ $('io-reset').onclick=()=>{
   [...PARTS,...WIRES].forEach(it=>{if(it.type==='ic'){it.at=it.at0;regIc(it)}else{it.a=it.a0;it.b=it.b0}});
   ends={};saveEnds();over={};saveOver();view.sel=null;ioMsg('Przywrócono domyślny model.');render();
 };
+$('svg').setAttribute('viewBox','20 100 '+Math.max(X(COLS)+60,...MODULES.map(m=>m.x+40+m.pins.length*m.pitch+10))+' 622');
 render();
 </script>

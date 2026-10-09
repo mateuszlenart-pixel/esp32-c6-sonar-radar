@@ -392,13 +392,13 @@ Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
 - **Nie zmierzone / nie testowane:** napięcie pracy, adres I2C, pobór prądu,
   obraz, wymiary suwmiarką.
 
-### 2026-10-09: OLED wpięty w płytkę, bez zasilania (relacja użytkownika)
+### 2026-10-09: OLED podłączony do ESP32, bez zasilania (relacja użytkownika)
 
-- **Połączenia:** moduł w f40–f43: VCC f40, GND f41, SCK f42, SDA f43 (górna
-  połowa płytki). Przewody do ESP32 (po pierwszym błędnym założeniu o rzędach
-  a–e wpięte w rząd g, ta sama połowa co moduł): 3V3 (J1 pin 1) → kolumna 40,
-  GND (J3 pin 1, obok TX) → kolumna 41, GPIO21 (SCL) → kolumna 42, GPIO20 (SDA)
-  → kolumna 43.
+- **Połączenia (stan faktyczny, korekta z relacji użytkownika):** moduł OLED jest
+  podłączony **bezpośrednio do ESP32** przewodami Dupont, **nie wpięty w płytkę
+  stykową** (zapis o f40–f43 z wcześniejszej wersji tego wpisu był nieaktualny):
+  VCC → 3V3 (J1 pin 1), GND → J3 pin 1 (obok TX), SCK (SCL) → GPIO21 (J3 pin 7),
+  SDA → GPIO20 (J3 pin 8).
 - **Pomiary ciągłości (wszystko odłączone):** 3V3 ↔ szyna dolna +, 3V3 ↔ GND
   i GPIO20 ↔ GPIO21: we wszystkich trzech brak pisku (OK).
 - **Test na sprzęcie (program `hardware/firmware-tests/oled-bench/`, wgrany z
