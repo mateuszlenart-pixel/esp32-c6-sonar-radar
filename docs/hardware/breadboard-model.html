@@ -162,7 +162,6 @@ details.lst summary{cursor:pointer;font-weight:500}
       </section>
       <section class="card sec"><h2>Do dodania w modelu</h2>
         <ul class="future">
-          <li>Matryca MAX7219: DIN GPIO7, CLK GPIO18, CS GPIO19 (kanały 2–4 AHCT)</li>
           <li>OLED: SDA GPIO20, SCL GPIO21, zasilanie 3,3 V</li>
           <li>Serwo: sygnał GPIO10, zasilanie 5 V</li>
           <li>Buzzer: GPIO22 przez tranzystor, po identyfikacji typu</li>
@@ -186,18 +185,20 @@ const GROUPS = [
   {id:'divider', name:'Dzielnik ECHO',        note:'10 kΩ + 15 kΩ obniża ECHO z 5 V do ok. 3,1 V'},
   {id:'buffer',  name:'Bufor TRIG (AHCT125)', note:'SN74AHCT125N podnosi GPIO11 z 3,3 V do 5 V dla TRIG'},
   {id:'sonar',   name:'Sonar HC-SR04',        note:'zasilanie 5 V, ECHO przez dzielnik, TRIG przez bufor'},
+  {id:'matrix',  name:'Matryca MAX7219',    note:'moduł Elegoo 8×8, zasilanie 5 V, DIN/CLK/CS z GPIO7/18/19 przez kanały 2–4 buforu AHCT'},
   {id:'esp',     name:'ESP32-C6',             note:'zasilany z USB-C, obok płytki; wspólna masa z szyną −'},
   {id:'custom',  name:'Własne przewody',      note:'dodane w przeglądarce; zapisz je w „Zapis stanu”'}
 ];
 const MODULES = [
-  {id:'PSU',  name:'Zasilacz EB2005', x:40,  pitch:70, pins:[{id:'+',label:'+',net:'+5V'},{id:'-',label:'−',net:'GND'}]},
-  {id:'SR04', name:'HC-SR04',                       x:260, pitch:70, pins:[{id:'VCC',net:'+5V'},{id:'TRIG',net:'TRIG'},{id:'ECHO',net:'ECHO'},{id:'GND',net:'GND'}]},
-  {id:'ESP',  name:'ESP32-C6-DevKitC-1',            x:620, pitch:90, pins:[{id:'GPIO6',net:'GPIO6'},{id:'GPIO11',net:'GPIO11'},{id:'GND',net:'GND'}]}
+  {id:'PSU',  name:'Zasilacz EB2005', x:30,  pitch:56, pins:[{id:'+',label:'+',net:'+5V'},{id:'-',label:'−',net:'GND'}]},
+  {id:'SR04', name:'HC-SR04',                       x:190, pitch:56, pins:[{id:'VCC',net:'+5V'},{id:'TRIG',net:'TRIG'},{id:'ECHO',net:'ECHO'},{id:'GND',net:'GND'}]},
+  {id:'MAX',  name:'MAX7219 (Elegoo V02), wejście', x:450, pitch:56, pins:[{id:'VCC',net:'+5V'},{id:'GND',net:'GND'},{id:'DIN',net:'DIN'},{id:'CS',net:'CS'},{id:'CLK',net:'CLK'}]},
+  {id:'ESP',  name:'ESP32-C6-DevKitC-1',            x:770, pitch:56, pins:[{id:'GPIO6',net:'GPIO6'},{id:'GPIO11',net:'GPIO11'},{id:'GND',net:'GND'},{id:'GPIO7',net:'GPIO7'},{id:'GPIO18',net:'GPIO18'},{id:'GPIO19',net:'GPIO19'}]}
 ];
 const U1_PINS = [ // numer pinu = indeks+1
   {n:'/1OE',net:'GND',need:1},{n:'1A',net:'GPIO11',need:1},{n:'1Y',net:'TRIG'},{n:'/2OE',net:'GND',need:1},
-  {n:'2A',net:'GND',need:1},{n:'2Y'},{n:'GND',net:'GND',need:1},
-  {n:'3Y'},{n:'3A',net:'GND',need:1},{n:'/3OE',net:'GND',need:1},{n:'4Y'},{n:'4A',net:'GND',need:1},{n:'/4OE',net:'GND',need:1},{n:'VCC',net:'+5V',need:1}
+  {n:'2A',need:1},{n:'2Y',net:'DIN'},{n:'GND',net:'GND',need:1},
+  {n:'3Y',net:'CLK'},{n:'3A',need:1},{n:'/3OE',net:'GND',need:1},{n:'4Y',net:'CS'},{n:'4A',need:1},{n:'/4OE',net:'GND',need:1},{n:'VCC',net:'+5V',need:1}
 ];
 const PARTS = [
   {id:'R1', group:'divider', type:'res', val:'10 kΩ', a:'a10', b:'a14', status:'measured', note:'Zmierzone: 9,77 kΩ (−2,3%). Od strony ECHO.'},
@@ -215,12 +216,12 @@ const WIRES = [
   {id:'W6',  group:'buffer',  a:'b22',     b:'B-@22',  color:'gnd',  status:'measured',     label:'Pin 1 (/1OE) → GND', note:'/OE jest aktywne stanem niskim, więc do GND bufor jest włączony.'},
   {id:'W7',  group:'buffer',  a:'b28',     b:'B-@28',  color:'gnd',  status:'measured',  label:'Pin 7 (GND) → GND', note:'Zmierzone 2026-10-09: pin 14 względem pinu 7 = 5,12 V.'},
   {id:'W8',  group:'buffer',  a:'j22',     b:'T+@22',  color:'vcc',  status:'measured',  label:'Pin 14 (VCC) → szyna górna +', note:'Zmierzone 2026-10-09: pin 14 względem pinu 7 = 5,12 V.'},
-  {id:'W9',  group:'buffer',  a:'b25',     b:'B-@25',  color:'gnd',  status:'built',     label:'Pin 4 (/2OE) → GND', note:'Nieużywany kanał 2. Zmienić, gdy podłączymy MAX7219.'},
-  {id:'W10', group:'buffer',  a:'b26',     b:'B-@26',  color:'gnd',  status:'built',     label:'Pin 5 (2A) → GND'},
+  {id:'W9',  group:'buffer',  a:'b25',     b:'B-@25',  color:'gnd',  status:'built',     label:'Pin 4 (/2OE) → GND', note:'/OE kanału 2 zostaje na GND (kanał włączony), także po podłączeniu MAX7219.'},
+  {id:'W10', group:'buffer',  a:'b26',     b:'B-@26',  color:'gnd',  status:'built',     label:'Pin 5 (2A) → GND (do zdjęcia przy MAX7219)', remove:true},
   {id:'W11', group:'buffer',  a:'g23',     b:'T-@23',  color:'gnd',  status:'built',     label:'Pin 13 (/4OE) → GND'},
-  {id:'W12', group:'buffer',  a:'g24',     b:'T-@24',  color:'gnd',  status:'built',     label:'Pin 12 (4A) → GND'},
+  {id:'W12', group:'buffer',  a:'g24',     b:'T-@24',  color:'gnd',  status:'built',     label:'Pin 12 (4A) → GND (do zdjęcia przy MAX7219)', remove:true},
   {id:'W13', group:'buffer',  a:'g26',     b:'T-@26',  color:'gnd',  status:'built',     label:'Pin 10 (/3OE) → GND'},
-  {id:'W14', group:'buffer',  a:'g27',     b:'T-@27',  color:'gnd',  status:'built',     label:'Pin 9 (3A) → GND'},
+  {id:'W14', group:'buffer',  a:'g27',     b:'T-@27',  color:'gnd',  status:'built',     label:'Pin 9 (3A) → GND (do zdjęcia przy MAX7219)', remove:true},
   {id:'W15', group:'sonar',   a:'SR04.VCC',  b:'B+@20', color:'vcc',  status:'measured', label:'VCC sonaru → szyna dolna +'},
   {id:'W16', group:'sonar',   a:'SR04.GND',  b:'B-@14', color:'gnd',  status:'measured', label:'GND sonaru → szyna dolna −'},
   {id:'W17', group:'sonar',   a:'SR04.ECHO', b:'a10',   color:'echo', status:'measured', label:'ECHO → a10', note:'Sygnał 5 V. Wchodzi tylko do dzielnika, nigdy bezpośrednio do GPIO6.'},
@@ -229,6 +230,16 @@ const WIRES = [
   {id:'W20', group:'esp',     a:'ESP.GPIO6', b:'c14',   color:'gpio', status:'measured', label:'GPIO6 ← c14 (węzeł dzielnika)'},
   {id:'W21', group:'esp',     a:'ESP.GPIO11',b:'a23',   color:'g11',  status:'measured', label:'GPIO11 → a23 (wejście 1A)', note:'Podpięte w a23 zamiast c23 (relacja użytkownika 2026-10-09): ta sama kolumna 23, więc ta sama sieć co wejście 1A (e23) i R3 47 kΩ do GND.'}
 ];
+WIRES.push(
+  {id:'W22', group:'matrix', a:'ESP.GPIO7',  b:'c26',  color:'gpio', status:'todo', label:'GPIO7 → c26 (pin 5, wejście 2A) = DIN', note:'Krok 1: wejścia bufora. Najpierw zdjąć W10 (b26 → szyna dolna −).'},
+  {id:'W23', group:'matrix', a:'ESP.GPIO18', b:'h27',  color:'gpio', status:'todo', label:'GPIO18 → h27 (pin 9, wejście 3A) = CLK', note:'Krok 1. Najpierw zdjąć W14 (g27 → szyna górna −). Kolumna 27, górna połowa (f–j).'},
+  {id:'W24', group:'matrix', a:'ESP.GPIO19', b:'h24',  color:'gpio', status:'todo', label:'GPIO19 → h24 (pin 12, wejście 4A) = CS', note:'Krok 1. Najpierw zdjąć W12 (g24 → szyna górna −).'},
+  {id:'W25', group:'matrix', a:'MAX.DIN',    b:'b27',  color:'sig',  status:'todo', label:'DIN modułu ← b27 (wyjście 2Y, pin 6)', note:'Krok 2: wyjścia bufora i zasilanie modułu. Kolumna 27, dolna połowa (a–e).'},
+  {id:'W26', group:'matrix', a:'MAX.CLK',    b:'g28',  color:'sig',  status:'todo', label:'CLK modułu ← g28 (wyjście 3Y, pin 8)', note:'Krok 2. Kolumna 28, górna połowa (f–j).'},
+  {id:'W27', group:'matrix', a:'MAX.CS',     b:'g25',  color:'sig',  status:'todo', label:'CS modułu ← g25 (wyjście 4Y, pin 11)', note:'Krok 2. Kolumna 25, górna połowa (f–j).'},
+  {id:'W28', group:'matrix', a:'MAX.VCC',    b:'B+@8', color:'vcc',  status:'todo', label:'VCC modułu → szyna dolna +', note:'Krok 2. 5 V z zasilacza, nie z ESP32.'},
+  {id:'W29', group:'matrix', a:'MAX.GND',    b:'B-@9', color:'gnd',  status:'todo', label:'GND modułu → szyna dolna −', note:'Krok 2.'}
+);
 /* ===== KONIEC DANYCH ===== */
 
 const NS='http://www.w3.org/2000/svg';
@@ -247,7 +258,7 @@ let over={}; try{over=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){o
 const view={mode:'plan',hidden:{},sel:null,pick:null,msg:'',add:null};
 function saveOver(){try{localStorage.setItem(KEY,JSON.stringify(over))}catch(e){}}
 const stat=it=>over[it.id]||it.status;
-const included=it=>!view.hidden[it.group]&&(view.mode==='plan'||stat(it)!=='todo');
+const included=it=>!view.hidden[it.group]&&!(it.remove&&view.mode==='plan')&&(view.mode==='plan'||stat(it)!=='todo');
 
 /* ---- geometria ---- */
 const pinPos={};
@@ -338,7 +349,7 @@ function runChecks(nets){
     const ni=netInfo(nets,r);
     if(ni.hints.length>1){bad++;out.push(['err','ZWARCIE','W jednej sieci są: '+ni.hints.map(h=>NETNAME[h]||h).join(' i ')+' (piny: '+ni.pins.join(', ')+').'])}
   });
-  if(!bad)out.push(['ok','OK','Brak zwarć między sygnałami (+5 V, GND, ECHO, GPIO6, TRIG, GPIO11).']);
+  if(!bad)out.push(['ok','OK','Brak zwarć między sygnałami (+5 V, GND, ECHO, TRIG, GPIO6, 7, 11, 18, 19, DIN, CLK, CS).']);
   // zasilanie / masa dla pinów podłączonych
   const psuP=nets.f('P:PSU.+'),psuN=nets.f('P:PSU.-');
   let pw=0,pwBad=0;

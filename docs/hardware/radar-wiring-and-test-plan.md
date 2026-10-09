@@ -409,6 +409,27 @@ Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
   wypisy skanu I2C (log startowy nie został wklejony), położenie obrazu na
   krawędziach i ewentualne przesunięcie, pełny firmware z OLED-em.
 
+### 2026-10-09: MAX7219 zaparkowany do następnej sesji
+
+- **Stan:** nic nie zostało zmienione na płytce. W10, W12 i W14 (wejścia 2A, 3A,
+  4A buforu do GND) nadal są na swoim miejscu.
+- **Gotowe do wznowienia:** plan połączeń w modelu (grupa „Matryca MAX7219”,
+  przewody W22–W29, przerywane = do zrobienia), program testowy
+  `hardware/firmware-tests/matrix-bench/`. Krok 1: zdjąć W10, W12, W14 i dołożyć
+  GPIO7 → c26, GPIO18 → h27, GPIO19 → h24. Krok 2: wyjścia buforu do modułu
+  (DIN ← b27, CLK ← g28, CS ← g25) i zasilanie modułu z szyny dolnej.
+- **Uwaga do PCB:** wejścia 2A–4A nie mają pull-downów; na docelowej płytce dodać
+  rezystory do GND na wszystkich wejściach buforu.
+
+### 2026-10-09: sonar + OLED razem (program `sonar-oled-bench`)
+
+- **Co uruchomiono:** `hardware/firmware-tests/sonar-oled-bench/`: pomiar HC-SR04
+  co 250 ms i pokazanie na OLED-zie (stan, kąt stały 90, odległość).
+- **Wynik według użytkownika:** stan na ekranie zmienia się zgodnie z progami
+  z `app_config.h`: poniżej 20 cm CRITICAL, do 50 cm TARGET LOCKED, dalej PATROL.
+- **Nie testowano:** zgodności wartości DIST z miarką w tym teście (poza wcześniejszym
+  testem sonaru), ruchu serwa, pełnego firmware z logiką potwierdzeń i histerezą.
+
 ## Schematy i karty katalogowe
 
 Na Dellu pobrane kopie offline znajdują się w `docs/hardware/references/`:
