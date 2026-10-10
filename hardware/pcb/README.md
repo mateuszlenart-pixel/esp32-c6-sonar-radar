@@ -52,7 +52,26 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   dla U1 (osadzona kopia 74AHCT125 jest spłaszczona, bez wpływu na połączenia).
 - **Pinout DevKita:** `devkit-pinout.md` (odczytany ze schematu Espressif; poprawka: GND jest
   też na J3 pin 12 i 15).
-- **Następne:** kontrakt mechaniczny (obrys), płytka w `pcbnew`, rozmieszczenie, trasowanie, DRC.
+- **Płytka (szkic automatyczny, 2026-10-10):** `radar-pcb.kicad_pcb`, 66 × 128 mm, dwie warstwy,
+  generowana skryptem `tools/gen_pcb.py` z netlisty schematu. Układ (widok od frontu): u góry
+  złącza kabli do głowicy (sonar, serwo, buzzer, przycisk zewnętrzny), pod nimi gniazda OLED i
+  MAX7219 (moduły wtykane od frontu), od tyłu poziomo DevKit (USB po lewej), gniazdo DC na
+  prawej krawędzi, bufor AHCT w podstawce między rzędami DevKita. Trasowanie: Freerouting 2.5.0
+  (jar + Temurin JRE 25, pobrane do `~/tools`, sumy kontrolne zweryfikowane), potem wylewki GND.
+- **Stan DRC (2026-10-10, po poprawkach):** `kicad-cli pcb drc --schematic-parity`: **0 błędów,
+  0 niepołączonych, 0 niezgodności ze schematem**; 23 ostrzeżenia o nakładaniu się opisów
+  (silkscreen), bez wpływu na elektrykę. Freerouting: 78 sieci, 0 nietrasowanych, 0 naruszeń.
+  Wszystkie elementy mają ręcznie zaplanowane pozycje (`FIXED` w `gen_pcb.py`), pas 0,9 mm przy
+  krawędzi jest wolny od ścieżek, wylewki GND na obu warstwach.
+- **Do sprawdzenia przed zamówieniem:** gniazdo DC musi mieć bolec **2,5 mm** (wtyk EB2005
+  5,5 × 2,5 mm), a footprint `BarrelJack_Horizontal` dobrać do konkretnego modelu (np. CUI PJ-002B);
+  rozstaw rzędów DevKita (założone 23,3 mm) i położenie gniazd modułów po pomiarach.
+- **Obrys 66 × 128 mm i położenie elementów to propozycja** do zatwierdzenia po zmierzeniu
+  modułów i DevKita (rozstaw rzędów DevKita założony 23,3 mm między środkami pinów).
+- **Odtworzenie całości jednym poleceniem** (z katalogu repo): `hardware/pcb/tools/build_all.sh`
+  (schemat, ERC, netlista, rozmieszczenie, Freerouting, wylewki GND, DRC; ok. 1,5 min).
+- **Następne:** poprawić rozmieszczenie i trasowanie do DRC bez błędów, przegląd użytkownika w
+  KiCadzie, kontrakt mechaniczny.
 
 ## Plan pracy
 

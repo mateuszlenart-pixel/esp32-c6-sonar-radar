@@ -62,7 +62,7 @@ def noconn(x, y):
     items.append('(no_connect (at %s %s) (uuid "%s"))' % (fmt(x), fmt(y), uid()))
 
 
-def place(ref, libfile, sym, value, footprint, x, y, nets, nc=(), unit=1, show_value=True):
+def place(ref, libfile, sym, value, footprint, x, y, nets, nc=(), unit=1, show_value=True, in_bom=True):
     """Umieszcza element; nets: {numer_pinu: sieć}; nc: numery pinów niepodłączonych."""
     x, y = snap(x), snap(y)
     FOOTPRINTS.add(footprint)
@@ -85,9 +85,9 @@ def place(ref, libfile, sym, value, footprint, x, y, nets, nc=(), unit=1, show_v
            '' if show_value else ' (hide yes)', footprint, fmt(x), fmt(y), fmt(x), fmt(y)))
     pin_lines = ' '.join('(pin "%s" (uuid "%s"))' % (p[0], uid()) for p in pins)
     items.append(
-        '(symbol (lib_id "%s") (at %s %s 0) (unit %d) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) '
+        '(symbol (lib_id "%s") (at %s %s 0) (unit %d) (exclude_from_sim no) (in_bom %s) (on_board yes) (dnp no) '
         '(uuid "%s")\n    %s\n    %s\n    (instances (project "%s" (path "/%s" (reference "%s") (unit %d)))))'
-        % (lid, fmt(x), fmt(y), unit, uid(), fields, pin_lines, PROJECT, ROOT, ref, unit))
+        % (lid, fmt(x), fmt(y), unit, 'yes' if in_bom else 'no', uid(), fields, pin_lines, PROJECT, ROOT, ref, unit))
     for p in pins:
         px, py = x + p[2], y - p[3]
         if p[0] in nets:
@@ -136,7 +136,7 @@ flag(250, 50, '+5V', '#FLG01')
 flag(262, 50, 'GND', '#FLG02')
 flag(274, 50, '+3V3', '#FLG03')
 for i, (ref, net) in enumerate([('TP1', '+5V'), ('TP2', '+3V3'), ('TP3', 'GND'), ('TP4', 'TRIG_5V'), ('TP5', 'ECHO_3V3')]):
-    place(ref, 'Connector', 'TestPoint', 'TP ' + net, TP, 40 + i * 22, 100, {'1': net}, show_value=False)
+    place(ref, 'Connector', 'TestPoint', 'TP ' + net, TP, 40 + i * 22, 100, {'1': net}, show_value=False, in_bom=False)
 
 # ------------------------------------------------------------------ bufor AHCT125
 text(30, 130, 'BUFOR SN74AHCT125 (DIP-14 w podstawce): 3,3 V z ESP32 -> 5 V; wejscia A z pull-downami')
@@ -206,7 +206,7 @@ open(OUT, 'w').write(sheet)
 # Tablice bibliotek projektu (ścieżki przez zmienne KiCada, działają na Dellu i na Asusie)
 d = os.path.dirname(os.path.abspath(OUT))
 sym_libs = sorted(set(k.split(':')[0] for k in LIBS))
-fp_libs = sorted(set(f.split(':')[0] for f in FOOTPRINTS))
+fp_libs = sorted(set(f.split(':')[0] for f in FOOTPRINTS) | {'MountingHole'})
 open(os.path.join(d, 'sym-lib-table'), 'w').write(
     '(sym_lib_table\n  (version 7)\n' + ''.join(
         '  (lib (name "%s")(type "KiCad")(uri "${KICAD10_SYMBOL_DIR}/%s.kicad_sym")(options "")(descr ""))\n' % (n, n)

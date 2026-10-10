@@ -3,3 +3,9 @@ erc.rpt
 *-backups/
 fp-info-cache
 __pycache__/
+drc.rpt
+radar-pcb.net
+radar-pcb.dsn
+radar-pcb.ses
+*.kicad_pcb-bak
+freerouting.log
