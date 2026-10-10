@@ -63,6 +63,17 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   (silkscreen), bez wpływu na elektrykę. Freerouting: 78 sieci, 0 nietrasowanych, 0 naruszeń.
   Wszystkie elementy mają ręcznie zaplanowane pozycje (`FIXED` w `gen_pcb.py`), pas 0,9 mm przy
   krawędzi jest wolny od ścieżek, wylewki GND na obu warstwach.
+- **Opisy na płytce (silkscreen):** przy każdym złączu nazwa modułu i nazwa każdego pinu (sonar,
+  serwo, buzzer, przycisk, OLED, MAX7219), od tyłu opis wszystkich 32 pinów DevKita z kierunkiem
+  USB-C, przy elementach oznaczenie z wartością (np. „R6 10k”, „C1 470uF 16V”), polaryzacja
+  („+” przy elektrolitach, „K” przy katodach diod, „1” przy pinie 1 bufora), opisy punktów
+  testowych, gniazda DC i przycisku ON/STANDBY. DRC: 0 błędów, 6 ostrzeżeń o opisach.
+- **Przycisk ON/STANDBY:** kątowy (C&K PTS645VL58-2LFS, footprint `SW_Tactile_SPST_Angled_PTS645Vx58-2LFS`)
+  na lewej krawędzi; popychacz wystaje ok. 3,3 mm poza płytkę, w osi 65,75 mm od górnej krawędzi
+  (otwór w ściance obudowy). Złącze J9 zostaje na ewentualny przycisk panelowy.
+- **Rysunek do weryfikacji:** `renders/radar-pcb-v0.1-wymiary-do-weryfikacji.pdf` (A4, strony 1-2
+  w skali 1:1: przód i tył z wymiarami W1-W12 oznaczonymi „?”, strona 3: podgląd 3D). Wymiary
+  są w skrypcie (`DIMS` w `gen_pcb.py`), legenda na warstwach Dwgs.User (przód) i Cmts.User (tył).
 - **Do sprawdzenia przed zamówieniem:** gniazdo DC musi mieć bolec **2,5 mm** (wtyk EB2005
   5,5 × 2,5 mm), a footprint `BarrelJack_Horizontal` dobrać do konkretnego modelu (np. CUI PJ-002B);
   rozstaw rzędów DevKita (założone 23,3 mm) i położenie gniazd modułów po pomiarach.

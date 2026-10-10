@@ -9,3 +9,4 @@ radar-pcb.dsn
 radar-pcb.ses
 *.kicad_pcb-bak
 freerouting.log
+renders/

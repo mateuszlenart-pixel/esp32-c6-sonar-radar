@@ -183,7 +183,7 @@ place('Q2', 'Transistor_BJT', 'MMBT3904', 'MMBT3904', 'Package_TO_SOT_SMD:SOT-23
 place('D2', 'Device', 'D', '1N4148W', 'Diode_SMD:D_SOD-123', 365, 225, {'1': '+5V', '2': 'BUZ_NEG'})
 place('J8', 'Connector_Generic', 'Conn_01x02', 'Buzzer: + -', HDR % 2, 395, 215, {'1': '+5V', '2': 'BUZ_NEG'})
 text(180, 240, 'WYLACZNIK ON/STANDBY (GPIO2): przycisk do GND, pull-up w ESP32')
-place('SW1', 'Switch', 'SW_Push', 'Przycisk ON/standby', 'Button_Switch_THT:SW_PUSH_6mm', 195, 265,
+place('SW1', 'Switch', 'SW_Push', 'Przycisk ON/standby (katowy)', 'Button_Switch_THT:SW_Tactile_SPST_Angled_PTS645Vx58-2LFS', 195, 265,
       {'1': 'BTN', '2': 'GND'})
 place('C5', 'Device', 'C', '100 nF', C, 235, 265, {'1': 'BTN', '2': 'GND'})
 place('J9', 'Connector_Generic', 'Conn_01x02', 'Przycisk zewnetrzny', HDR % 2, 270, 262, {'1': 'BTN', '2': 'GND'})

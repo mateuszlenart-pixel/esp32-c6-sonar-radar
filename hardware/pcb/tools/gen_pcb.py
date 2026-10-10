@@ -23,7 +23,7 @@ SES = os.path.join(PCB_DIR, 'radar-pcb.ses')
 FP_ROOT = '/app/extensions/Library/footprints/'
 
 W, H = 66.0, 128.0          # obrys płytki, mm (propozycja do zatwierdzenia)
-OX, OY = 100.0, 60.0        # przesunięcie na arkuszu KiCada
+OX, OY = 100.0, 25.0        # przesunięcie na arkuszu KiCada (A4 poziomo, płytka nad tabelką)
 mm = pcbnew.FromMM
 
 
@@ -61,7 +61,7 @@ FIXED = {
     # moduły wtykane od frontu (nagłówki u góry modułów)
     'J7': (33 - 3.81, 13, 90, 'F'), 'J6': (33 - 5.08, 55, 90, 'F'),
     # lewy pas: kondensator serwa, przycisk ON/standby
-    'C4': (5.5, 50, 0, 'F'), 'SW1': (3.75, 63.75, 0, 'F'), 'C5': (7, 72, 0, 'F'),
+    'C4': (5.5, 50, 0, 'F'), 'SW1': (2.64, 68, 90, 'F'), 'C5': (7, 72, 0, 'F'),
     # prawy pas: gniazdo DC (otwór na krawędzi), bezpiecznik, MOSFET, kondensatory, LED
     'J1': (52.3, 66, 180, 'F'), 'D1': (63.5, 74, 90, 'F'), 'R1': (59.5, 73.6, 0, 'F'),
     'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'F1': (57.25, 89, 0, 'F'), 'Q1': (63, 89, 90, 'F'),
@@ -117,6 +117,170 @@ def pack_small(parts, rects):
         if not done:
             raise RuntimeError('brak miejsca dla ' + ref)
     return placed
+
+
+# ------------------------------------------------------------------ opisy na płytce
+PIN_NAMES = {
+    'J4': ('HC-SR04', ['VCC', 'TRIG', 'ECHO', 'GND']),
+    'J5': ('SERWO', ['GND', '+5V', 'SIG']),
+    'J8': ('BUZZ', ['+', '-']),
+    'J9': ('PRZYC.', ['IO2', 'GND']),
+    'J7': ('OLED SH1106', ['VCC', 'GND', 'SCK', 'SDA']),
+    'J6': ('MAX7219', ['VCC', 'GND', 'DIN', 'CS', 'CLK']),
+}
+DEVKIT = {
+    'J3': ('DevKit J3', ['GND', 'TX', 'RX', 'IO15', 'IO23', 'IO22', 'IO21', 'IO20', 'IO19', 'IO18', 'IO9',
+                         'GND', 'IO13', 'IO12', 'GND', 'NC']),
+    'J2': ('DevKit J1', ['3V3', 'RST', 'IO4', 'IO5', 'IO6', 'IO7', 'IO0', 'IO1', 'IO8', 'IO10', 'IO11',
+                         'IO2', 'IO3', '5V', 'GND', 'NC']),
+}
+# oznaczenie + wartość na opisie: ref -> (tekst, dx, dy, wyrównanie, obrót) względem środka elementu.
+# Własne oznaczenie elementu (pole Reference) jest ukrywane, żeby napisy się nie dublowały.
+VALUES = {
+    'R1': ('R1 1k', -1.6, 0, 'right', 0), 'D1': ('D1 PWR', 2.1, -2.9, 'right', 0),
+    'C1': ('C1 470uF 16V', 1.75, 5.4, 'center', 0), 'C2': ('C2 100nF', 1.9, 0, 'center', 90),
+    'F1': ('F1 1,5A', -3.4, 0, 'right', 0), 'Q1': ('Q1 AO3401', 2.6, 2.8, 'right', 0),
+    'C4': ('C4 220uF 10V', 1.25, 4.6, 'center', 0), 'SW1': ('SW1 ON/STANDBY', 4.0, -1.6, 'left', 0),
+    'C5': ('C5 100nF', 0, 1.6, 'center', 0),
+    'Q2': ('Q2 3904', -0.7, 3.0, 'center', 0), 'R9': ('R9 1k', 0, -1.7, 'center', 0),
+    'R10': ('R10 100k', 0.7, 2.1, 'center', 0), 'D2': ('D2 1N4148', -0.6, 2.3, 'left', 0),
+    'C3': ('C3 100nF', 1.1, -2.6, 'right', 0),
+    'R2': ('R2 47k', 0, 1.7, 'center', 0), 'R3': ('R3 47k', 0, 1.7, 'center', 0),
+    'R4': ('R4 47k', 1.6, 0, 'left', 0), 'R5': ('R5 47k', -1.6, 0, 'right', 0),
+    'R6': ('R6 10k', 0, -2.6, 'center', 0), 'R7': ('R7 15k', 0, 2.5, 'center', 0),
+    'R8': ('R8 330', 1.6, 0, 'left', 0), 'U1': ('U1 74AHCT125', 7.6, 2.4, 'center', 0),
+    'J1': ('J1 DC 5V  (+) srodek', 6.2, -6.4, 'center', 0),
+}
+FREE_TEXT = [
+    # (tekst, x, y, wysokość, obrót, warstwa)
+    ('(GPIO2)  <- przycisk z boku', 6.6, 67.8, 0.8, 0, 'F', 'left'),
+    ('+5V', 59.5, 99.2, 0.8, 0, 'F'), ('GND', 63, 99.2, 0.8, 0, 'F'),
+    ('3V3', 12.6, 100, 0.8, 0, 'F'), ('TRIG', 12.9, 104, 0.8, 0, 'F'), ('ECHO', 50.9, 104, 0.8, 0, 'F', 'left'),
+    ('DevKit od tylu  <- USB-C', 30, 90.2, 0.9, 0, 'F'),
+    ('Radar ESP32-C6  v0.1  2026-10', 33, 126.4, 0.9, 0, 'F'),
+    ('USB-C ->', 30, 126.6, 1.0, 0, 'B'),
+    ('DevKit J3 (pin 1 = GND)', 36, 86.2, 0.9, 0, 'B'),
+    ('DevKit J1 (pin 1 = 3V3)', 36, 124.6, 0.9, 0, 'B'),
+    ('Radar ESP32-C6 - tyl', 33, 66, 1.2, 0, 'B'),
+]
+
+
+def add_text(board, s, x, y, h=0.8, angle=0, side='F', just='center'):
+    t = pcbnew.PCB_TEXT(board)
+    t.SetText(s)
+    t.SetLayer(pcbnew.F_SilkS if side == 'F' else pcbnew.B_SilkS)
+    t.SetTextSize(pcbnew.VECTOR2I(mm(h), mm(h)))
+    t.SetTextThickness(mm(0.15))
+    t.SetTextAngleDegrees(angle)
+    t.SetHorizJustify({'center': pcbnew.GR_TEXT_H_ALIGN_CENTER, 'left': pcbnew.GR_TEXT_H_ALIGN_LEFT,
+                       'right': pcbnew.GR_TEXT_H_ALIGN_RIGHT}[just])
+    if side == 'B':
+        t.SetMirrored(True)
+    t.SetPosition(P(x, y))
+    board.Add(t)
+
+
+def add_labels(board, fps):
+    # złącza na froncie: nazwa pinu pionowo pod każdym pinem, nazwa modułu po lewej
+    for ref, (title, names) in PIN_NAMES.items():
+        fp = fps[ref]
+        for i, n in enumerate(names):
+            x, y = pad_xy(fp, i + 1)
+            add_text(board, n, x, y + 1.5, 0.8, 90, 'F', 'right')
+        x1, y1 = pad_xy(fp, 1)
+        add_text(board, title, x1 - 1.8, y1 + 1.5, 0.8, 90, 'F', 'right')
+    # DevKit od tyłu: nazwy pinów nad J3 i pod J2 (warstwa B, lustrzane)
+    for ref, (title, names) in DEVKIT.items():
+        fp = fps[ref]
+        above = ref == 'J3'
+        for i, n in enumerate(names):
+            x, y = pad_xy(fp, i + 1)
+            if above:
+                add_text(board, n, x, y - 1.5, 0.8, 90, 'B', 'right')
+            else:
+                add_text(board, n, x, y + 1.5, 0.8, 90, 'B', 'left')
+    # wartości elementów
+    for ref, (txt, dx, dy, just, ang) in VALUES.items():
+        fps[ref].Reference().SetVisible(False)
+        c = fps[ref].GetPosition()
+        add_text(board, txt, pcbnew.ToMM(c.x) - OX + dx, pcbnew.ToMM(c.y) - OY + dy, 0.8, ang, 'F', just)
+    # polaryzacja: + przy kondensatorach elektrolitycznych, K przy katodach, 1 przy pinie 1 U1
+    for ref in ('C1', 'C4'):
+        x, y = pad_xy(fps[ref], 1)
+        add_text(board, '+', x - 2.6, y - 2.4, 1.2, 0, 'F')
+    for ref in ('D1', 'D2'):
+        x, y = pad_xy(fps[ref], 1)
+        dx, dy = (0, 0)
+        add_text(board, 'K', x + (1.4 if ref == 'D1' else -1.6), y + (0 if ref == 'D1' else -1.4), 0.8, 0, 'F')
+    x, y = pad_xy(fps['U1'], 1)
+    add_text(board, '1', x - 1.6, y + 1.2, 0.8, 0, 'F')
+    for item in FREE_TEXT:
+        add_text(board, *item)
+
+
+
+# ------------------------------------------------------------------ wymiary do weryfikacji
+# (nr, start, koniec, odsunięcie linii wymiaru, strona, opis do legendy)
+DIMS = [
+    ('W1', (0, 0), (W, 0), 5, 'F', 'szerokosc plytki: czy miesci sie we wnetrzu kolumny obudowy'),
+    ('W2', (0, H), (0, 0), 9, 'F', 'wysokosc plytki: czy miesci sie w kolumnie nad podstawka'),
+    ('W3', (0, 13), (33 - 3.81, 13), -3, 'F', 'OLED: od lewej krawedzi do pinu 1 gniazda J7 (okno ekranu w obudowie)'),
+    ('W4', (0, 55), (33 - 5.08, 55), -3, 'F', 'MAX7219: od lewej krawedzi do pinu 1 gniazda J6 (okno matrycy)'),
+    ('W5', (42, 13), (42, 55), -3, 'F', 'odstep gniazd OLED-MAX7219 (pion), zgodny z oknami w obudowie'),
+    ('W6', (W, 0), (W, 66), -5, 'F', 'gniazdo DC: od gornej krawedzi do osi wtyku (otwor w scianie obudowy)'),
+    ('W7', (0, 0), (0, 65.75), 4, 'F', 'przycisk boczny: od gornej krawedzi do osi popychacza (otwor w scianie)'),
+    ('W8', (3.5, 32), (W - 3.5, 32), 4, 'F', 'otwory montazowe M3: rozstaw w poziomie'),
+    ('W9', (3.5, 32), (3.5, 88), -4, 'F', 'otwory montazowe M3: rozstaw w pionie'),
+    ('W10', (55, 94), (55, 117.3), -6, 'B', 'DevKit: rozstaw rzedow pinow (srodek-srodek), ZALOZONE 23,3 mm'),
+    ('W11', (55, 117.3), (55 - 38.1, 117.3), -5, 'B', 'DevKit: pin 1 - pin 16 jednej listwy (15 x 2,54 mm)'),
+    ('W12', (55, 94), (W, 94), 4, 'B', 'DevKit: od prawej krawedzi (widok od frontu) do pinu 1'),
+]
+
+
+def add_dimensions(board):
+    for (nr, a, b, h, side, _) in DIMS:
+        d = pcbnew.PCB_DIM_ALIGNED(board)
+        d.SetLayer(pcbnew.Dwgs_User if side == 'F' else pcbnew.Cmts_User)
+        d.SetStart(P(*a))
+        d.SetEnd(P(*b))
+        d.SetHeight(mm(h))
+        d.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MM)
+        d.SetUnitsFormat(pcbnew.DIM_UNITS_FORMAT_BARE_SUFFIX)
+        d.SetPrecision(pcbnew.DIM_PRECISION_X_XX)
+        d.SetPrefix(nr + ': ')
+        d.SetSuffix(' ?')
+        d.SetTextSize(pcbnew.VECTOR2I(mm(1.1), mm(1.1)))
+        if side == 'B':
+            d.SetMirrored(True)
+        board.Add(d)
+        d.Update()
+    # legenda obok płytki
+    for side, layer in (('F', pcbnew.Dwgs_User), ('B', pcbnew.Cmts_User)):
+        lines = ['WYMIARY DO WERYFIKACJI  (? = wartosc z projektu)',
+                 'Wydruk w skali 1:1 (100%, bez dopasowania do strony).', '']
+        lines += ['%s  %s' % (nr, opis) for (nr, _, _, _, sd, opis) in DIMS if sd == side]
+        lines += ['', 'Strona: ' + ('PRZOD (widok od frontu)' if side == 'F' else
+                                    'TYL (widok od tylu, lustro) - DevKit wtykany od tej strony'),
+                  'Projekt roboczy v0.1 - NIE ZAMAWIAC przed weryfikacja wymiarow.']
+        for i, line in enumerate(lines):
+            t = pcbnew.PCB_TEXT(board)
+            t.SetText(line)
+            t.SetLayer(layer)
+            t.SetTextSize(pcbnew.VECTOR2I(mm(1.6 if i == 0 else 1.25), mm(1.6 if i == 0 else 1.25)))
+            t.SetTextThickness(mm(0.2 if i == 0 else 0.16))
+            t.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT)
+            if side == 'B':
+                # po odbiciu lustrzanym na wydruku tekst ląduje po prawej stronie płytki
+                t.SetMirrored(True)
+                t.SetPosition(P(-8, 4 + i * 3.0))
+            else:
+                t.SetPosition(P(W + 14, 4 + i * 3.0))
+            board.Add(t)
+    tb = board.GetTitleBlock()
+    tb.SetTitle('Radar ESP32-C6 - plytka glowna - WYMIARY DO WERYFIKACJI')
+    tb.SetRevision('0.1')
+    tb.SetDate('2026-10-10')
+    tb.SetComment(0, 'Projekt roboczy. Wymiary oznaczone ? sprawdzic na elementach przed zamowieniem.')
 
 
 def build():
@@ -207,6 +371,8 @@ def build():
         for (x, y) in [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]:
             o.Append(mm(OX + x), mm(OY + y))
         board.Add(ka)
+    add_labels(board, fps)
+    add_dimensions(board)
     board.Save(PCB)
     pcbnew.ExportSpecctraDSN(board, DSN)
     # kontrola położeń rzędów DevKita i modułów
