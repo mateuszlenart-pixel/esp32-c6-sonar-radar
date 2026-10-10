@@ -74,6 +74,13 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 - **Rysunek do weryfikacji:** `renders/radar-pcb-v0.1-wymiary-do-weryfikacji.pdf` (A4, strony 1-2
   w skali 1:1: przód i tył z wymiarami W1-W12 oznaczonymi „?”, strona 3: podgląd 3D). Wymiary
   są w skrypcie (`DIMS` w `gen_pcb.py`), legenda na warstwach Dwgs.User (przód) i Cmts.User (tył).
+- **Ochrona przed zakłóceniami matrycy (2026-10-11, z testów na breadboardzie):** filtr RC zasilania
+  sonaru (R11 10 Ω + C6 100 µF + C7 100 nF, sieć SR04_VCC na J4 pin 1), rezystory szeregowe
+  100 Ω na DIN/CLK/CS do MAX7219 (R12–R14, sieci *_J na J6) i kondensatory przy module (C8 100 µF,
+  C9 100 nF). Na breadboardzie przełączanie wierszy MAX7219 i transmisja do niej dawały fałszywe
+  echa HC-SR04; firmware obchodzi to gaszeniem matrycy na czas pomiaru (widoczne lekkie mruganie).
+  Te elementy mają pozwolić z tego obejścia zrezygnować; nie są jeszcze sprawdzone na płytce.
+- **Rendery i PDF:** `tools/export_docs.sh` (po `build_all.sh`).
 - **Do sprawdzenia przed zamówieniem:** gniazdo DC musi mieć bolec **2,5 mm** (wtyk EB2005
   5,5 × 2,5 mm), a footprint `BarrelJack_Horizontal` dobrać do konkretnego modelu (np. CUI PJ-002B);
   rozstaw rzędów DevKita (założone 23,3 mm) i położenie gniazd modułów po pomiarach.

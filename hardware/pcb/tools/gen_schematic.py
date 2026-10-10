@@ -166,13 +166,23 @@ place('J3', 'Connector_Generic', 'Conn_01x16', 'DevKit J3', SKT % 16, 120, 262,
 # ------------------------------------------------------------------ moduly i zlacza
 text(330, 30, 'MODULY I ZLACZA')
 place('J4', 'Connector_Generic', 'Conn_01x04', 'HC-SR04 (kabel): VCC TRIG ECHO GND', HDR % 4, 340, 55,
-      {'1': '+5V', '2': 'TRIG_5V', '3': 'ECHO_5V', '4': 'GND'})
+      {'1': 'SR04_VCC', '2': 'TRIG_5V', '3': 'ECHO_5V', '4': 'GND'})
+# filtr RC zasilania sonaru: oddziela odbiornik HC-SR04 od skoków prądu matrycy MAX7219
+place('R11', 'Device', 'R', '10', R, 370, 40, {'1': '+5V', '2': 'SR04_VCC'})
+place('C6', 'Device', 'C_Polarized', '100 uF / 16 V', CP63, 385, 45, {'1': 'SR04_VCC', '2': 'GND'})
+place('C7', 'Device', 'C', '100 nF', C, 400, 45, {'1': 'SR04_VCC', '2': 'GND'})
 place('J5', 'Connector_Generic', 'Conn_01x03', 'Serwo SG90 (kabel): GND +5V SIG', HDR % 3, 340, 95,
       {'1': 'GND', '2': '+5V', '3': 'SERVO_SIG'})
 place('R8', 'Device', 'R', '330', R, 300, 95, {'1': 'SERVO_3V3', '2': 'SERVO_SIG'})
 place('C4', 'Device', 'C_Polarized', '220 uF / 10 V', CP63, 280, 95, {'1': '+5V', '2': 'GND'})
 place('J6', 'Connector_Generic', 'Conn_01x05', 'MAX7219 Elegoo: VCC GND DIN CS CLK', SKT % 5, 340, 130,
-      {'1': '+5V', '2': 'GND', '3': 'DIN_5V', '4': 'CS_5V', '5': 'CLK_5V'})
+      {'1': '+5V', '2': 'GND', '3': 'DIN_J', '4': 'CS_J', '5': 'CLK_J'})
+# rezystory szeregowe tłumiące odbicia na liniach do matrycy, kondensatory przy module
+place('R12', 'Device', 'R', '100', R, 370, 115, {'1': 'DIN_5V', '2': 'DIN_J'})
+place('R13', 'Device', 'R', '100', R, 385, 115, {'1': 'CLK_5V', '2': 'CLK_J'})
+place('R14', 'Device', 'R', '100', R, 400, 115, {'1': 'CS_5V', '2': 'CS_J'})
+place('C8', 'Device', 'C_Polarized', '100 uF / 16 V', CP63, 370, 140, {'1': '+5V', '2': 'GND'})
+place('C9', 'Device', 'C', '100 nF', C, 385, 140, {'1': '+5V', '2': 'GND'})
 place('J7', 'Connector_Generic', 'Conn_01x04', 'OLED SH1106: VCC GND SCK SDA', SKT % 4, 340, 165,
       {'1': '+3V3', '2': 'GND', '3': 'SCL', '4': 'SDA'})
 text(260, 200, 'BUZZER (typ do ustalenia): tranzystor + dioda')

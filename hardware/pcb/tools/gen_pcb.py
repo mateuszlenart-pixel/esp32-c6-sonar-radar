@@ -75,6 +75,11 @@ FIXED = {
     'R6': (42, 104, 90, 'F'), 'R7': (45.5, 104, 90, 'F'), 'TP5': (49, 104, 0, 'F'),
     # pozostałe punkty testowe, rezystor serwa
     'TP2': (10, 100, 0, 'F'), 'TP4': (10, 104, 0, 'F'), 'R8': (30, 122, 0, 'F'),
+    # filtr RC zasilania sonaru przy J4 (lewy górny róg)
+    'R11': (16.5, 12, 0, 'F'), 'C6': (4.5, 14, 0, 'F'), 'C7': (11, 14.5, 90, 'F'),
+    # rezystory szeregowe DIN/CS/CLK nad gniazdem MAX7219, kondensatory obok modułu
+    'R12': (27, 51, 0, 'F'), 'R14': (35.5, 51, 0, 'F'), 'R13': (44, 51, 0, 'F'),
+    'C8': (52.2, 55, 0, 'F'), 'C9': (61.5, 55, 90, 'F'),
 }
 HOLES = [(3.5, 32), (W - 3.5, 32), (3.5, 88), (W - 3.5, 124)]
 
@@ -150,6 +155,11 @@ VALUES = {
     'R6': ('R6 10k', 0, -2.6, 'center', 0), 'R7': ('R7 15k', 0, 2.5, 'center', 0),
     'R8': ('R8 330', 1.6, 0, 'left', 0), 'U1': ('U1 74AHCT125', 7.6, 2.4, 'center', 0),
     'J1': ('J1 DC 5V  (+) srodek', 6.2, -6.4, 'center', 0),
+    'R11': ('R11 10R', 0, 1.7, 'center', 0), 'C6': ('C6 100uF', 1.25, 4.4, 'center', 0),
+    'C7': ('C7 100nF', 1.9, 0, 'center', 90),
+    'R12': ('R12 100R', 0, -1.7, 'center', 0), 'R14': ('R14 100R', 0, -1.7, 'center', 0),
+    'R13': ('R13 100R', 0, -1.7, 'center', 0), 'C8': ('C8 100uF', 1.25, -4.3, 'center', 0),
+    'C9': ('C9 100nF', -1.9, 0, 'center', 90),
 }
 FREE_TEXT = [
     # (tekst, x, y, wysokość, obrót, warstwa)
@@ -205,7 +215,7 @@ def add_labels(board, fps):
         c = fps[ref].GetPosition()
         add_text(board, txt, pcbnew.ToMM(c.x) - OX + dx, pcbnew.ToMM(c.y) - OY + dy, 0.8, ang, 'F', just)
     # polaryzacja: + przy kondensatorach elektrolitycznych, K przy katodach, 1 przy pinie 1 U1
-    for ref in ('C1', 'C4'):
+    for ref in ('C1', 'C4', 'C6', 'C8'):
         x, y = pad_xy(fps[ref], 1)
         add_text(board, '+', x - 2.6, y - 2.4, 1.2, 0, 'F')
     for ref in ('D1', 'D2'):
@@ -303,7 +313,7 @@ def build():
     power.SetViaDiameter(mm(0.9))
     power.SetViaDrill(mm(0.45))
     ns.SetNetclass('Power', power)
-    for pat in ('+5V', 'GND', 'VIN', 'VIN_F', '+3V3'):
+    for pat in ('+5V', 'GND', 'VIN', 'VIN_F', '+3V3', 'SR04_VCC'):
         ns.SetNetclassPatternAssignment(pat, 'Power')
 
     # --- sieci
