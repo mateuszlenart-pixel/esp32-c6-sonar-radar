@@ -430,6 +430,28 @@ Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
 - **Nie testowano:** zgodności wartości DIST z miarką w tym teście (poza wcześniejszym
   testem sonaru), ruchu serwa, pełnego firmware z logiką potwierdzeń i histerezą.
 
+### 2026-10-10: wyłącznik ON/standby (firmware zbudowany, nietestowany na sprzęcie)
+
+- **Wymaganie użytkownika:** fizyczny wyłącznik: sygnał z przycisku na GPIO zatrzymuje
+  serwo i pomiary oraz gasi ekrany; ten sam ON/OFF z Zigbee/Home Assistant; także
+  na płytce testowej i na PCB.
+- **Realizacja w kodzie (`src/`):** stan „zasilanie” w `logic.c`
+  (`logic_set_power_enabled`, domyślnie ON po starcie). W standby: patrol i pomiary
+  stoją, serwo jest zwolnione (`servo_release`, brak impulsów PWM), OLED i MAX7219
+  wygaszone, buzzer cicho, stan w HA wraca do PATROL z nieważną odległością.
+  Przycisk: GPIO2 do GND, pull-up wewnętrzny, odbicie styków 60 ms, jedno przełączenie
+  na wciśnięcie (`power_button.c`). Zigbee: nowy endpoint 9 (On/Off) „power”;
+  MQTT: przełącznik „Zasilanie radaru” (`power_enabled`).
+- **Uwaga:** to standby, a nie odcięcie zasilania. ESP32 pracuje dalej, żeby odbierać
+  polecenia z Zigbee. Twardy wyłącznik 5 V jest osobną opcją.
+- **Konwerter Zigbee2MQTT** (`zigbee2mqtt/radar_converter.mjs`): dodany przełącznik
+  `power` (endpoint 9). Dodanie endpointu zmienia opis urządzenia, więc po wgraniu
+  trzeba w Zigbee2MQTT ponownie skonfigurować (Reconfigure) albo sparować urządzenie.
+- **Sprawdzone:** pełny firmware kompiluje się (PlatformIO, `[SUCCESS]`).
+- **Nie sprawdzone na sprzęcie:** przycisk, standby, wznowienie, polecenie z Zigbee/HA.
+- **Breadboard:** przycisk chwilowy między GPIO2 (J1 pin 12) a GND; w modelu przewody
+  W35 i W36 (do zrobienia).
+
 ## Schematy i karty katalogowe
 
 Na Dellu pobrane kopie offline znajdują się w `docs/hardware/references/`:

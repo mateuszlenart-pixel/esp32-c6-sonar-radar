@@ -45,6 +45,7 @@ zwarcia, pomiar HC-SR04, kolejne moduły). Do tego czasu nic nie zamawiamy.
 | OLED SDA | 20 | I2C | 3,3 V | adres 0x3C, 100 kHz, SH1106 1,3" |
 | OLED SCL | 21 | I2C | 3,3 V | |
 | Buzzer | 22 | wyjście PWM | 3,3 V → tranzystor | tylko przez stopień tranzystorowy |
+| Przycisk ON/standby | 2 | wejście | 3,3 V, wewnętrzny pull-up, styk do GND | wciśnięcie przełącza ON ↔ standby (ten sam stan co przełącznik „Zasilanie” w Zigbee/HA) |
 
 Unikamy GPIO4/GPIO5 (piny strapping w ESP32-C6-DevKitC-1).
 
