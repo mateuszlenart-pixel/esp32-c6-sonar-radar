@@ -97,9 +97,9 @@ static void render_target(uint8_t frame[MATRIX_SIZE])
 {
     for (int offset = 1; offset <= 2; ++offset) {
         set_pixel(frame, 3 - offset, 3);
-        set_pixel(frame, 3 + offset, 3);
+        set_pixel(frame, 4 + offset, 3);
         set_pixel(frame, 3 - offset, 4);
-        set_pixel(frame, 3 + offset, 4);
+        set_pixel(frame, 4 + offset, 4);
         set_pixel(frame, 3, 3 - offset);
         set_pixel(frame, 4, 3 - offset);
         set_pixel(frame, 3, 4 + offset);

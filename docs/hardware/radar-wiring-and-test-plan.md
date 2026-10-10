@@ -452,6 +452,47 @@ Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
 - **Breadboard:** przycisk chwilowy między GPIO2 (J1 pin 12) a GND; w modelu przewody
   W35 i W36 (do zrobienia).
 
+### 2026-10-10: stan płytki z modelu użytkownika i MAX7219 wpięty w płytkę
+
+- **Stan według zapisu modelu od użytkownika:** dzielnik przesunięty o kolumnę:
+  R1 10 kΩ d11–d15, R2 15 kΩ e15–e19, ECHO sonaru → a11, GPIO6 → c15, koniec dzielnika
+  b19 → szyna dolna −. Zasilacz: + w B+@1, − w B-@1; VCC sonaru B+@7, GND sonaru B-@13;
+  C1 100 nF h22 → szyna górna −; R3 47 kΩ a23 → szyna dolna −.
+- **Krok 1 MAX7219 wykonany** (relacja użytkownika): GPIO7 → b26 (2A), GPIO18 → g27 (3A),
+  GPIO19 → g24 (4A). Użytkownik potwierdził, że b26, g24 i g27 nie są już połączone z masą
+  (przewody W10, W12, W14 zdjęte).
+- **MAX7219 wpięty bezpośrednio w płytkę** (z braku przewodów), po korekcie użytkownika w rzędzie a:
+  VCC a40, GND a41, DIN a42, CS a43, CLK a44 (te same kolumny co wcześniej w rzędzie e).
+- **Krok 2 wykonany (relacja użytkownika):** e40 → szyna dolna + (VCC 5 V), e41 → szyna dolna −
+  (GND), e42 → b27 (DIN z 2Y), e43 → g25 (CS z 4Y), e44 → g28 (CLK z 3Y). Przycisk ON/standby
+  jeszcze nie podłączony (brak przycisku).
+- **Test ciągłości bez zasilania (relacja użytkownika):** szyna dolna + ↔ −, b27 ↔ g27 oraz
+  e42/e43/e44 ↔ szyna −: we wszystkich brak pisku (OK).
+- **Pierwsze zasilenie (relacja użytkownika):** wgrywanie programu testowego się zawiesiło, matryca
+  zapaliła najpierw jedną diodę, po chwili wszystkie. Zasilanie odłączone. **Hipoteza
+  (niepotwierdzona):** wejścia 2A/3A/4A bufora bez pull-downów wiszą, gdy GPIO ESP32 nie są
+  ustawione, i MAX7219 dostaje losowe dane (m.in. tryb testu wyświetlacza = wszystkie diody).
+- **Poprawka:** trzy rezystory 47 kΩ do masy: a26 → szyna dolna − (2A/DIN), j27 → szyna górna −
+  (3A/CLK), j24 → szyna górna − (4A/CS). W modelu R11–R13.
+- **Pomiary po wpięciu pull-downów (wszystko odłączone):** a26 ↔ szyna dolna −, j27 ↔ szyna
+  górna −, j24 ↔ szyna górna −: ok. 47 kΩ każdy. j27 ↔ szyna górna + i j24 ↔ szyna górna +:
+  ok. 66 kΩ. Interpretacja: 47 kΩ do masy plus ok. 19 kΩ między + a − przez obciążenia
+  (moduł, bufor, sonar, LED) widziane przez omomierz; rezystory są do −, nie do +.
+
+### 2026-10-10: MAX7219 działa (program `matrix-bench`)
+
+- **Przebieg:** po wgraniu programu matryca nadal świeciła w całości. Użytkownik poprawił wpięcie
+  rezystorów 47 kΩ od j24 i od j27 (pull-downy wejść 4A/CS i 3A/CLK; co dokładnie było nie tak,
+  nie opisano); po tym matryca zaczęła pokazywać obrazy.
+- **Wynik według użytkownika:** cykl stanów zgodny z programem: X migający szybko (alarm
+  krytyczny), X migający wolno (utracony cel), łuk z ruchomą linią (patrol), krzyżyk (cel).
+  Bufor i ESP32 w normalnej temperaturze.
+- **Błąd firmware znaleziony podczas testu:** krzyżyk celu miał krótsze ramię (`render_target`
+  w `src/matrix.c` rysował prawe ramię od x = 3 zamiast od 4). Poprawione w kodzie 2026-10-10.
+  Po wgraniu przebudowanego `matrix-bench` krzyżyk jest symetryczny (relacja użytkownika).
+- **Orientacja:** moduł wpięty obrócony; krótsze ramię widoczne u góry, czyli obraz jest obrócony
+  o 90° względem założenia w kodzie. Do ustalenia przy obudowie (ew. obrót obrazu w firmware).
+
 ## Schematy i karty katalogowe
 
 Na Dellu pobrane kopie offline znajdują się w `docs/hardware/references/`:

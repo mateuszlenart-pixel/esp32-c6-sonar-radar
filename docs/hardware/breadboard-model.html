@@ -179,7 +179,7 @@ details.lst summary{cursor:pointer;font-weight:500}
    - punkt na szynie:    "B-@20" (T/B = górna/dolna szyna, +/−, po @ kolumna do narysowania)
    - pin modułu:         "SR04.ECHO"
    status: todo | built | measured     net (przy pinie): nazwa sygnału oczekiwana w tym miejscu */
-const COLS = 30;
+const COLS = 46;
 const GROUPS = [
   {id:'power',   name:'Zasilanie 5 V',        note:'EB2005 → gniazdo DC → szyny breadboardu'},
   {id:'divider', name:'Dzielnik ECHO',        note:'10 kΩ + 15 kΩ obniża ECHO z 5 V do ok. 3,1 V'},
@@ -194,55 +194,56 @@ const GROUPS = [
 const MODULES = [
   {id:'PSU',  name:'Zasilacz EB2005', x:30,  pitch:56, pins:[{id:'+',label:'+',net:'+5V'},{id:'-',label:'−',net:'GND'}]},
   {id:'SR04', name:'HC-SR04',                       x:190, pitch:56, pins:[{id:'VCC',net:'+5V'},{id:'TRIG',net:'TRIG'},{id:'ECHO',net:'ECHO'},{id:'GND',net:'GND'}]},
-  {id:'MAX',  name:'MAX7219 (Elegoo V02), wejście', x:450, pitch:56, pins:[{id:'VCC',net:'+5V'},{id:'GND',net:'GND'},{id:'DIN',net:'DIN'},{id:'CS',net:'CS'},{id:'CLK',net:'CLK'}]},
-  {id:'ESP',  name:'ESP32-C6-DevKitC-1',            x:770, pitch:56, pins:[{id:'GPIO6',net:'GPIO6'},{id:'GPIO11',net:'GPIO11'},{id:'GND',net:'GND'},{id:'GPIO7',net:'GPIO7'},{id:'GPIO18',net:'GPIO18'},{id:'GPIO19',net:'GPIO19'},{id:'3V3',net:'3V3'},{id:'GND2',label:'GND 2',net:'GND'},{id:'GPIO21',net:'SCL'},{id:'GPIO20',net:'SDA'},{id:'GPIO2',net:'GPIO2'}]},
-  {id:'OLED', name:'OLED SH1106 1,3″ (V2.2)',       x:1106, y:740, pitch:56, pins:[{id:'VCC',net:'3V3'},{id:'GND',net:'GND'},{id:'SCK',net:'SCL'},{id:'SDA',net:'SDA'}]},
-  {id:'BTN',  name:'Przycisk ON/standby',           x:1380, y:740, pitch:56, pins:[{id:'1',label:'A',net:'GPIO2'},{id:'2',label:'B',net:'GND'}]}
+  {id:'ESP',  name:'ESP32-C6-DevKitC-1',            x:450, pitch:56, pins:[{id:'GPIO6',net:'GPIO6'},{id:'GPIO11',net:'GPIO11'},{id:'GND',net:'GND'},{id:'GPIO7',net:'GPIO7'},{id:'GPIO18',net:'GPIO18'},{id:'GPIO19',net:'GPIO19'},{id:'3V3',net:'3V3'},{id:'GND2',label:'GND 2',net:'GND'},{id:'GPIO21',net:'SCL'},{id:'GPIO20',net:'SDA'},{id:'GPIO2',net:'GPIO2'}]},
+  {id:'OLED', name:'OLED SH1106 1,3″ (V2.2)',       x:786, y:740, pitch:56, pins:[{id:'VCC',net:'3V3'},{id:'GND',net:'GND'},{id:'SCK',net:'SCL'},{id:'SDA',net:'SDA'}]},
+  {id:'BTN',  name:'Przycisk ON/standby',           x:1010, y:740, pitch:56, pins:[{id:'1',label:'A',net:'GPIO2'},{id:'2',label:'B',net:'GND'}]}
 ];
 const U1_PINS = [ // numer pinu = indeks+1
   {n:'/1OE',net:'GND',need:1},{n:'1A',net:'GPIO11',need:1},{n:'1Y',net:'TRIG'},{n:'/2OE',net:'GND',need:1},
   {n:'2A',need:1},{n:'2Y',net:'DIN'},{n:'GND',net:'GND',need:1},
   {n:'3Y',net:'CLK'},{n:'3A',need:1},{n:'/3OE',net:'GND',need:1},{n:'4Y',net:'CS'},{n:'4A',need:1},{n:'/4OE',net:'GND',need:1},{n:'VCC',net:'+5V',need:1}
 ];
+const MAX_PINS = [{n:'VCC',net:'+5V',need:1},{n:'GND',net:'GND',need:1},{n:'DIN',net:'DIN',need:1},{n:'CS',net:'CS',need:1},{n:'CLK',net:'CLK',need:1}];
 const PARTS = [
-  {id:'R1', group:'divider', type:'res', val:'10 kΩ', a:'a10', b:'a14', status:'measured', note:'Zmierzone: 9,77 kΩ (−2,3%). Od strony ECHO.'},
-  {id:'R2', group:'divider', type:'res', val:'15 kΩ', a:'b14', b:'b18', status:'measured', note:'Zmierzone: 14,71 kΩ (−1,9%). Przy 5,13 V węzeł GPIO6 ma ok. 3,08 V (limit 3,3 V).'},
+  {id:'R1', group:'divider', type:'res', val:'10 kΩ', a:'d11', b:'d15', status:'measured', note:'Zmierzone: 9,77 kΩ (−2,3%). Od strony ECHO.'},
+  {id:'R2', group:'divider', type:'res', val:'15 kΩ', a:'e15', b:'e19', status:'measured', note:'Zmierzone: 14,71 kΩ (−1,9%). Przy 5,13 V węzeł GPIO6 ma ok. 3,08 V (limit 3,3 V).'},
   {id:'U1', group:'buffer', type:'ic', pl:U1_PINS, span:7, at:22, name:'SN74AHCT125N', status:'measured', note:'Kanał 1 działa funkcjonalnie (test 2026-10-09: TRIG przechodzi do sonaru). Wstawiony (relacja użytkownika 2026-10-09). Zatrzask po lewej, pin 1 w e22, pin 14 w f22. Wstawić przy odłączonym zasilaniu.'},
-  {id:'C1', group:'buffer', type:'cap', val:'100 nF', a:'h22', b:'T-@20.6', status:'built', note:'Odsprzęganie, blisko VCC i GND układu.'},
-  {id:'R3', group:'buffer', type:'res', val:'47 kΩ', a:'a23', b:'B-@23.4', status:'measured', note:'Pull-down na wejściu 1A, żeby nie wisiało w powietrzu przy wyłączonym ESP32. Zakup 47 kΩ niepotwierdzony; w obwodzie zmierzono 50,6 kΩ (GPIO11 ↔ GND, 2026-10-09), co dla pull-downa wystarcza.'}
+  {id:'C1', group:'buffer', type:'cap', val:'100 nF', a:'h22', b:'T-@20', status:'built', note:'Odsprzęganie, blisko VCC i GND układu.'},
+  {id:'R3', group:'buffer', type:'res', val:'47 kΩ', a:'a23', b:'B-@23', status:'measured', note:'Pull-down na wejściu 1A, żeby nie wisiało w powietrzu przy wyłączonym ESP32. Zakup 47 kΩ niepotwierdzony; w obwodzie zmierzono 50,6 kΩ (GPIO11 ↔ GND, 2026-10-09), co dla pull-downa wystarcza.'}
+  ,{id:'R11', group:'matrix', type:'res', val:'47 kΩ', a:'a26', b:'B-@26.4', status:'measured', note:'Pull-down wejścia 2A (DIN). Bez niego wejście wisi, gdy ESP32 jest w resecie lub bez zasilania, a MAX7219 dostaje losowe polecenia (np. test wyświetlacza: wszystkie diody).'}
+  ,{id:'R12', group:'matrix', type:'res', val:'47 kΩ', a:'j27', b:'T-@27.4', status:'measured', note:'Pull-down wejścia 3A (CLK). Nóżka do szyny górnej −, czyli tej dalszej od rzędu j (nad szyną +); nie dotykać szyny +. Użytkownik poprawił jego wpięcie 2026-10-10 (szczegóły nieopisane).'}
+  ,{id:'R13', group:'matrix', type:'res', val:'47 kΩ', a:'j24', b:'T-@24.4', status:'measured', note:'Pull-down wejścia 4A (CS). Nóżka do szyny górnej −, nie do +. Użytkownik poprawił jego wpięcie 2026-10-10 (szczegóły nieopisane); po poprawce matryca zaczęła działać.'}
+  ,{id:'MAX', group:'matrix', type:'ic', layout:'sip', row:'a', pl:MAX_PINS, span:5, at:40, name:'MAX7219 (Elegoo V02)', status:'built', note:'Moduł wpięty bezpośrednio w płytkę (relacja użytkownika 2026-10-10, przesunięty do rzędu a): VCC a40, GND a41, DIN a42, CS a43, CLK a44. Wejście modułu, piny wyjściowe (DOUT) wolne.'}
 ];
 const WIRES = [
-  {id:'W1',  group:'power',   a:'PSU.+',   b:'B+@3',   color:'vcc',  status:'measured', label:'+ zasilacza → szyna dolna +', note:'5,13 V zmierzone na obu końcach szyny.'},
-  {id:'W2',  group:'power',   a:'PSU.-',   b:'B-@4',   color:'gnd',  status:'measured', label:'− zasilacza → szyna dolna −'},
+  {id:'W1',  group:'power',   a:'PSU.+',   b:'B+@1',   color:'vcc',  status:'measured', label:'+ zasilacza → szyna dolna +', note:'5,13 V zmierzone na obu końcach szyny.'},
+  {id:'W2',  group:'power',   a:'PSU.-',   b:'B-@1',   color:'gnd',  status:'measured', label:'− zasilacza → szyna dolna −'},
   {id:'W3',  group:'power',   a:'B+@29',   b:'T+@29',  color:'vcc',  status:'measured',  label:'Mostek szyn +', note:'Zmierzone 2026-10-09 (zasilacz włączony, ESP32 odłączone): szyna górna 5,13 V, dolna 5,13 V.'},
   {id:'W4',  group:'power',   a:'B-@30',   b:'T-@30',  color:'gnd',  status:'measured',  label:'Mostek szyn −', note:'Zmierzone pośrednio 2026-10-09: napięcie szyny górnej względem górnego − wynosi 5,13 V, tyle co na szynie dolnej.'},
-  {id:'W5',  group:'divider', a:'a18',     b:'B-@18',  color:'gnd',  status:'built',    label:'Koniec dzielnika → GND'},
+  {id:'W5',  group:'divider', a:'b19',     b:'B-@19',  color:'gnd',  status:'built',    label:'Koniec dzielnika → GND'},
   {id:'W6',  group:'buffer',  a:'b22',     b:'B-@22',  color:'gnd',  status:'measured',     label:'Pin 1 (/1OE) → GND', note:'/OE jest aktywne stanem niskim, więc do GND bufor jest włączony.'},
   {id:'W7',  group:'buffer',  a:'b28',     b:'B-@28',  color:'gnd',  status:'measured',  label:'Pin 7 (GND) → GND', note:'Zmierzone 2026-10-09: pin 14 względem pinu 7 = 5,12 V.'},
   {id:'W8',  group:'buffer',  a:'j22',     b:'T+@22',  color:'vcc',  status:'measured',  label:'Pin 14 (VCC) → szyna górna +', note:'Zmierzone 2026-10-09: pin 14 względem pinu 7 = 5,12 V.'},
   {id:'W9',  group:'buffer',  a:'b25',     b:'B-@25',  color:'gnd',  status:'built',     label:'Pin 4 (/2OE) → GND', note:'/OE kanału 2 zostaje na GND (kanał włączony), także po podłączeniu MAX7219.'},
-  {id:'W10', group:'buffer',  a:'b26',     b:'B-@26',  color:'gnd',  status:'built',     label:'Pin 5 (2A) → GND (do zdjęcia przy MAX7219)', remove:true},
   {id:'W11', group:'buffer',  a:'g23',     b:'T-@23',  color:'gnd',  status:'built',     label:'Pin 13 (/4OE) → GND'},
-  {id:'W12', group:'buffer',  a:'g24',     b:'T-@24',  color:'gnd',  status:'built',     label:'Pin 12 (4A) → GND (do zdjęcia przy MAX7219)', remove:true},
   {id:'W13', group:'buffer',  a:'g26',     b:'T-@26',  color:'gnd',  status:'built',     label:'Pin 10 (/3OE) → GND'},
-  {id:'W14', group:'buffer',  a:'g27',     b:'T-@27',  color:'gnd',  status:'built',     label:'Pin 9 (3A) → GND (do zdjęcia przy MAX7219)', remove:true},
-  {id:'W15', group:'sonar',   a:'SR04.VCC',  b:'B+@20', color:'vcc',  status:'measured', label:'VCC sonaru → szyna dolna +'},
-  {id:'W16', group:'sonar',   a:'SR04.GND',  b:'B-@14', color:'gnd',  status:'measured', label:'GND sonaru → szyna dolna −'},
-  {id:'W17', group:'sonar',   a:'SR04.ECHO', b:'a10',   color:'echo', status:'measured', label:'ECHO → a10', note:'Sygnał 5 V. Wchodzi tylko do dzielnika, nigdy bezpośrednio do GPIO6.'},
+  {id:'W15', group:'sonar',   a:'SR04.VCC',  b:'B+@7', color:'vcc',  status:'measured', label:'VCC sonaru → szyna dolna +'},
+  {id:'W16', group:'sonar',   a:'SR04.GND',  b:'B-@13', color:'gnd',  status:'measured', label:'GND sonaru → szyna dolna −'},
+  {id:'W17', group:'sonar',   a:'SR04.ECHO', b:'a11',   color:'echo', status:'measured', label:'ECHO → a11', note:'Sygnał 5 V. Wchodzi tylko do dzielnika, nigdy bezpośrednio do GPIO6.'},
   {id:'W18', group:'sonar',   a:'SR04.TRIG', b:'c24',   color:'trig', status:'measured', label:'TRIG ← c24 (wyjście 1Y)'},
   {id:'W19', group:'esp',     a:'ESP.GND',   b:'B-@15', color:'gnd',  status:'measured', label:'GND ESP32 → szyna dolna −', note:'Podpięte w B-@15 (relacja użytkownika 2026-10-09; plan zakładał @27, zmiana nieistotna). Wspólna masa z zasilaczem peryferiów. Nie łącz +5 V zasilacza z pinem 5V ESP32.'},
-  {id:'W20', group:'esp',     a:'ESP.GPIO6', b:'c14',   color:'gpio', status:'measured', label:'GPIO6 ← c14 (węzeł dzielnika)'},
+  {id:'W20', group:'esp',     a:'ESP.GPIO6', b:'c15',   color:'gpio', status:'measured', label:'GPIO6 ← c15 (węzeł dzielnika)'},
   {id:'W21', group:'esp',     a:'ESP.GPIO11',b:'a23',   color:'g11',  status:'measured', label:'GPIO11 → a23 (wejście 1A)', note:'Podpięte w a23 zamiast c23 (relacja użytkownika 2026-10-09): ta sama kolumna 23, więc ta sama sieć co wejście 1A (e23) i R3 47 kΩ do GND.'}
 ];
 WIRES.push(
-  {id:'W22', group:'matrix', a:'ESP.GPIO7',  b:'c26',  color:'gpio', status:'todo', label:'GPIO7 → c26 (pin 5, wejście 2A) = DIN', note:'Krok 1: wejścia bufora. Najpierw zdjąć W10 (b26 → szyna dolna −).'},
-  {id:'W23', group:'matrix', a:'ESP.GPIO18', b:'h27',  color:'gpio', status:'todo', label:'GPIO18 → h27 (pin 9, wejście 3A) = CLK', note:'Krok 1. Najpierw zdjąć W14 (g27 → szyna górna −). Kolumna 27, górna połowa (f–j).'},
-  {id:'W24', group:'matrix', a:'ESP.GPIO19', b:'h24',  color:'gpio', status:'todo', label:'GPIO19 → h24 (pin 12, wejście 4A) = CS', note:'Krok 1. Najpierw zdjąć W12 (g24 → szyna górna −).'},
-  {id:'W25', group:'matrix', a:'MAX.DIN',    b:'b27',  color:'sig',  status:'todo', label:'DIN modułu ← b27 (wyjście 2Y, pin 6)', note:'Krok 2: wyjścia bufora i zasilanie modułu. Kolumna 27, dolna połowa (a–e).'},
-  {id:'W26', group:'matrix', a:'MAX.CLK',    b:'g28',  color:'sig',  status:'todo', label:'CLK modułu ← g28 (wyjście 3Y, pin 8)', note:'Krok 2. Kolumna 28, górna połowa (f–j).'},
-  {id:'W27', group:'matrix', a:'MAX.CS',     b:'g25',  color:'sig',  status:'todo', label:'CS modułu ← g25 (wyjście 4Y, pin 11)', note:'Krok 2. Kolumna 25, górna połowa (f–j).'},
-  {id:'W28', group:'matrix', a:'MAX.VCC',    b:'B+@8', color:'vcc',  status:'todo', label:'VCC modułu → szyna dolna +', note:'Krok 2. 5 V z zasilacza, nie z ESP32.'},
-  {id:'W29', group:'matrix', a:'MAX.GND',    b:'B-@9', color:'gnd',  status:'todo', label:'GND modułu → szyna dolna −', note:'Krok 2.'}
+  {id:'W22', group:'matrix', a:'ESP.GPIO7',  b:'b26',  color:'gpio', status:'built', label:'GPIO7 → b26 (pin 5, wejście 2A) = DIN', note:'Podłączone (relacja użytkownika 2026-10-10). Przewód do GND tego wejścia zdjęty.'},
+  {id:'W23', group:'matrix', a:'ESP.GPIO18', b:'g27',  color:'gpio', status:'built', label:'GPIO18 → g27 (pin 9, wejście 3A) = CLK', note:'Podłączone (relacja użytkownika 2026-10-10). Przewód do GND tego wejścia zdjęty.'},
+  {id:'W24', group:'matrix', a:'ESP.GPIO19', b:'g24',  color:'gpio', status:'built', label:'GPIO19 → g24 (pin 12, wejście 4A) = CS', note:'Podłączone (relacja użytkownika 2026-10-10). Przewód do GND tego wejścia zdjęty.'},
+  {id:'W25', group:'matrix', a:'b27', b:'e42', color:'sig', status:'built', label:'2Y (pin 6, kolumna 27 a–e) b27 → e42 = DIN modułu', note:'Podłączone (relacja użytkownika 2026-10-10).'},
+  {id:'W26', group:'matrix', a:'g28', b:'e44', color:'sig', status:'built', label:'3Y (pin 8) g28 → e44 = CLK modułu', note:'Podłączone (relacja użytkownika 2026-10-10).'},
+  {id:'W27', group:'matrix', a:'g25', b:'e43', color:'sig', status:'built', label:'4Y (pin 11) g25 → e43 = CS modułu', note:'Podłączone (relacja użytkownika 2026-10-10).'},
+  {id:'W28', group:'matrix', a:'e40', b:'B+@40', color:'vcc', status:'built', label:'VCC modułu e40 → szyna dolna +', note:'Podłączone (relacja użytkownika 2026-10-10).'},
+  {id:'W29', group:'matrix', a:'e41', b:'B-@41', color:'gnd', status:'built', label:'GND modułu e41 → szyna dolna −', note:'Podłączone (relacja użytkownika 2026-10-10).'}
 );
 WIRES.push(
   {id:'W30', group:'oled', a:'ESP.3V3',    b:'OLED.VCC', color:'g11', status:'measured', label:'3V3 ESP32 (J1 pin 1) → VCC OLED', note:'Bezpośredni przewód Dupont, tylko 3,3 V. Test ciągłości 3V3 ↔ szyna 5 V: brak pisku (2026-10-09).'},
@@ -279,7 +280,7 @@ const included=it=>!view.hidden[it.group]&&!(it.remove&&view.mode==='plan')&&(vi
 const pinPos={};
 MODULES.forEach(m=>m.pins.forEach((p,i)=>{pinPos[m.id+'.'+p.id]={x:m.x+40+i*m.pitch,y:m.y||MOD_Y,mod:m,pin:p}}));
 function icPin(u,p){ // p=1..14
-  if(u.layout==='sip')return{x:X(u.at+p-1),y:ROWY.f,half:'U'};
+  if(u.layout==='sip'){const r=u.row||'f';return{x:X(u.at+p-1),y:ROWY[r],half:'abcde'.includes(r)?'L':'U'}}
   return p<=7?{x:X(u.at+p-1),y:ROWY.e,half:'L'}:{x:X(u.at+(14-p)),y:ROWY.f,half:'U'};
 }
 function regIc(u){
@@ -443,13 +444,13 @@ function render(){
   const items=[...PARTS,...WIRES].filter(included);
   const dimOf=it=>hlRoot&&!itemInNet(it)?' dim':'';
   PARTS.filter(p=>included(p)&&p.type==='ic'&&p.layout==='sip').forEach(u=>{
-    const x0=X(u.at)-16,x1=X(u.at+u.span-1)+16,y0=ROWY.f-12,y1=ROWY.f+14;
+    const ry=ROWY[u.row||'f'],low='abcde'.includes(u.row||'f');const x0=X(u.at)-16,x1=X(u.at+u.span-1)+16,y0=ry-12,y1=ry+14;
     const sl=view.sel&&view.sel.type==='item'&&view.sel.id===u.id;
     let g=`<g class="item${sl?' sel':''}${dimOf(u)}" data-item="${u.id}"><title>${esc(u.name)} (${ST[stat(u)]})</title>`;
     g+=`<rect class="shape" x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" rx="5" fill="var(--ic)" ${stat(u)==='todo'?'stroke="var(--sel)" stroke-dasharray="6 4" stroke-width="2"':''}/>`;
-    g+=`<text class="pinlbl" style="font-size:11px;font-weight:600;text-anchor:start" x="${x0}" y="${ROWY.e-10}">${esc(u.name)}</text>`;
+    g+=`<text class="pinlbl" style="font-size:11px;font-weight:600;text-anchor:start" x="${low?x1+6:x0}" y="${low?ry+4:ROWY.e-10}">${esc(u.name)}</text>`;
     u.pl.forEach((pp,i)=>{const q=icPin(u,i+1);
-      g+=`<text class="pinlbl" style="fill:var(--ink)" x="${q.x}" y="${q.y+27}">${esc(pp.n)}</text>`;
+      g+=`<text class="pinlbl" style="fill:var(--ink)" x="${q.x}" y="${low?q.y-24:q.y+27}">${esc(pp.n)}</text>`;
       g+=`<circle cx="${q.x}" cy="${q.y}" r="4.2" fill="var(--ic-ink)" data-node="P:${u.id}.${i+1}"/>`});
     g+='</g>';s.push(g);
   });
