@@ -493,6 +493,44 @@ Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
 - **Orientacja:** moduł wpięty obrócony; krótsze ramię widoczne u góry, czyli obraz jest obrócony
   o 90° względem założenia w kodzie. Do ustalenia przy obudowie (ew. obrót obrazu w firmware).
 
+### 2026-10-10: pełny firmware z Zigbee i diagnostyka skaczących pomiarów
+
+- **Zigbee/HA:** pełny firmware dołącza do sieci, Zigbee2MQTT widzi urządzenie online. Reconfigure
+  przerywał się na żądaniu raportowania `outOfService` (UNREPORTABLE_ATTRIBUTE, atrybut
+  nieraportowalny w ZCL), przez co endpoint 9 („power”) nie był konfigurowany. Po poprawce
+  konwertera (raportowanie tylko `presentValue`, każdy krok osobno) Reconfigure przechodzi, a
+  przełącznik power w HA działa (relacja użytkownika).
+- **Objaw:** w HA odległość skakała 20–120 cm. Log z urządzenia: przy pomiarze co 80 ms większość
+  odczytów 78–128 cm, tylko co kilka ok. 56 cm.
+- **Hipoteza 1 (odrzucona):** opóźnienia programowej pętli pomiaru przez radio Zigbee. Pomiar
+  przepisany na sprzętowy capture MCPWM; rozkład wyników bez zmian. Capture zostaje (odporniejszy).
+- **Test A (co 250 ms, matryca włączona, mały przedmiot ok. 56 cm):** ok. 85% odczytów 55–58 cm,
+  pojedyncze 93–127 cm.
+- **Test B (co 80 ms, matryca nieużywana i wygaszona, ściana 100 cm):** 99–100 cm, bez wyskoków.
+- **Test porównawczy (co 80 ms, matryca włączona, ta sama ściana 100 cm):** częste zaniżone odczyty
+  86–98 cm przy części pomiarów, pozostałe 99–100 cm.
+- **Wniosek:** praca matrycy MAX7219 zakłóca pomiar (zaniżone odczyty, typowe dla zakłóceń na
+  zasilaniu odbiornika HC-SR04); przy małym celu dochodzi wpływ częstych impulsów (odbicia).
+  Rzeczywistych odległości w teście A nie zmierzono miarką.
+
+### 2026-10-11: zakłócenia matrycy w sonarze rozwiązane w firmware (sonar przy ścianie 100 cm)
+
+- **Kondensatory dodane (relacja użytkownika):** 100 µF c40/c41 i 100 nF d40/d41 przy MAX7219,
+  100 µF i 100 nF na szynach dolnych przy przewodach sonaru. Same nie usunęły zakłóceń.
+- **Obserwacje:** gdy matryca pracowała, odczyty układały się w powoli rosnące serie (zakłócenie
+  okresowe od przełączania wierszy MAX7219, ok. 800 Hz, przesuwające się względem pomiaru), a
+  fałszywe krótkie odczyty wywoływały alarm i dalsze zakłócenia („dyskoteka”). Po wprowadzeniu
+  gaszenia matrycy na czas pomiaru zostały regularne `raw 2` co 5. pomiar (co 400 ms = zbieg
+  odświeżania matrycy co 50 ms z pomiarem co 80 ms).
+- **Zmiany w firmware (2026-10-10/11):** pomiar ECHO sprzętowy (MCPWM capture) z odrzucaniem
+  szpilek i impulsów < 100 µs; matryca w trybie shutdown i zablokowana magistrala na cały czas
+  pomiaru; konfiguracja MAX7219 wysyłana w każdej klatce (matryca sama wraca po zakłóceniu);
+  wolniejsze zbocza zegara; mediana z 5 ostatnich pomiarów.
+- **Wynik (log użytkownika, ok. 20 s, dwa pełne przebiegi):** po starcie (ok. 1,3 s) wynik po
+  filtrze 99–100 cm we wszystkich pomiarach; surowe pojedyncze odstające (4–61 cm) rzadko, odrzucane.
+- **Koszt:** delikatne mruganie matrycy (gaszenie na czas pomiaru). Docelowo do usunięcia sprzętowo
+  na PCB: filtr RC na zasilaniu sonaru, rezystory szeregowe na DIN/CLK/CS, kondensatory przy modułach.
+
 ## Schematy i karty katalogowe
 
 Na Dellu pobrane kopie offline znajdują się w `docs/hardware/references/`:

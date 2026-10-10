@@ -213,6 +213,10 @@ const PARTS = [
   ,{id:'R11', group:'matrix', type:'res', val:'47 kΩ', a:'a26', b:'B-@26.4', status:'measured', note:'Pull-down wejścia 2A (DIN). Bez niego wejście wisi, gdy ESP32 jest w resecie lub bez zasilania, a MAX7219 dostaje losowe polecenia (np. test wyświetlacza: wszystkie diody).'}
   ,{id:'R12', group:'matrix', type:'res', val:'47 kΩ', a:'j27', b:'T-@27.4', status:'measured', note:'Pull-down wejścia 3A (CLK). Nóżka do szyny górnej −, czyli tej dalszej od rzędu j (nad szyną +); nie dotykać szyny +. Użytkownik poprawił jego wpięcie 2026-10-10 (szczegóły nieopisane).'}
   ,{id:'R13', group:'matrix', type:'res', val:'47 kΩ', a:'j24', b:'T-@24.4', status:'measured', note:'Pull-down wejścia 4A (CS). Nóżka do szyny górnej −, nie do +. Użytkownik poprawił jego wpięcie 2026-10-10 (szczegóły nieopisane); po poprawce matryca zaczęła działać.'}
+  ,{id:'C11', pol:true, group:'matrix', type:'cap', val:'100 µF', a:'c40', b:'c41', status:'built', note:'Elektrolit 100 µF/50 V tuż przy zasilaniu MAX7219: nóżka + (dłuższa) w c40 (VCC), nóżka − (pasek) w c41 (GND). Tłumi impulsy prądu matrycy, które zakłócają sonar.'}
+  ,{id:'C12', group:'matrix', type:'cap', val:'100 nF', a:'d40', b:'d41', status:'built', note:'Ceramiczny 100 nF (104) równolegle do C11, przy module.'}
+  ,{id:'C13', pol:true, group:'sonar', type:'cap', val:'100 µF', a:'B+@9', b:'B-@9', status:'built', note:'Elektrolit 100 µF/50 V na szynach dolnych przy przewodach sonaru: nóżka + w szynie +, nóżka − (pasek) w szynie −.'}
+  ,{id:'C14', group:'sonar', type:'cap', val:'100 nF', a:'B+@10.4', b:'B-@10.4', status:'built', note:'Ceramiczny 100 nF (104) między szynami dolnymi obok C13.'}
   ,{id:'MAX', group:'matrix', type:'ic', layout:'sip', row:'a', pl:MAX_PINS, span:5, at:40, name:'MAX7219 (Elegoo V02)', status:'built', note:'Moduł wpięty bezpośrednio w płytkę (relacja użytkownika 2026-10-10, przesunięty do rzędu a): VCC a40, GND a41, DIN a42, CS a43, CLK a44. Wejście modułu, piny wyjściowe (DOUT) wolne.'}
 ];
 const WIRES = [
@@ -476,6 +480,7 @@ function render(){
     if(p.type==='res')g+=`<g transform="translate(${mx},${my}) rotate(${ang})"><rect x="-26" y="-8" width="52" height="16" rx="6" fill="var(--part)" stroke="var(--part-ink)" stroke-width="1.5" ${todo?'stroke-dasharray="3 3"':''}/><text class="txtm" style="text-anchor:middle;fill:var(--part-ink)" y="3.5">${esc(p.val)}</text></g>`;
     else g+=`<g transform="translate(${mx},${my}) rotate(${ang})"><rect x="-24" y="-8" width="48" height="16" rx="4" fill="var(--cap)" stroke="var(--part-ink)" stroke-width="1.5" ${todo?'stroke-dasharray="3 3"':''}/><text class="txtm" style="text-anchor:middle;fill:var(--part-ink)" y="3.5">${esc(p.val)}</text></g>`;
     [a,b].forEach(e=>g+=`<circle class="endc" cx="${e.x}" cy="${e.y}" r="4.5" fill="var(--part-ink)"/>`);
+    if(p.pol){const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;g+=`<circle cx="${a.x-dy/L*11}" cy="${a.y+dx/L*11}" r="7" fill="var(--w-vcc)"/><text x="${a.x-dy/L*11}" y="${a.y+dx/L*11+4.5}" style="font:700 13px var(--f-mono);fill:#fff;text-anchor:middle">+</text>`}
     g+='</g>';s.push(g);
   });
   // moduły
