@@ -44,6 +44,16 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 11. **Obrys i otwory montażowe:** dopiero z kontraktu mechanicznego (kolumna obudowy
     70 × 50 mm, wnętrze mniejsze o ścianki).
 
+## Stan prac (2026-10-10)
+
+- **Schemat:** `radar-pcb.kicad_sch` (A3), generowany skryptem `tools/gen_schematic.py`
+  (połączenia przez etykiety globalne, każdy pin ma sieć albo znacznik NC). 36 elementów,
+  41 sieci. ERC (`kicad-cli sch erc`): **0 błędów**, 6 ostrzeżeń `lib_symbol_mismatch`
+  dla U1 (osadzona kopia 74AHCT125 jest spłaszczona, bez wpływu na połączenia).
+- **Pinout DevKita:** `devkit-pinout.md` (odczytany ze schematu Espressif; poprawka: GND jest
+  też na J3 pin 12 i 15).
+- **Następne:** kontrakt mechaniczny (obrys), płytka w `pcbnew`, rozmieszczenie, trasowanie, DRC.
+
 ## Plan pracy
 
 1. Zatwierdzenie założeń powyżej.
