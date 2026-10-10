@@ -56,3 +56,9 @@
 #define GPIO_OLED_SCL 21
 // PWM output for a transistor driver; do not connect an unknown buzzer directly.
 #define GPIO_BUZZER 22
+// Push button to GND (internal pull-up): toggles the device between ON and standby.
+#define GPIO_POWER_BUTTON 2
+#define POWER_BUTTON_POLL_MS 20
+#define POWER_BUTTON_DEBOUNCE_MS 60
+#define RADAR_POWER_TASK_STACK_SIZE 3072
+#define RADAR_POWER_TASK_PRIORITY 3

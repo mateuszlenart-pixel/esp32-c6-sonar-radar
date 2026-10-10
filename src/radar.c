@@ -23,9 +23,19 @@ static void radar_task(void *arg)
     int angle = RADAR_MIN_ANGLE_DEG;
     int direction = 1;
     bool has_scanned = false;
+    bool servo_released = false;
 
     while (true) {
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(RADAR_STEP_PERIOD_MS));
+
+        if (!logic_is_power_enabled()) {
+            if (!servo_released) {
+                (void)servo_release();
+                servo_released = true;
+            }
+            continue;
+        }
+        servo_released = false;
 
         if (!logic_is_patrol_enabled()) {
             continue;

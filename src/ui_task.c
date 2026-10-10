@@ -16,6 +16,7 @@ static const char *TAG = "UI";
 static bool s_oled_ready;
 static bool s_matrix_ready;
 static bool s_buzzer_ready;
+static bool s_was_powered = true;
 
 static bool status_changed(const radar_status_t *left, const radar_status_t *right)
 {
@@ -35,6 +36,35 @@ static void ui_task(void *arg)
     bool has_oled_status = false;
 
     while (true) {
+        if (!logic_is_power_enabled()) {
+            if (s_was_powered) {
+                s_was_powered = false;
+                if (s_buzzer_ready) {
+                    (void)buzzer_silence();
+                }
+                if (s_oled_ready) {
+                    (void)oled_set_power(false);
+                }
+                if (s_matrix_ready) {
+                    (void)matrix_set_power(false);
+                }
+                ESP_LOGI(TAG, "Standby: displays off, buzzer silent");
+            }
+            vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(RADAR_UI_REFRESH_MS));
+            continue;
+        }
+        if (!s_was_powered) {
+            s_was_powered = true;
+            has_oled_status = false;
+            if (s_oled_ready) {
+                (void)oled_set_power(true);
+            }
+            if (s_matrix_ready) {
+                (void)matrix_set_power(true);
+            }
+            ESP_LOGI(TAG, "Power on: displays resumed");
+        }
+
         radar_status_t current;
         if (logic_get_status(&current)) {
             const uint32_t now_ms = (uint32_t)(xTaskGetTickCount() *

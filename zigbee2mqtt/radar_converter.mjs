@@ -77,8 +77,9 @@ export default {
             .withValueMin(5).withValueMax(300).withValueStep(1),
         e.switch().withEndpoint('patrol'),
         e.switch().withEndpoint('buzzer'),
+        e.switch().withEndpoint('power'),
     ],
-    endpoint: () => ({patrol: 5, buzzer: 6}),
+    endpoint: () => ({patrol: 5, buzzer: 6, power: 9}),
     meta: {multiEndpoint: true},
     configure: async (device, coordinatorEndpoint) => {
         for (const id of [1, 2]) {
@@ -100,7 +101,7 @@ export default {
                 maximumReportInterval: 10,
             }]);
         }
-        for (const id of [5, 6]) {
+        for (const id of [5, 6, 9]) {
             const endpoint = device.getEndpoint(id);
             await endpoint.bind('genOnOff', coordinatorEndpoint);
             await endpoint.configureReporting('genOnOff', [{

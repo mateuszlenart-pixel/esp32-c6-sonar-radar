@@ -31,6 +31,15 @@ esp_err_t servo_set_angle(int angle_deg)
     return ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
 }
 
+esp_err_t servo_release(void)
+{
+    if (!s_initialized) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    /* Stop the PWM pulses: the servo stops holding position and draws no current. */
+    return ledc_stop(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
+}
+
 esp_err_t servo_init(void)
 {
     const ledc_timer_config_t timer_config = {

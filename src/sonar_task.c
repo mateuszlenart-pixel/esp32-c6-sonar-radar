@@ -22,6 +22,9 @@ static void sonar_task(void *arg)
 
     int angle_deg;
     while (xQueueReceive(s_request_queue, &angle_deg, portMAX_DELAY) == pdTRUE) {
+        if (!logic_is_power_enabled()) {
+            continue;
+        }
         uint32_t distance_cm = 0;
         const esp_err_t err = sonar_measure_cm(&distance_cm);
         const bool distance_valid = err == ESP_OK;

@@ -14,6 +14,7 @@
 #define RADAR_TARGET_LOCKED_BIT (1U << 0)
 #define RADAR_PATROL_ENABLED_BIT (1U << 1)
 #define RADAR_BUZZER_ENABLED_BIT (1U << 2)
+#define RADAR_POWER_ENABLED_BIT (1U << 3)
 
 typedef struct {
     int angle_deg;
@@ -38,6 +39,9 @@ static void logic_task(void *arg)
     radar_measurement_t measurement;
 
     while (xQueueReceive(s_measurement_queue, &measurement, portMAX_DELAY) == pdTRUE) {
+        if (!logic_is_power_enabled()) {
+            continue; /* standby: drop measurements still in flight */
+        }
         if (xQueuePeek(s_threshold_queue, &thresholds, 0) == pdTRUE) {
             radar_detector_set_distance_thresholds(&detector,
                 thresholds.target_distance_cm, thresholds.critical_distance_cm);
@@ -126,7 +130,8 @@ esp_err_t logic_init(void)
     };
     xQueueOverwrite(s_threshold_queue, &initial_thresholds);
     xEventGroupSetBits(s_control_events,
-                       RADAR_PATROL_ENABLED_BIT | RADAR_BUZZER_ENABLED_BIT);
+                       RADAR_PATROL_ENABLED_BIT | RADAR_BUZZER_ENABLED_BIT |
+                       RADAR_POWER_ENABLED_BIT);
     return ESP_OK;
 }
 
@@ -182,6 +187,38 @@ bool logic_get_status(radar_status_t *status)
 {
     return status != NULL && s_status_queue != NULL &&
            xQueuePeek(s_status_queue, status, 0) == pdTRUE;
+}
+
+void logic_set_power_enabled(bool enabled)
+{
+    if (s_control_events == NULL) {
+        return;
+    }
+    if (enabled) {
+        xEventGroupSetBits(s_control_events, RADAR_POWER_ENABLED_BIT);
+        return;
+    }
+    xEventGroupClearBits(s_control_events,
+                         RADAR_POWER_ENABLED_BIT | RADAR_TARGET_LOCKED_BIT);
+    if (s_measurement_queue != NULL) {
+        (void)xQueueReset(s_measurement_queue);
+    }
+    if (s_status_queue != NULL) {
+        radar_status_t status;
+        if (xQueuePeek(s_status_queue, &status, 0) != pdTRUE) {
+            status.angle_deg = RADAR_MIN_ANGLE_DEG;
+        }
+        status.state = RADAR_STATE_PATROL;
+        status.distance_cm = 0;
+        status.distance_valid = false;
+        (void)xQueueOverwrite(s_status_queue, &status);
+    }
+}
+
+bool logic_is_power_enabled(void)
+{
+    return s_control_events != NULL &&
+           (xEventGroupGetBits(s_control_events) & RADAR_POWER_ENABLED_BIT) != 0;
 }
 
 void logic_set_patrol_enabled(bool enabled)

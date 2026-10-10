@@ -157,6 +157,15 @@ esp_err_t matrix_init(void)
     return ESP_OK;
 }
 
+esp_err_t matrix_set_power(bool on)
+{
+    if (!s_initialized) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    write_register(MATRIX_REGISTER_SHUTDOWN, on ? 1 : 0);
+    return ESP_OK;
+}
+
 esp_err_t matrix_render_status(const radar_status_t *status, uint32_t now_ms)
 {
     if (!s_initialized || status == NULL) {
