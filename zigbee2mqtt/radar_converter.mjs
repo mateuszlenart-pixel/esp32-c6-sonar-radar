@@ -82,37 +82,38 @@ export default {
     endpoint: () => ({patrol: 5, buzzer: 6, power: 9}),
     meta: {multiEndpoint: true},
     configure: async (device, coordinatorEndpoint) => {
-        for (const id of [1, 2]) {
+        // Każdy krok osobno: błąd jednego endpointu nie przerywa konfiguracji pozostałych
+        // (wcześniej odrzucony atrybut outOfService zatrzymywał całość przed endpointem 9).
+        const step = async (id, cluster, reporting) => {
             const endpoint = device.getEndpoint(id);
-            await endpoint.bind('msOccupancySensing', coordinatorEndpoint);
-            await endpoint.configureReporting('msOccupancySensing', [{
+            try {
+                await endpoint.bind(cluster, coordinatorEndpoint);
+                await endpoint.configureReporting(cluster, reporting);
+            } catch (error) {
+                console.warn(`ESP32C6-SonarRadar: configure ep ${id} ${cluster} failed: ${error}`);
+            }
+        };
+        for (const id of [1, 2]) {
+            await step(id, 'msOccupancySensing', [{
                 attribute: 'occupancy', minimumReportInterval: 1,
                 maximumReportInterval: 10, reportableChange: 1,
             }]);
         }
+        // outOfService nie jest w ZCL atrybutem raportowalnym: raportujemy tylko presentValue.
         for (const id of [3, 4]) {
-            const endpoint = device.getEndpoint(id);
-            await endpoint.bind('genAnalogInput', coordinatorEndpoint);
-            await endpoint.configureReporting('genAnalogInput', [{
+            await step(id, 'genAnalogInput', [{
                 attribute: 'presentValue', minimumReportInterval: 1,
                 maximumReportInterval: 10, reportableChange: 1,
-            }, {
-                attribute: 'outOfService', minimumReportInterval: 1,
-                maximumReportInterval: 10,
             }]);
         }
         for (const id of [5, 6, 9]) {
-            const endpoint = device.getEndpoint(id);
-            await endpoint.bind('genOnOff', coordinatorEndpoint);
-            await endpoint.configureReporting('genOnOff', [{
+            await step(id, 'genOnOff', [{
                 attribute: 'onOff', minimumReportInterval: 1,
                 maximumReportInterval: 10,
             }]);
         }
         for (const id of [7, 8]) {
-            const endpoint = device.getEndpoint(id);
-            await endpoint.bind('genAnalogOutput', coordinatorEndpoint);
-            await endpoint.configureReporting('genAnalogOutput', [{
+            await step(id, 'genAnalogOutput', [{
                 attribute: 'presentValue', minimumReportInterval: 1,
                 maximumReportInterval: 10, reportableChange: 1,
             }]);

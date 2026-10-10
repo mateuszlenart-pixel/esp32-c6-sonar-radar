@@ -5,6 +5,9 @@
 #include <string.h>
 
 #include "driver/gpio.h"
+#include "esp_rom_sys.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 #include "app_config.h"
 
@@ -16,12 +19,25 @@
 #define MATRIX_REGISTER_DISPLAY_TEST 0x0F
 
 static bool s_initialized;
+static bool s_powered = true;
+// While the sonar pings, matrix scanning is paused (shutdown): its row switching injects current
+// spikes that the HC-SR04 receiver mistakes for echoes. The UI and sonar tasks share the bus.
+static bool s_quiet;
+static SemaphoreHandle_t s_lock;
+
+static uint8_t shutdown_value(void)
+{
+    return (s_powered && !s_quiet) ? 1 : 0;
+}
 
 static void write_bit(bool level)
 {
+    // Short pauses let the long breadboard wires settle, so ringing is not seen as extra clocks.
     gpio_set_level(GPIO_MAX7219_CLK, 0);
     gpio_set_level(GPIO_MAX7219_DIN, level ? 1 : 0);
+    esp_rom_delay_us(1);
     gpio_set_level(GPIO_MAX7219_CLK, 1);
+    esp_rom_delay_us(1);
 }
 
 static void write_register(uint8_t address, uint8_t value)
@@ -122,6 +138,16 @@ static void render_alert(uint8_t frame[MATRIX_SIZE], bool visible)
     }
 }
 
+// Control registers are re-sent with every frame: a supply glitch or a corrupted transfer
+// can reset the MAX7219 or switch it off, and it would otherwise stay dark until reboot.
+static void write_config(void)
+{
+    write_register(MATRIX_REGISTER_DISPLAY_TEST, 0);
+    write_register(MATRIX_REGISTER_DECODE_MODE, 0);
+    write_register(MATRIX_REGISTER_SCAN_LIMIT, 7);
+    write_register(MATRIX_REGISTER_INTENSITY, MAX7219_INTENSITY);
+}
+
 esp_err_t matrix_init(void)
 {
     if (s_initialized) {
@@ -142,13 +168,14 @@ esp_err_t matrix_init(void)
         return err;
     }
 
+    s_lock = xSemaphoreCreateMutex();
+    if (s_lock == NULL) {
+        return ESP_ERR_NO_MEM;
+    }
     gpio_set_level(GPIO_MAX7219_CLK, 0);
     gpio_set_level(GPIO_MAX7219_CS, 1);
     write_register(MATRIX_REGISTER_SHUTDOWN, 0);
-    write_register(MATRIX_REGISTER_DISPLAY_TEST, 0);
-    write_register(MATRIX_REGISTER_DECODE_MODE, 0);
-    write_register(MATRIX_REGISTER_SCAN_LIMIT, 7);
-    write_register(MATRIX_REGISTER_INTENSITY, MAX7219_INTENSITY);
+    write_config();
     for (uint8_t row = 1; row <= MATRIX_SIZE; ++row) {
         write_register(row, 0);
     }
@@ -162,8 +189,29 @@ esp_err_t matrix_set_power(bool on)
     if (!s_initialized) {
         return ESP_ERR_INVALID_STATE;
     }
-    write_register(MATRIX_REGISTER_SHUTDOWN, on ? 1 : 0);
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    s_powered = on;
+    write_register(MATRIX_REGISTER_SHUTDOWN, shutdown_value());
+    xSemaphoreGive(s_lock);
     return ESP_OK;
+}
+
+void matrix_quiet(bool quiet)
+{
+    if (!s_initialized) {
+        return;
+    }
+    // quiet=true takes the bus lock and keeps it until quiet=false, so no frame is sent while
+    // the sonar listens (bus edges and LED scanning both corrupt the echo).
+    if (quiet) {
+        xSemaphoreTake(s_lock, portMAX_DELAY);
+        s_quiet = true;
+        write_register(MATRIX_REGISTER_SHUTDOWN, shutdown_value());
+    } else {
+        s_quiet = false;
+        write_register(MATRIX_REGISTER_SHUTDOWN, shutdown_value());
+        xSemaphoreGive(s_lock);
+    }
 }
 
 esp_err_t matrix_render_status(const radar_status_t *status, uint32_t now_ms)
@@ -189,8 +237,12 @@ esp_err_t matrix_render_status(const radar_status_t *status, uint32_t now_ms)
         break;
     }
 
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    write_config();
+    write_register(MATRIX_REGISTER_SHUTDOWN, shutdown_value());
     for (uint8_t row = 0; row < MATRIX_SIZE; ++row) {
         write_register((uint8_t)(row + 1), frame[row]);
     }
+    xSemaphoreGive(s_lock);
     return ESP_OK;
 }

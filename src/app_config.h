@@ -23,6 +23,10 @@
 #define SONAR_TRIGGER_PULSE_US 10
 #define SONAR_RISE_TIMEOUT_US 30000
 #define SONAR_ECHO_TIMEOUT_US 25000
+// Shortest ECHO pulse accepted (about 1.7 cm); shorter pulses are treated as noise.
+#define SONAR_MIN_ECHO_US 100
+// Median over the last N valid readings rejects isolated false echoes (odd number).
+#define SONAR_MEDIAN_WINDOW 5
 #define SONAR_POLL_INTERVAL_US 5
 #define RADAR_TASK_STACK_SIZE 4096
 #define RADAR_TASK_PRIORITY 4
