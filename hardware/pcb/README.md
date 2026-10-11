@@ -80,6 +80,14 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   C9 100 nF). Na breadboardzie przełączanie wierszy MAX7219 i transmisja do niej dawały fałszywe
   echa HC-SR04; firmware obchodzi to gaszeniem matrycy na czas pomiaru (widoczne lekkie mruganie).
   Te elementy mają pozwolić z tego obejścia zrezygnować; nie są jeszcze sprawdzone na płytce.
+- **Serwo i buzzer (2026-10-11, analiza zakłóceń przed testem):** serwo SG90 pobiera impulsy prądu
+  rzędu setek mA i jest zasilane z tej samej szyny 5 V co sonar, bufor i matryca. Dlatego +5V serwa
+  idzie przez FB1 (miejsce na ferryt ≥ 1 A albo zworkę 0 Ω) do sieci SERVO_5V, z C4 220 µF i C10 100 nF
+  przy złączu J5 (C4 przeniesiony z lewego pasa pod J5). R15 10 kΩ ciągnie sygnał serwa do masy,
+  gdy GPIO10 jest nieustawione (reset, start). Buzzer: C11 100 nF na +5V przy sterowniku Q2/J8
+  (przełączanie 2 kHz), dioda D2 już była; C12 100 nF równolegle do buzzera jest miejscem
+  opcjonalnym. Nie sprawdzone na sprzęcie. Rejon J5/J8 jest gęsty, więc opisy na silkscreenie
+  w górnej części płytki częściowo na siebie zachodzą (tylko ostrzeżenia DRC).
 - **Rendery i PDF:** `tools/export_docs.sh` (po `build_all.sh`).
 - **Do sprawdzenia przed zamówieniem:** gniazdo DC musi mieć bolec **2,5 mm** (wtyk EB2005
   5,5 × 2,5 mm), a footprint `BarrelJack_Horizontal` dobrać do konkretnego modelu (np. CUI PJ-002B);

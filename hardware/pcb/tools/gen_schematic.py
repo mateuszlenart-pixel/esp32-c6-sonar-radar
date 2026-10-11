@@ -172,9 +172,16 @@ place('R11', 'Device', 'R', '10', R, 370, 40, {'1': '+5V', '2': 'SR04_VCC'})
 place('C6', 'Device', 'C_Polarized', '100 uF / 16 V', CP63, 385, 45, {'1': 'SR04_VCC', '2': 'GND'})
 place('C7', 'Device', 'C', '100 nF', C, 400, 45, {'1': 'SR04_VCC', '2': 'GND'})
 place('J5', 'Connector_Generic', 'Conn_01x03', 'Serwo SG90 (kabel): GND +5V SIG', HDR % 3, 340, 95,
-      {'1': 'GND', '2': '+5V', '3': 'SERVO_SIG'})
+      {'1': 'GND', '2': 'SERVO_5V', '3': 'SERVO_SIG'})
+# zasilanie serwa przez miejsce na ferryt (montowac zworke 0 R albo ferryt >= 1 A): silnik nie zasmieca
+# szyny 5 V sonaru, bufora i matrycy; C4 + C10 przy zlaczu zasilaja impulsy pradu serwa
+place('FB1', 'Device', 'FerriteBead', 'Ferryt >=1 A lub 0 R', 'Inductor_SMD:L_0805_2012Metric', 300, 75,
+      {'1': '+5V', '2': 'SERVO_5V'})
+place('C10', 'Device', 'C', '100 nF', C, 320, 75, {'1': 'SERVO_5V', '2': 'GND'})
+# rezystor ciagnie sygnal serwa do masy, gdy GPIO10 jest nieukonczone (reset, start): brak drgan serwa
+place('R15', 'Device', 'R', '10 k', R, 320, 105, {'1': 'SERVO_SIG', '2': 'GND'})
 place('R8', 'Device', 'R', '330', R, 300, 95, {'1': 'SERVO_3V3', '2': 'SERVO_SIG'})
-place('C4', 'Device', 'C_Polarized', '220 uF / 10 V', CP63, 280, 95, {'1': '+5V', '2': 'GND'})
+place('C4', 'Device', 'C_Polarized', '220 uF / 10 V', CP63, 280, 95, {'1': 'SERVO_5V', '2': 'GND'})
 place('J6', 'Connector_Generic', 'Conn_01x05', 'MAX7219 Elegoo: VCC GND DIN CS CLK', SKT % 5, 340, 130,
       {'1': '+5V', '2': 'GND', '3': 'DIN_J', '4': 'CS_J', '5': 'CLK_J'})
 # rezystory szeregowe tłumiące odbicia na liniach do matrycy, kondensatory przy module
@@ -192,6 +199,10 @@ place('Q2', 'Transistor_BJT', 'MMBT3904', 'MMBT3904', 'Package_TO_SOT_SMD:SOT-23
       {'1': 'BUZ_BASE', '2': 'GND', '3': 'BUZ_NEG'})
 place('D2', 'Device', 'D', '1N4148W', 'Diode_SMD:D_SOD-123', 365, 225, {'1': '+5V', '2': 'BUZ_NEG'})
 place('J8', 'Connector_Generic', 'Conn_01x02', 'Buzzer: + -', HDR % 2, 395, 215, {'1': '+5V', '2': 'BUZ_NEG'})
+# odsprzezenie zasilania sterownika buzzera: przelaczanie 2 kHz nie moze wchodzic w szyne 5 V
+place('C11', 'Device', 'C', '100 nF', C, 420, 215, {'1': '+5V', '2': 'GND'})
+# miejsce na kondensator rownolegle do buzzera (tlumienie iskrzenia/EMI), opcjonalny
+place('C12', 'Device', 'C', '100 nF (opcja)', C, 440, 215, {'1': '+5V', '2': 'BUZ_NEG'})
 text(180, 240, 'WYLACZNIK ON/STANDBY (GPIO2): przycisk do GND, pull-up w ESP32')
 place('SW1', 'Switch', 'SW_Push', 'Przycisk ON/standby (katowy)', 'Button_Switch_THT:SW_Tactile_SPST_Angled_PTS645Vx58-2LFS', 195, 265,
       {'1': 'BTN', '2': 'GND'})

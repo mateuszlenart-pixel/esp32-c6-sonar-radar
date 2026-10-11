@@ -61,7 +61,8 @@ FIXED = {
     # moduły wtykane od frontu (nagłówki u góry modułów)
     'J7': (33 - 3.81, 13, 90, 'F'), 'J6': (33 - 5.08, 55, 90, 'F'),
     # lewy pas: kondensator serwa, przycisk ON/standby
-    'C4': (5.5, 50, 0, 'F'), 'SW1': (2.64, 68, 90, 'F'), 'C5': (7, 72, 0, 'F'),
+    'C4': (22.5, 12.5, 0, 'F'), 'FB1': (27.8, 8.4, 0, 'F'), 'C10': (19, 8.3, 90, 'F'),
+    'R15': (29.2, 5.0, 0, 'F'), 'C11': (39, 9.2, 90, 'F'), 'C12': (43.5, 12.5, 0, 'F'), 'SW1': (2.64, 68, 90, 'F'), 'C5': (7, 72, 0, 'F'),
     # prawy pas: gniazdo DC (otwór na krawędzi), bezpiecznik, MOSFET, kondensatory, LED
     'J1': (52.3, 66, 180, 'F'), 'D1': (63.5, 74, 90, 'F'), 'R1': (59.5, 73.6, 0, 'F'),
     'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'F1': (57.25, 89, 0, 'F'), 'Q1': (63, 89, 90, 'F'),
@@ -145,7 +146,9 @@ VALUES = {
     'R1': ('R1 1k', -1.6, 0, 'right', 0), 'D1': ('D1 PWR', 2.1, -2.9, 'right', 0),
     'C1': ('C1 470uF 16V', 1.75, 5.4, 'center', 0), 'C2': ('C2 100nF', 1.9, 0, 'center', 90),
     'F1': ('F1 1,5A', -3.4, 0, 'right', 0), 'Q1': ('Q1 AO3401', 2.6, 2.8, 'right', 0),
-    'C4': ('C4 220uF 10V', 1.25, 4.6, 'center', 0), 'SW1': ('SW1 ON/STANDBY', 4.0, -1.6, 'left', 0),
+    'C4': ('C4 220uF 10V', 1.25, 4.6, 'center', 0), 'FB1': ('FB1 ferryt/0R', 0, -1.7, 'center', 0),
+    'C10': ('C10 100nF', 1.9, 0, 'center', 90), 'R15': ('R15 10k', 0, -1.7, 'center', 0),
+    'C11': ('C11 100nF', 1.9, 0, 'center', 90), 'C12': ('C12 100nF opcja', 0, 1.7, 'center', 0), 'SW1': ('SW1 ON/STANDBY', 4.0, -1.6, 'left', 0),
     'C5': ('C5 100nF', 0, 1.6, 'center', 0),
     'Q2': ('Q2 3904', -0.7, 3.0, 'center', 0), 'R9': ('R9 1k', 0, -1.7, 'center', 0),
     'R10': ('R10 100k', 0.7, 2.1, 'center', 0), 'D2': ('D2 1N4148', -0.6, 2.3, 'left', 0),
@@ -313,7 +316,7 @@ def build():
     power.SetViaDiameter(mm(0.9))
     power.SetViaDrill(mm(0.45))
     ns.SetNetclass('Power', power)
-    for pat in ('+5V', 'GND', 'VIN', 'VIN_F', '+3V3', 'SR04_VCC'):
+    for pat in ('+5V', 'GND', 'VIN', 'VIN_F', '+3V3', 'SR04_VCC', 'SERVO_5V'):
         ns.SetNetclassPatternAssignment(pat, 'Power')
 
     # --- sieci
