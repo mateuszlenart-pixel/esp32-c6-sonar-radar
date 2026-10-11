@@ -122,7 +122,7 @@ SKT = 'Connector_PinSocket_2.54mm:PinSocket_1x%02d_P2.54mm_Vertical'
 TP = 'TestPoint:TestPoint_Pad_D1.5mm'
 
 # ------------------------------------------------------------------ zasilanie
-text(30, 30, 'ZASILANIE 5 V: gniazdo USB-C (tylko zasilanie, rezystory CC 5,1 k), TVS, bezpiecznik')
+text(30, 30, 'ZASILANIE 5 V: gniazdo USB-C (tylko zasilanie, rezystory CC 5,1 k), TVS, przelacznik z miekkim startem')
 place('J1', 'Connector', 'USB_C_Receptacle_USB2.0_16P', 'USB-C zasilanie 5 V (GCT USB4105)',
       'Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal', 40, 60,
       {'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', 'SH': 'GND',
@@ -130,14 +130,16 @@ place('J1', 'Connector', 'USB_C_Receptacle_USB2.0_16P', 'USB-C zasilanie 5 V (GC
       nc=['A6', 'A7', 'A8', 'B6', 'B7', 'B8'])
 place('R16', 'Device', 'R', '5,1 k', R, 60, 85, {'1': 'CC1', '2': 'GND'})
 place('R17', 'Device', 'R', '5,1 k', R, 80, 85, {'1': 'CC2', '2': 'GND'})
-place('D3', 'Device', 'D_TVS', 'SMAJ5.0CA (TVS 5 V)', 'Diode_SMD:D_SMA', 100, 85, {'1': 'VIN', '2': 'GND'})
-place('F1', 'Device', 'Polyfuse', 'Polyfuse 1,5 A', 'Fuse:Fuse_1812_4532Metric', 75, 60, {'1': 'VIN', '2': '+5V'})
+place('D3', 'Device', 'D_Zener', 'SMAJ5.0A (TVS 5 V, jednokierunkowy)', 'Diode_SMD:D_SMA', 100, 85, {'1': 'VIN', '2': 'GND'})
+# przelacznik obciazenia z miekkim startem i ogranicznikiem pradu (zamiast polyfuse): AP22804AW5 (EN aktywny wysokim)
+place('U2', 'Power_Management', 'AP22804AW5', 'AP22804AW5 (przelacznik 5 V, limit ok. 2,5-3 A)',
+      'Package_TO_SOT_SMD:SOT-23-5', 75, 60, {'5': 'VIN', '4': 'VIN', '2': 'GND', '1': '+5V'}, nc=['3'])
+place('C16', 'Device', 'C', '1 uF', C, 95, 60, {'1': 'VIN', '2': 'GND'})
 flag(115, 50, 'VIN', '#FLG04')
 place('C1', 'Device', 'C_Polarized', '470 uF / 16 V', CP8, 150, 60, {'1': '+5V', '2': 'GND'})
 place('C2', 'Device', 'C', '100 nF', C, 175, 60, {'1': '+5V', '2': 'GND'})
 place('R1', 'Device', 'R', '1 k', R, 200, 60, {'1': '+5V', '2': 'LED_A'})
 place('D1', 'Device', 'LED', 'LED zasilania', 'LED_SMD:LED_0805_2012Metric', 225, 75, {'1': 'GND', '2': 'LED_A'})
-flag(250, 50, '+5V', '#FLG01')
 flag(262, 50, 'GND', '#FLG02')
 flag(274, 50, '+3V3', '#FLG03')
 for i, (ref, net) in enumerate([('TP1', '+5V'), ('TP2', '+3V3'), ('TP3', 'GND'), ('TP4', 'TRIG_5V'), ('TP5', 'ECHO_3V3')]):
@@ -145,7 +147,7 @@ for i, (ref, net) in enumerate([('TP1', '+5V'), ('TP2', '+3V3'), ('TP3', 'GND'),
 
 # ------------------------------------------------------------------ bufor AHCT125
 text(30, 130, 'BUFOR SN74AHCT125 (DIP-14 w podstawce): 3,3 V z ESP32 -> 5 V; wejscia A z pull-downami')
-U = ('74xx', '74AHCT125', 'SN74AHCT125N', 'Package_DIP:DIP-14_W7.62mm_Socket')
+U = ('74xx', '74AHCT125', 'SN74AHCT125D', 'Package_SO:SOIC-14_3.9x8.7mm_P1.27mm')
 gates = [(1, 80, 160, '1', '2', '3', 'TRIG'), (2, 80, 205, '4', '5', '6', 'DIN'),
          (3, 150, 160, '10', '9', '8', 'CLK'), (4, 150, 205, '13', '12', '11', 'CS')]
 for unit, x, y, oe, a, yy, sig in gates:
@@ -153,20 +155,21 @@ for unit, x, y, oe, a, yy, sig in gates:
 place('U1', U[0], U[1], U[2], U[3], 215, 190, {'7': 'GND', '14': '+5V'}, unit=5)
 place('C3', 'Device', 'C', '100 nF', C, 245, 190, {'1': '+5V', '2': 'GND'})
 for i, sig in enumerate(['TRIG', 'DIN', 'CLK', 'CS']):
+    # CS (spoczynkowo wysoki w firmware) ma pull-up do 3,3 V, pozostale linie pull-down do masy
     place('R%d' % (2 + i), 'Device', 'R', '47 k', R, 40 + (i % 2) * 70, 160 + (i // 2) * 45,
-          {'1': sig + '_3V3', '2': 'GND'})
+          {'1': sig + '_3V3', '2': '+3V3' if sig == 'CS' else 'GND'})
 text(260, 150, 'DZIELNIK ECHO 5 V -> 3,1 V')
 place('R6', 'Device', 'R', '10 k', R, 270, 175, {'1': 'ECHO_5V', '2': 'ECHO_3V3'})
 place('R7', 'Device', 'R', '15 k', R, 300, 175, {'1': 'ECHO_3V3', '2': 'GND'})
 
 # ------------------------------------------------------------------ ESP32 DevKitC-1
-text(30, 226, 'ESP32-C6-DevKitC-1 (gniazda zenskie 1x16, J1 i J3 DevKita). Pin 5V DevKita (J2 pin 14) jest polaczony z +5V (DevKit ma diode Schottky od USB).')
+text(30, 226, 'ESP32-C6-DevKitC-1 (gniazda zenskie 1x16, J1 i J3 DevKita). Pin 5V DevKita (J2 pin 14) zasilany z +5V przez diode Schottky D4 (kierunek plytka -> DevKit): USB DevKita nie zasila plytki.')
 place('J2', 'Connector_Generic', 'Conn_01x16', 'DevKit J1', SKT % 16, 40, 262,
-      {'1': '+3V3', '5': 'ECHO_3V3', '6': 'DIN_3V3', '10': 'SERVO_3V3', '11': 'TRIG_3V3', '12': 'BTN', '14': '+5V', '15': 'GND'},
-      nc=['2', '3', '4', '7', '8', '9', '13', '16'])
+      {'1': '+3V3', '5': 'ECHO_3V3', '6': 'DIN_3V3', '10': 'SERVO_3V3', '11': 'TRIG_3V3', '12': 'BTN_ESP', '14': 'DEVKIT_5V', '15': 'GND', '7': 'V5_SENSE', '8': 'CC1_SENSE', '13': 'CC2_SENSE', '2': 'EN'},
+      nc=['3', '4', '9', '16'])
 place('J3', 'Connector_Generic', 'Conn_01x16', 'DevKit J3', SKT % 16, 120, 262,
-      {'1': 'GND', '6': 'BUZ_CTRL', '7': 'SCL', '8': 'SDA', '9': 'CS_3V3', '10': 'CLK_3V3', '12': 'GND', '15': 'GND'},
-      nc=['2', '3', '4', '5', '11', '13', '14', '16'])
+      {'1': 'GND', '6': 'BUZ_CTRL', '7': 'SCL', '8': 'SDA', '9': 'CS_3V3', '10': 'CLK_3V3', '12': 'GND', '15': 'GND', '11': 'BOOT'},
+      nc=['2', '3', '4', '5', '13', '14', '16'])
 
 # ------------------------------------------------------------------ moduly i zlacza
 text(330, 30, 'MODULY I ZLACZA')
@@ -180,7 +183,7 @@ place('J5', 'Connector_Generic', 'Conn_01x03', 'Serwo SG90 (kabel): GND +5V SIG'
       {'1': 'GND', '2': 'SERVO_5V', '3': 'SERVO_SIG'})
 # zasilanie serwa przez miejsce na ferryt (montowac zworke 0 R albo ferryt >= 1 A): silnik nie zasmieca
 # szyny 5 V sonaru, bufora i matrycy; C4 + C10 przy zlaczu zasilaja impulsy pradu serwa
-place('FB1', 'Device', 'FerriteBead', 'Ferryt >=1 A lub 0 R', 'Inductor_SMD:L_0805_2012Metric', 300, 75,
+place('FB1', 'Device', 'FerriteBead', '0 R (zworka; opcja: ferryt >= 1 A)', 'Inductor_SMD:L_0805_2012Metric', 300, 75,
       {'1': '+5V', '2': 'SERVO_5V'})
 place('C10', 'Device', 'C', '100 nF', C, 320, 75, {'1': 'SERVO_5V', '2': 'GND'})
 # rezystor ciagnie sygnal serwa do masy, gdy GPIO10 jest nieukonczone (reset, start): brak drgan serwa
@@ -211,8 +214,27 @@ place('C12', 'Device', 'C', '100 nF (opcja)', C, 440, 215, {'1': '+5V', '2': 'BU
 text(180, 240, 'WYLACZNIK ON/STANDBY (GPIO2): przycisk do GND, pull-up w ESP32')
 place('SW1', 'Switch', 'SW_Push', 'Przycisk ON/standby (katowy)', 'Button_Switch_THT:SW_Tactile_SPST_Angled_PTS645Vx58-2LFS', 195, 265,
       {'1': 'BTN', '2': 'GND'})
-place('C5', 'Device', 'C', '100 nF', C, 235, 265, {'1': 'BTN', '2': 'GND'})
+place('C5', 'Device', 'C', '100 nF', C, 235, 265, {'1': 'BTN_ESP', '2': 'GND'})
 place('J9', 'Connector_Generic', 'Conn_01x02', 'Przycisk zewnetrzny', HDR % 2, 270, 262, {'1': 'BTN', '2': 'GND'})
+# kabel do przycisku na panelu: rezystor szeregowy (ESD) i zewnetrzny pull-up po stronie kabla
+place('R18', 'Device', 'R', '1 k', R, 300, 262, {'1': 'BTN', '2': 'BTN_ESP'})
+place('R19', 'Device', 'R', '10 k', R, 320, 262, {'1': 'BTN', '2': '+3V3'})
+
+# --- dodatki z audytu (2026-10-11)
+text(30, 300, 'DODATKI: dioda 5V DevKita, pomiary ADC (5V, CC1, CC2), BOOT/RST, pull-upy I2C (opcja)')
+place('D4', 'Device', 'D_Schottky', '1N5819HW', 'Diode_SMD:D_SOD-123', 40, 320, {'1': 'DEVKIT_5V', '2': '+5V'})
+place('R20', 'Device', 'R', '100 k', R, 70, 320, {'1': '+5V', '2': 'V5_SENSE'})
+place('R21', 'Device', 'R', '47 k', R, 90, 320, {'1': 'V5_SENSE', '2': 'GND'})
+place('C13', 'Device', 'C', '100 nF', C, 110, 320, {'1': 'V5_SENSE', '2': 'GND'})
+place('R22', 'Device', 'R', '100 k', R, 130, 320, {'1': 'CC1', '2': 'CC1_SENSE'})
+place('C14', 'Device', 'C', '100 nF', C, 150, 320, {'1': 'CC1_SENSE', '2': 'GND'})
+place('R23', 'Device', 'R', '100 k', R, 170, 320, {'1': 'CC2', '2': 'CC2_SENSE'})
+place('C15', 'Device', 'C', '100 nF', C, 190, 320, {'1': 'CC2_SENSE', '2': 'GND'})
+place('J10', 'Connector_Generic', 'Conn_01x03', 'Awaryjne wgrywanie: RST GND BOOT (zwarcie sasiednich)', HDR % 3, 220, 320,
+      {'1': 'EN', '2': 'GND', '3': 'BOOT'})
+place('R24', 'Device', 'R', '4,7 k (nie montowac)', R, 250, 320, {'1': 'SCL', '2': '+3V3'})
+place('R25', 'Device', 'R', '4,7 k (nie montowac)', R, 270, 320, {'1': 'SDA', '2': '+3V3'})
+place('TP6', 'Connector', 'TestPoint', 'TP SERVO_5V', TP, 290, 320, {'1': 'SERVO_5V'}, show_value=False, in_bom=False)
 
 if errors:
     print('BLEDY OPISU:')

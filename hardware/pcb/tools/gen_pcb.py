@@ -62,22 +62,27 @@ FIXED = {
     'J7': (33 - 3.81, 13, 90, 'F'), 'J6': (33 - 5.08, 55, 90, 'F'),
     # lewy pas: kondensator serwa, przycisk ON/standby
     'C4': (21, 20.5, 0, 'F'), 'FB1': (23.5, 12.4, 0, 'F'), 'C10': (14.5, 19.5, 90, 'F'),
-    'R15': (29.5, 5.0, 0, 'F'), 'C11': (44.5, 16, 0, 'F'), 'C12': (51, 16, 0, 'F'), 'SW1': (2.64, 68, 90, 'F'), 'C5': (7, 72, 0, 'F'),
+    'R15': (29.2, 7.0, 0, 'F'), 'C11': (44.5, 16, 0, 'F'), 'C12': (51, 16, 0, 'F'), 'SW1': (2.64, 68, 90, 'F'), 'C5': (7, 72, 0, 'F'),
     # prawy pas: gniazdo USB-C zasilania (na krawędzi), CC, TVS, bezpiecznik, kondensatory, LED
     'J1': (W - 3.1, 66, 90, 'F'), 'R16': (55.3, 67.6, 0, 'F'), 'R17': (55.3, 64.2, 0, 'F'), 'D3': (52.2, 72.4, 90, 'F'), 'D1': (63.5, 74, 90, 'F'), 'R1': (59.5, 73.6, 0, 'F'),
-    'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'F1': (57.25, 89, 0, 'F'),
-    'TP1': (59.5, 97, 0, 'F'), 'TP3': (63, 97, 0, 'F'),
+    'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'U2': (57.5, 88.2, 0, 'F'), 'C16': (62.2, 88, 90, 'F'),
+    'TP1': (49.5, 89.5, 0, 'F'), 'TP3': (46, 89.5, 0, 'F'),
+    'D4': (25, 121.8, 0, 'F'), 'R18': (12.5, 73.5, 0, 'F'), 'R19': (12.5, 77, 0, 'F'), 'J10': (8, 84, 90, 'F'),
+    'R20': (5.5, 108.5, 0, 'F'), 'R21': (5.5, 112.5, 0, 'F'), 'C13': (5.5, 116.5, 0, 'F'),
+    'R24': (46, 121.8, 0, 'F'),
+    'R25': (50.5, 121.8, 0, 'F'), 'R22': (37.2, 113.6, 90, 'F'), 'C14': (34.3, 113.6, 90, 'F'),
+    'R23': (24.8, 112.2, 90, 'F'), 'C15': (28.0, 114.0, 90, 'F'), 'TP6': (13, 26, 0, 'F'),
     # DevKit od tyłu (poziomo, USB po lewej w widoku od frontu)
     'J3': (55, 94, 90, 'B'), 'J2': (55, 117.3, 90, 'B'),
-    # bufor w podstawce między rzędami DevKita, pull-downy przy wejściach, odsprzęganie
-    'U1': (21, 108, 90, 'F'), 'C3': (17.5, 104, 90, 'F'),
-    'R2': (23.5, 112, 0, 'F'), 'R3': (31.2, 112, 0, 'F'), 'R4': (33.7, 97.4, 0, 'F'), 'R5': (26.1, 97.4, 0, 'F'),
+    # bufor SOIC-14 między rzędami DevKita, pull-downy przy wejściach, odsprzęganie
+    'U1': (28.6, 104.2, 90, 'F'), 'C3': (17.5, 104, 90, 'F'),
+    'R2': (20.2, 110.5, 0, 'F'), 'R3': (31.2, 112, 0, 'F'), 'R4': (33.7, 97.4, 0, 'F'), 'R5': (26.1, 97.4, 0, 'F'),
     # dzielnik ECHO i punkt testowy węzła GPIO6
     'R6': (42, 104, 90, 'F'), 'R7': (45.5, 104, 90, 'F'), 'TP5': (49, 104, 0, 'F'),
     # pozostałe punkty testowe, rezystor serwa
     'TP2': (10, 100, 0, 'F'), 'TP4': (10, 104, 0, 'F'), 'R8': (30, 122, 0, 'F'),
     # filtr RC zasilania sonaru przy J4 (lewy górny róg)
-    'R11': (16.5, 12, 0, 'F'), 'C6': (4.5, 14, 0, 'F'), 'C7': (11, 14.5, 90, 'F'),
+    'R11': (16.5, 14, 0, 'F'), 'C6': (4.5, 17.5, 0, 'F'), 'C7': (11, 18, 90, 'F'),
     # rezystory szeregowe DIN/CS/CLK nad gniazdem MAX7219, kondensatory obok modułu
     'R12': (27, 51, 0, 'F'), 'R14': (35.5, 51, 0, 'F'), 'R13': (44, 51, 0, 'F'),
     'C8': (52.2, 55, 0, 'F'), 'C9': (61.5, 55, 90, 'F'),
@@ -131,6 +136,7 @@ PIN_NAMES = {
     'J5': ('SERWO', ['GND', '+5V', 'SIG']),
     'J8': ('BUZZ', ['+', '-']),
     'J9': ('PRZYC.', ['IO2', 'GND']),
+    'J10': ('BOOT', ['RST', 'GND', 'IO9']),
     'J7': ('OLED SH1106', ['VCC', 'GND', 'SCK', 'SDA']),
     'J6': ('MAX7219', ['VCC', 'GND', 'DIN', 'CS', 'CLK']),
 }
@@ -143,22 +149,26 @@ DEVKIT = {
 # oznaczenie + wartość na opisie: ref -> (tekst, dx, dy, wyrównanie, obrót) względem środka elementu.
 # Własne oznaczenie elementu (pole Reference) jest ukrywane, żeby napisy się nie dublowały.
 VALUES = {
-    'R1': ('R1 1k', -1.6, 0, 'right', 0), 'D1': ('D1 PWR', 2.1, -2.9, 'right', 0),
+    'R1': ('R1 1k', -1.6, 0, 'right', 0), 'D1': ('D1 PWR', 0, 2.3, 'center', 0),
     'C1': ('C1 470uF 16V', 1.75, 5.4, 'center', 0), 'C2': ('C2 100nF', 1.9, 0, 'center', 90),
-    'F1': ('F1 1,5A', -3.4, 0, 'right', 0),
+    'U2': ('U2 AP22804', 1.0, 2.3, 'center', 0), 'C16': ('C16 1uF', 1.9, 0, 'center', 90),
     'R16': ('R16 5k1', 0, -1.6, 'center', 0), 'R17': ('R17 5k1', 0, -1.6, 'center', 0), 'D3': ('D3 TVS', -2.2, 0, 'center', 90),
+    'D4': ('D4 5V->DevKit', 0, 1.7, 'center', 0), 'R18': ('R18 1k', 0, 1.6, 'center', 0), 'R19': ('R19 10k', 0, 1.6, 'center', 0),
+    'R20': ('R20 100k', 0, -1.6, 'center', 0), 'R21': ('R21 47k', 0, 1.6, 'center', 0), 'C13': ('C13 100n', 0, 1.6, 'center', 0),
+    'R22': ('R22 100k', 2.0, 0, 'left', 0), 'R23': ('100k', -2.0, 0, 'right', 0),
+    'C14': ('100n', 0, -2.6, 'center', 0), 'C15': ('100n', 2.0, 0, 'left', 0), 'R24': ('R24 4k7 (opcja)', 0, -1.6, 'center', 0), 'R25': ('R25 4k7 (opcja)', 0, 1.6, 'center', 0),
     'C4': ('C4 220uF 10V', 1.25, 4.6, 'center', 0), 'FB1': ('FB1 0R', 0, 1.7, 'center', 0),
-    'C10': ('C10 100n', 0, 2.2, 'center', 0), 'R15': ('R15 10k', 0.2, -1.7, 'center', 0),
+    'C10': ('C10 100n', 0, 2.2, 'center', 0), 'R15': ('R15 10k', -0.5, 1.7, 'center', 0),
     'C11': ('C11 100nF', 0, 1.7, 'center', 0), 'C12': ('C12 100n opc.', 0, -1.7, 'center', 0), 'SW1': ('SW1 ON/STANDBY', 4.0, -1.6, 'left', 0),
     'C5': ('C5 100nF', 0, 1.6, 'center', 0),
     'Q2': ('Q2 3904', -0.7, 3.0, 'center', 0), 'R9': ('R9 1k', 0, -1.7, 'center', 0),
     'R10': ('R10 100k', 0.7, 2.1, 'center', 0), 'D2': ('D2 1N4148', -0.6, 2.3, 'left', 0),
     'C3': ('C3 100nF', 1.1, -2.6, 'right', 0),
-    'R2': ('R2 47k', 0, 1.7, 'center', 0), 'R3': ('R3 47k', 0, 1.7, 'center', 0),
+    'R2': ('R2 47k', 0, -1.7, 'center', 0), 'R3': ('R3 47k', -1.0, -1.7, 'center', 0),
     'R4': ('R4 47k', 1.6, 0, 'left', 0), 'R5': ('R5 47k', -1.6, 0, 'right', 0),
     'R6': ('R6 10k', 0, -2.6, 'center', 0), 'R7': ('R7 15k', 0, 2.5, 'center', 0),
-    'R8': ('R8 330', 1.6, 0, 'left', 0), 'U1': ('U1 74AHCT125', 7.6, 2.4, 'center', 0),
-    'J1': ('J1 USB-C 5V', -1.0, -6.4, 'center', 0),
+    'R8': ('R8 330', 1.6, 0, 'left', 0), 'U1': ('U1 74AHCT125', 0, 4.4, 'center', 0),
+    'J1': ('J1 USB-C 5V', -6.0, -6.4, 'center', 0),
     'R11': ('R11 10R', 0, 1.7, 'center', 0), 'C6': ('C6 100uF', 1.25, 4.4, 'center', 0),
     'C7': ('C7 100nF', 1.9, 0, 'center', 90),
     'R12': ('R12 100R', 0, -1.7, 'center', 0), 'R14': ('R14 100R', 0, -1.7, 'center', 0),
@@ -168,7 +178,7 @@ VALUES = {
 FREE_TEXT = [
     # (tekst, x, y, wysokość, obrót, warstwa)
     ('(GPIO2)  <- przycisk z boku', 6.6, 67.8, 0.8, 0, 'F', 'left'),
-    ('+5V', 59.5, 99.2, 0.8, 0, 'F'), ('GND', 63, 99.2, 0.8, 0, 'F'),
+    ('+5V', 49.5, 87.6, 0.8, 0, 'F'), ('GND', 46, 87.6, 0.8, 0, 'F'), ('SERVO 5V', 13, 27.8, 0.8, 0, 'F'),
     ('3V3', 12.6, 100, 0.8, 0, 'F'), ('TRIG', 12.9, 104, 0.8, 0, 'F'), ('ECHO', 50.9, 104, 0.8, 0, 'F', 'left'),
     ('DevKit od tylu  <- USB-C', 30, 90.2, 0.9, 0, 'F'),
     ('Radar ESP32-C6  v0.1  2026-10', 33, 126.4, 0.9, 0, 'F'),
@@ -221,7 +231,7 @@ def add_labels(board, fps):
     # polaryzacja: + przy kondensatorach elektrolitycznych, K przy katodach, 1 przy pinie 1 U1
     for ref in ('C1', 'C4', 'C6', 'C8'):
         x, y = pad_xy(fps[ref], 1)
-        add_text(board, '+', x - 2.6, y - 2.4, 1.2, 0, 'F')
+        add_text(board, '+', x - (3.6 if ref == 'C1' else 2.6), y - (1.4 if ref == 'C1' else 2.4), 1.2, 0, 'F')
     for ref in ('D1', 'D2'):
         x, y = pad_xy(fps[ref], 1)
         dx, dy = (0, 0)
@@ -353,6 +363,8 @@ def build():
                 pad.SetNet(netinfo[nm])
         fp.Reference().SetTextSize(pcbnew.VECTOR2I(mm(0.8), mm(0.8)))
         fp.Value().SetVisible(False)
+        if ref.startswith('TP'):
+            fp.Reference().SetVisible(False)
 
     for ref in FIXED:
         place_fixed(board, fps[ref], ref)
@@ -392,6 +404,20 @@ def build():
         for (x, y) in [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]:
             o.Append(mm(OX + x), mm(OY + y))
         board.Add(ka)
+    # pod anteną DevKita (koniec z pinem 1, x >= 57): bez miedzi na obu warstwach
+    ka = pcbnew.ZONE(board)
+    ka.SetIsRuleArea(True)
+    ka.SetDoNotAllowTracks(True)
+    ka.SetDoNotAllowVias(True)
+    ka.SetDoNotAllowPads(False)
+    ka.SetDoNotAllowFootprints(False)
+    ka.SetDoNotAllowZoneFills(True)
+    ka.SetLayerSet(pcbnew.LSET.AllCuMask())
+    o = ka.Outline()
+    o.NewOutline()
+    for (x, y) in [(57, 91), (W, 91), (W, 121), (57, 121)]:
+        o.Append(mm(OX + x), mm(OY + y))
+    board.Add(ka)
     add_labels(board, fps)
     add_dimensions(board)
     board.Save(PCB)
