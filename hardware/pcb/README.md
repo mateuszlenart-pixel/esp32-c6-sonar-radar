@@ -86,8 +86,7 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   przy złączu J5 (C4 przeniesiony z lewego pasa pod J5). R15 10 kΩ ciągnie sygnał serwa do masy,
   gdy GPIO10 jest nieustawione (reset, start). Buzzer: C11 100 nF na +5V przy sterowniku Q2/J8
   (przełączanie 2 kHz), dioda D2 już była; C12 100 nF równolegle do buzzera jest miejscem
-  opcjonalnym. Nie sprawdzone na sprzęcie. Rejon J5/J8 jest gęsty, więc opisy na silkscreenie
-  w górnej części płytki częściowo na siebie zachodzą (tylko ostrzeżenia DRC).
+  opcjonalnym. Nie sprawdzone na sprzęcie.
 - **Rendery i PDF:** `tools/export_docs.sh` (po `build_all.sh`).
 - **Do sprawdzenia przed zamówieniem:** gniazdo DC musi mieć bolec **2,5 mm** (wtyk EB2005
   5,5 × 2,5 mm), a footprint `BarrelJack_Horizontal` dobrać do konkretnego modelu (np. CUI PJ-002B);
