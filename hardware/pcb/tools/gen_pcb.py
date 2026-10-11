@@ -63,9 +63,9 @@ FIXED = {
     # lewy pas: kondensator serwa, przycisk ON/standby
     'C4': (21, 20.5, 0, 'F'), 'FB1': (23.5, 12.4, 0, 'F'), 'C10': (14.5, 19.5, 90, 'F'),
     'R15': (29.5, 5.0, 0, 'F'), 'C11': (44.5, 16, 0, 'F'), 'C12': (51, 16, 0, 'F'), 'SW1': (2.64, 68, 90, 'F'), 'C5': (7, 72, 0, 'F'),
-    # prawy pas: gniazdo DC (otwór na krawędzi), bezpiecznik, MOSFET, kondensatory, LED
-    'J1': (52.3, 66, 180, 'F'), 'D1': (63.5, 74, 90, 'F'), 'R1': (59.5, 73.6, 0, 'F'),
-    'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'F1': (57.25, 89, 0, 'F'), 'Q1': (63, 89, 90, 'F'),
+    # prawy pas: gniazdo USB-C zasilania (na krawędzi), CC, TVS, bezpiecznik, kondensatory, LED
+    'J1': (W - 3.1, 66, 90, 'F'), 'R16': (55.3, 67.6, 0, 'F'), 'R17': (55.3, 64.2, 0, 'F'), 'D3': (52.2, 72.4, 90, 'F'), 'D1': (63.5, 74, 90, 'F'), 'R1': (59.5, 73.6, 0, 'F'),
+    'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'F1': (57.25, 89, 0, 'F'),
     'TP1': (59.5, 97, 0, 'F'), 'TP3': (63, 97, 0, 'F'),
     # DevKit od tyłu (poziomo, USB po lewej w widoku od frontu)
     'J3': (55, 94, 90, 'B'), 'J2': (55, 117.3, 90, 'B'),
@@ -145,7 +145,8 @@ DEVKIT = {
 VALUES = {
     'R1': ('R1 1k', -1.6, 0, 'right', 0), 'D1': ('D1 PWR', 2.1, -2.9, 'right', 0),
     'C1': ('C1 470uF 16V', 1.75, 5.4, 'center', 0), 'C2': ('C2 100nF', 1.9, 0, 'center', 90),
-    'F1': ('F1 1,5A', -3.4, 0, 'right', 0), 'Q1': ('Q1 AO3401', 2.6, 2.8, 'right', 0),
+    'F1': ('F1 1,5A', -3.4, 0, 'right', 0),
+    'R16': ('R16 5k1', 0, -1.6, 'center', 0), 'R17': ('R17 5k1', 0, -1.6, 'center', 0), 'D3': ('D3 TVS', -2.2, 0, 'center', 90),
     'C4': ('C4 220uF 10V', 1.25, 4.6, 'center', 0), 'FB1': ('FB1 0R', 0, 1.7, 'center', 0),
     'C10': ('C10 100n', 0, 2.2, 'center', 0), 'R15': ('R15 10k', 0.2, -1.7, 'center', 0),
     'C11': ('C11 100nF', 0, 1.7, 'center', 0), 'C12': ('C12 100n opc.', 0, -1.7, 'center', 0), 'SW1': ('SW1 ON/STANDBY', 4.0, -1.6, 'left', 0),
@@ -157,7 +158,7 @@ VALUES = {
     'R4': ('R4 47k', 1.6, 0, 'left', 0), 'R5': ('R5 47k', -1.6, 0, 'right', 0),
     'R6': ('R6 10k', 0, -2.6, 'center', 0), 'R7': ('R7 15k', 0, 2.5, 'center', 0),
     'R8': ('R8 330', 1.6, 0, 'left', 0), 'U1': ('U1 74AHCT125', 7.6, 2.4, 'center', 0),
-    'J1': ('J1 DC 5V  (+) srodek', 6.2, -6.4, 'center', 0),
+    'J1': ('J1 USB-C 5V', -1.0, -6.4, 'center', 0),
     'R11': ('R11 10R', 0, 1.7, 'center', 0), 'C6': ('C6 100uF', 1.25, 4.4, 'center', 0),
     'C7': ('C7 100nF', 1.9, 0, 'center', 90),
     'R12': ('R12 100R', 0, -1.7, 'center', 0), 'R14': ('R14 100R', 0, -1.7, 'center', 0),
@@ -240,7 +241,7 @@ DIMS = [
     ('W3', (0, 13), (33 - 3.81, 13), -3, 'F', 'OLED: od lewej krawedzi do pinu 1 gniazda J7 (okno ekranu w obudowie)'),
     ('W4', (0, 55), (33 - 5.08, 55), -3, 'F', 'MAX7219: od lewej krawedzi do pinu 1 gniazda J6 (okno matrycy)'),
     ('W5', (42, 13), (42, 55), -3, 'F', 'odstep gniazd OLED-MAX7219 (pion), zgodny z oknami w obudowie'),
-    ('W6', (W, 0), (W, 66), -5, 'F', 'gniazdo DC: od gornej krawedzi do osi wtyku (otwor w scianie obudowy)'),
+    ('W6', (W, 0), (W, 66), -5, 'F', 'gniazdo USB-C zasilania: od gornej krawedzi do osi wtyku (otwor w scianie obudowy)'),
     ('W7', (0, 0), (0, 65.75), 4, 'F', 'przycisk boczny: od gornej krawedzi do osi popychacza (otwor w scianie)'),
     ('W8', (3.5, 32), (W - 3.5, 32), 4, 'F', 'otwory montazowe M3: rozstaw w poziomie'),
     ('W9', (3.5, 32), (3.5, 88), -4, 'F', 'otwory montazowe M3: rozstaw w pionie'),
@@ -316,7 +317,14 @@ def build():
     power.SetViaDiameter(mm(0.9))
     power.SetViaDrill(mm(0.45))
     ns.SetNetclass('Power', power)
-    for pat in ('+5V', 'GND', 'VIN', 'VIN_F', '+3V3', 'SR04_VCC', 'SERVO_5V'):
+    vin = pcbnew.NETCLASS('Vin')
+    vin.SetClearance(mm(0.2))
+    vin.SetTrackWidth(mm(0.5))
+    vin.SetViaDiameter(mm(0.8))
+    vin.SetViaDrill(mm(0.4))
+    ns.SetNetclass('Vin', vin)
+    ns.SetNetclassPatternAssignment('VIN', 'Vin')
+    for pat in ('+5V', 'GND', '+3V3', 'SR04_VCC', 'SERVO_5V'):
         ns.SetNetclassPatternAssignment(pat, 'Power')
 
     # --- sieci

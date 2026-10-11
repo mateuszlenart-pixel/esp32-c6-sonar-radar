@@ -26,11 +26,16 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 
 1. **ESP32-C6-DevKitC-1 w gniazdach żeńskich** (decyzja użytkownika z 2026-10-09).
    Rozstaw rzędów do potwierdzenia na posiadanej płytce przed layoutem.
-2. **Zasilanie wejściowe:** gniazdo DC 5,5 × 2,5 mm na płytce (pasuje do wtyku EB2005),
-   zabezpieczenie przed odwrotną polaryzacją (dioda Schottky lub P-MOSFET) i bezpiecznik
-   polimerowy. Wejście 5 V zasila serwo, HC-SR04, MAX7219 i bufor. ESP32 nadal z USB-C.
-3. **Nie łączymy 5 V płytki z pinem 5V DevKita** (jak w prototypie); zasilanie ESP32 z
-   płytki tylko jeśli świadomie to wybierzemy (do decyzji).
+2. **Zasilanie wejściowe (zmiana 2026-10-11):** gniazdo **USB-C tylko do zasilania** (GCT USB4105,
+   montaż maszynowy) zamiast gniazda DC. Rezystory 5,1 kΩ na CC1/CC2 (R16, R17) są konieczne, żeby
+   ładowarka z kablem USB-C ↔ USB-C podała 5 V. Ochrona: TVS 5 V (D3, SMAJ5.0CA) i bezpiecznik
+   polimerowy F1 1,5 A; zabezpieczenie przed odwrotną polaryzacją (Q1) usunięte, bo USB-C nie da się
+   podłączyć odwrotnie. Linie danych USB (D+/D−, SBU) niepodłączone. Wejście 5 V zasila serwo, HC-SR04,
+   MAX7219, bufor i ESP32. Wymagana ładowarka ≥ 5 V / 1,5 A (szczyt poboru około 1–1,3 A); port USB
+   komputera (500 mA) może nie wystarczyć.
+3. **Pin 5V DevKita (J2 pin 14) jest połączony z +5V płytki.** DevKit ma diodę Schottky
+   (1N5819, D1 na schemacie Espressif v1.4) między VBUS własnego USB-C a szyną 5 V, więc USB do
+   programowania nie cofa napięcia do płytki, a oba zasilania mogą być wpięte jednocześnie.
 4. **Moduły na złączach 2,54 mm** (gniazda żeńskie na PCB): OLED 1×4, MAX7219 1×5,
    HC-SR04 1×4, serwo 1×3. HC-SR04 i serwo na kablach, bo siedzą na obracanej głowicy.
 5. **Bufor SN74AHCT125 w SMD (SOIC-14) lub DIP-14** (do decyzji), wszystkie 4 kanały użyte
@@ -55,7 +60,7 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 - **Płytka (szkic automatyczny, 2026-10-10):** `radar-pcb.kicad_pcb`, 66 × 128 mm, dwie warstwy,
   generowana skryptem `tools/gen_pcb.py` z netlisty schematu. Układ (widok od frontu): u góry
   złącza kabli do głowicy (sonar, serwo, buzzer, przycisk zewnętrzny), pod nimi gniazda OLED i
-  MAX7219 (moduły wtykane od frontu), od tyłu poziomo DevKit (USB po lewej), gniazdo DC na
+  MAX7219 (moduły wtykane od frontu), od tyłu poziomo DevKit (USB po lewej), gniazdo USB-C zasilania na
   prawej krawędzi, bufor AHCT w podstawce między rzędami DevKita. Trasowanie: Freerouting 2.5.0
   (jar + Temurin JRE 25, pobrane do `~/tools`, sumy kontrolne zweryfikowane), potem wylewki GND.
 - **Stan DRC (2026-10-10, po poprawkach):** `kicad-cli pcb drc --schematic-parity`: **0 błędów,
@@ -67,7 +72,7 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   serwo, buzzer, przycisk, OLED, MAX7219), od tyłu opis wszystkich 32 pinów DevKita z kierunkiem
   USB-C, przy elementach oznaczenie z wartością (np. „R6 10k”, „C1 470uF 16V”), polaryzacja
   („+” przy elektrolitach, „K” przy katodach diod, „1” przy pinie 1 bufora), opisy punktów
-  testowych, gniazda DC i przycisku ON/STANDBY. DRC: 0 błędów, 6 ostrzeżeń o opisach.
+  testowych, gniazda USB-C i przycisku ON/STANDBY. DRC: 0 błędów, 6 ostrzeżeń o opisach.
 - **Przycisk ON/STANDBY:** kątowy (C&K PTS645VL58-2LFS, footprint `SW_Tactile_SPST_Angled_PTS645Vx58-2LFS`)
   na lewej krawędzi; popychacz wystaje ok. 3,3 mm poza płytkę, w osi 65,75 mm od górnej krawędzi
   (otwór w ściance obudowy). Złącze J9 zostaje na ewentualny przycisk panelowy.
@@ -88,9 +93,9 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   (przełączanie 2 kHz), dioda D2 już była; C12 100 nF równolegle do buzzera jest miejscem
   opcjonalnym. Nie sprawdzone na sprzęcie.
 - **Rendery i PDF:** `tools/export_docs.sh` (po `build_all.sh`).
-- **Do sprawdzenia przed zamówieniem:** gniazdo DC musi mieć bolec **2,5 mm** (wtyk EB2005
-  5,5 × 2,5 mm), a footprint `BarrelJack_Horizontal` dobrać do konkretnego modelu (np. CUI PJ-002B);
-  rozstaw rzędów DevKita (założone 23,3 mm) i położenie gniazd modułów po pomiarach.
+- **Do sprawdzenia przed zamówieniem:** gniazdo USB-C GCT USB4105-xx-A (footprint z biblioteki KiCad) – potwierdzić
+  dostępność u wykonawcy montażu; dopuszczalny odstęp 0,19 mm pól GND od otworów pozycjonujących jest
+  z zaleceń producenta (ustawione w `.kicad_pro`); rozstaw rzędów DevKita (założone 23,3 mm) i położenie gniazd modułów po pomiarach.
 - **Obrys 66 × 128 mm i położenie elementów to propozycja** do zatwierdzenia po zmierzeniu
   modułów i DevKita (rozstaw rzędów DevKita założony 23,3 mm między środkami pinów).
 - **Odtworzenie całości jednym poleceniem** (z katalogu repo): `hardware/pcb/tools/build_all.sh`

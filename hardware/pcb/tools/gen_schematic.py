@@ -122,12 +122,17 @@ SKT = 'Connector_PinSocket_2.54mm:PinSocket_1x%02d_P2.54mm_Vertical'
 TP = 'TestPoint:TestPoint_Pad_D1.5mm'
 
 # ------------------------------------------------------------------ zasilanie
-text(30, 30, 'ZASILANIE 5 V: gniazdo DC 5,5x2,5 mm, bezpiecznik, ochrona przed odwrotna polaryzacja (P-MOSFET)')
-place('J1', 'Connector', 'Barrel_Jack', 'DC 5,5x2,5 mm (+ w srodku)', 'Connector_BarrelJack:BarrelJack_Horizontal',
-      40, 60, {'1': 'VIN', '2': 'GND'})
-place('F1', 'Device', 'Polyfuse', 'Polyfuse 1,5 A', 'Fuse:Fuse_1812_4532Metric', 75, 60, {'1': 'VIN', '2': 'VIN_F'})
-place('Q1', 'Transistor_FET', 'AO3401A', 'AO3401A (P-MOSFET)', 'Package_TO_SOT_SMD:SOT-23', 115, 60,
-      {'1': 'GND', '2': '+5V', '3': 'VIN_F'})
+text(30, 30, 'ZASILANIE 5 V: gniazdo USB-C (tylko zasilanie, rezystory CC 5,1 k), TVS, bezpiecznik')
+place('J1', 'Connector', 'USB_C_Receptacle_USB2.0_16P', 'USB-C zasilanie 5 V (GCT USB4105)',
+      'Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal', 40, 60,
+      {'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', 'SH': 'GND',
+       'A4': 'VIN', 'A9': 'VIN', 'B4': 'VIN', 'B9': 'VIN', 'A5': 'CC1', 'B5': 'CC2'},
+      nc=['A6', 'A7', 'A8', 'B6', 'B7', 'B8'])
+place('R16', 'Device', 'R', '5,1 k', R, 60, 85, {'1': 'CC1', '2': 'GND'})
+place('R17', 'Device', 'R', '5,1 k', R, 80, 85, {'1': 'CC2', '2': 'GND'})
+place('D3', 'Device', 'D_TVS', 'SMAJ5.0CA (TVS 5 V)', 'Diode_SMD:D_SMA', 100, 85, {'1': 'VIN', '2': 'GND'})
+place('F1', 'Device', 'Polyfuse', 'Polyfuse 1,5 A', 'Fuse:Fuse_1812_4532Metric', 75, 60, {'1': 'VIN', '2': '+5V'})
+flag(115, 50, 'VIN', '#FLG04')
 place('C1', 'Device', 'C_Polarized', '470 uF / 16 V', CP8, 150, 60, {'1': '+5V', '2': 'GND'})
 place('C2', 'Device', 'C', '100 nF', C, 175, 60, {'1': '+5V', '2': 'GND'})
 place('R1', 'Device', 'R', '1 k', R, 200, 60, {'1': '+5V', '2': 'LED_A'})
@@ -155,10 +160,10 @@ place('R6', 'Device', 'R', '10 k', R, 270, 175, {'1': 'ECHO_5V', '2': 'ECHO_3V3'
 place('R7', 'Device', 'R', '15 k', R, 300, 175, {'1': 'ECHO_3V3', '2': 'GND'})
 
 # ------------------------------------------------------------------ ESP32 DevKitC-1
-text(30, 226, 'ESP32-C6-DevKitC-1 (gniazda zenskie 1x16, J1 i J3 DevKita). Pin 5V DevKita NIE jest podlaczony.')
+text(30, 226, 'ESP32-C6-DevKitC-1 (gniazda zenskie 1x16, J1 i J3 DevKita). Pin 5V DevKita (J2 pin 14) jest polaczony z +5V (DevKit ma diode Schottky od USB).')
 place('J2', 'Connector_Generic', 'Conn_01x16', 'DevKit J1', SKT % 16, 40, 262,
-      {'1': '+3V3', '5': 'ECHO_3V3', '6': 'DIN_3V3', '10': 'SERVO_3V3', '11': 'TRIG_3V3', '12': 'BTN', '15': 'GND'},
-      nc=['2', '3', '4', '7', '8', '9', '13', '14', '16'])
+      {'1': '+3V3', '5': 'ECHO_3V3', '6': 'DIN_3V3', '10': 'SERVO_3V3', '11': 'TRIG_3V3', '12': 'BTN', '14': '+5V', '15': 'GND'},
+      nc=['2', '3', '4', '7', '8', '9', '13', '16'])
 place('J3', 'Connector_Generic', 'Conn_01x16', 'DevKit J3', SKT % 16, 120, 262,
       {'1': 'GND', '6': 'BUZ_CTRL', '7': 'SCL', '8': 'SDA', '9': 'CS_3V3', '10': 'CLK_3V3', '12': 'GND', '15': 'GND'},
       nc=['2', '3', '4', '5', '11', '13', '14', '16'])

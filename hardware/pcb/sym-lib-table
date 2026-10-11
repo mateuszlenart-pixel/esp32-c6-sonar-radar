@@ -6,6 +6,5 @@
   (lib (name "Device")(type "KiCad")(uri "${KICAD10_SYMBOL_DIR}/Device.kicad_sym")(options "")(descr ""))
   (lib (name "Switch")(type "KiCad")(uri "${KICAD10_SYMBOL_DIR}/Switch.kicad_sym")(options "")(descr ""))
   (lib (name "Transistor_BJT")(type "KiCad")(uri "${KICAD10_SYMBOL_DIR}/Transistor_BJT.kicad_sym")(options "")(descr ""))
-  (lib (name "Transistor_FET")(type "KiCad")(uri "${KICAD10_SYMBOL_DIR}/Transistor_FET.kicad_sym")(options "")(descr ""))
   (lib (name "power")(type "KiCad")(uri "${KICAD10_SYMBOL_DIR}/power.kicad_sym")(options "")(descr ""))
 )

@@ -47,7 +47,7 @@ wymiar potrzebny do obrysu/obudowy, **E** = potrzebny do schematu/elektroniki.
 - [ ] W średnica i wysokość, rozstaw nóżek
 
 ## 8. Zasilanie i złącza
-- [ ] W gniazdo DC / złącze śrubowe: wymiary korpusu, rozstaw pinów, odległość otworu od krawędzi
+- [ ] W gniazdo USB-C zasilania (po zmianie z DC; dotyczy też obudowy): wymiary korpusu, rozstaw pinów, odległość otworu od krawędzi
 - [ ] W wtyk zasilacza EB2005 (kabel, wtyk 5,5×2,5): długość wtyku, średnica kabla (przejście w obudowie)
 - [ ] E jeśli będzie bezpiecznik/szybkozłącze: ich wymiary
 

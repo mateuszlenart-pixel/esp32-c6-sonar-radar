@@ -27,4 +27,4 @@ Uwagi:
   schemacie). Wcześniejsze stwierdzenie „po jednym GND na listwę” było błędne.
 - GPIO12/13 to linie USB (natywne USB-C), nie używać. GPIO4/5/8/9/15 to piny strapping.
 - Pin 5V (J1 pin 14) leży obok GND (pin 15): przy kablach łatwo je pomylić. Na PCB pin 5V DevKita
-  jest celowo niepodłączony.
+  jest połączony z +5V płytki (zasilanie z USB-C płytki); DevKit ma diodę Schottky od własnego USB.
