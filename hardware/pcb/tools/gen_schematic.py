@@ -133,7 +133,7 @@ place('R17', 'Device', 'R', '5,1 k', R, 80, 85, {'1': 'CC2', '2': 'GND'})
 place('D3', 'Device', 'D_Zener', 'SMAJ5.0A (TVS 5 V, jednokierunkowy)', 'Diode_SMD:D_SMA', 100, 85, {'1': 'VIN', '2': 'GND'})
 # przelacznik obciazenia z miekkim startem i ogranicznikiem pradu (zamiast polyfuse): AP22804AW5 (EN aktywny wysokim)
 place('U2', 'Power_Management', 'AP22804AW5', 'AP22804AW5 (przelacznik 5 V, limit ok. 2,5-3 A)',
-      'Package_TO_SOT_SMD:SOT-23-5', 75, 60, {'5': 'VIN', '4': 'VIN', '2': 'GND', '1': '+5V'}, nc=['3'])
+      'Package_TO_SOT_SMD:SOT-23-5', 75, 60, {'5': 'VIN', '4': 'VIN', '2': 'GND', '1': '+5V', '3': 'U2_FLG'})
 place('C16', 'Device', 'C', '1 uF', C, 95, 60, {'1': 'VIN', '2': 'GND'})
 flag(115, 50, 'VIN', '#FLG04')
 place('C1', 'Device', 'C_Polarized', '470 uF / 16 V', CP8, 150, 60, {'1': '+5V', '2': 'GND'})
@@ -168,8 +168,8 @@ place('J2', 'Connector_Generic', 'Conn_01x16', 'DevKit J1', SKT % 16, 40, 262,
       {'1': '+3V3', '5': 'ECHO_3V3', '6': 'DIN_3V3', '10': 'SERVO_3V3', '11': 'TRIG_3V3', '12': 'BTN_ESP', '14': 'DEVKIT_5V', '15': 'GND', '7': 'V5_SENSE', '8': 'CC1_SENSE', '13': 'CC2_SENSE', '2': 'EN'},
       nc=['3', '4', '9', '16'])
 place('J3', 'Connector_Generic', 'Conn_01x16', 'DevKit J3', SKT % 16, 120, 262,
-      {'1': 'GND', '6': 'BUZ_CTRL', '7': 'SCL', '8': 'SDA', '9': 'CS_3V3', '10': 'CLK_3V3', '12': 'GND', '15': 'GND', '11': 'BOOT'},
-      nc=['2', '3', '4', '5', '13', '14', '16'])
+      {'1': 'GND', '6': 'BUZ_CTRL', '7': 'SCL', '8': 'SDA', '9': 'CS_3V3', '10': 'CLK_3V3', '12': 'GND', '15': 'GND', '11': 'BOOT', '5': 'U2_FLG'},
+      nc=['2', '3', '4', '13', '14', '16'])
 
 # ------------------------------------------------------------------ moduly i zlacza
 text(330, 30, 'MODULY I ZLACZA')
@@ -230,8 +230,9 @@ place('R22', 'Device', 'R', '100 k', R, 130, 320, {'1': 'CC1', '2': 'CC1_SENSE'}
 place('C14', 'Device', 'C', '100 nF', C, 150, 320, {'1': 'CC1_SENSE', '2': 'GND'})
 place('R23', 'Device', 'R', '100 k', R, 170, 320, {'1': 'CC2', '2': 'CC2_SENSE'})
 place('C15', 'Device', 'C', '100 nF', C, 190, 320, {'1': 'CC2_SENSE', '2': 'GND'})
-place('J10', 'Connector_Generic', 'Conn_01x03', 'Awaryjne wgrywanie: RST GND BOOT (zwarcie sasiednich)', HDR % 3, 220, 320,
-      {'1': 'EN', '2': 'GND', '3': 'BOOT'})
+place('R26', 'Device', 'R', '10 k', R, 310, 320, {'1': 'U2_FLG', '2': '+3V3'})
+place('J10', 'Connector_Generic', 'Conn_01x03', 'Awaryjne wgrywanie: BOOT GND RST (zworka na sasiednie piny)', HDR % 3, 220, 320,
+      {'1': 'BOOT', '2': 'GND', '3': 'EN'})
 place('R24', 'Device', 'R', '4,7 k (nie montowac)', R, 250, 320, {'1': 'SCL', '2': '+3V3'})
 place('R25', 'Device', 'R', '4,7 k (nie montowac)', R, 270, 320, {'1': 'SDA', '2': '+3V3'})
 place('TP6', 'Connector', 'TestPoint', 'TP SERVO_5V', TP, 290, 320, {'1': 'SERVO_5V'}, show_value=False, in_bom=False)

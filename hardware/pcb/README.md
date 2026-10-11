@@ -30,7 +30,7 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
    montaż maszynowy) zamiast gniazda DC. Rezystory 5,1 kΩ na CC1/CC2 (R16, R17) są konieczne, żeby
    ładowarka z kablem USB-C ↔ USB-C podała 5 V. Ochrona: TVS 5 V (D3, SMAJ5.0A, jednokierunkowy) na wejściu oraz przełącznik obciążenia z miękkim startem
    i ogranicznikiem prądu U2 (AP22804AW5, EN aktywny wysokim, EN połączone z VIN, RDS(on) 65 mΩ) zamiast
-   bezpiecznika polimerowego (mniejszy spadek napięcia, łagodne ładowanie ok. 900 µF kondensatorów); zabezpieczenie przed odwrotną polaryzacją (Q1) usunięte, bo USB-C nie da się
+   bezpiecznika polimerowego (mniejszy spadek napięcia, miękki start i ograniczenie prądu przy ładowaniu ok. 900 µF; patrz uwagi do weryfikacji niżej); zabezpieczenie przed odwrotną polaryzacją (Q1) usunięte, bo USB-C nie da się
    podłączyć odwrotnie. Linie danych USB (D+/D−, SBU) niepodłączone. Wejście 5 V zasila serwo, HC-SR04,
    MAX7219, bufor i ESP32. Wymagana ładowarka ≥ 5 V / 1,5 A (szczyt poboru około 1–1,3 A); port USB
    komputera (500 mA) może nie wystarczyć.
@@ -109,9 +109,30 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   Pomiary CC1 i CC2 przez ADC (R22/R23 100 kΩ, C14/C15 100 nF → IO1 i IO3) są wdrożone; elementy stoją
   tuż przy pinach 8 i 13 DevKita między rzędami (wcześniejsze ustawienie przy złączu USB-C nie dawało
   się poprowadzić).
+- **Drugi audyt (2026-10-11), wdrożone:** U2 i C16 stoją tuż przy gnieździe USB-C (VIN jest krótki,
+  dalej idzie `+5V` ścieżką 0,6–0,8 mm; wcześniej VIN miał ok. 41 mm i spadek napięcia nie malał); LED
+  zasilania (D1, R1) przeniesiona niżej; złącze J10 stoi między rzędami DevKita blisko pinów RST (J1 pin 2)
+  i GPIO9 (J3 pin 11), więc linie EN i BOOT są krótkie (wcześniej 63 i 21 mm); FLG z U2 prowadzi do GPIO23
+  (J3 pin 5, pull-up R26 10 kΩ do 3,3 V; niski = przeciążenie), firmware do dopisania.
+  **J10:** kolejność BOOT, GND, RST. Wgrywanie awaryjne: zworka na BOOT–GND, odłączyć i podłączyć
+  zasilanie, wgrać firmware, zdjąć zworkę i zrobić reset (zworka na GND–RST na chwilę). Jedna zworka
+  obejmuje tylko jedną parę pinów naraz.
+  **Otwór H4** (62,5; 124) leży ok. 8 mm od anteny; zalecane nylonowe śruby i tuleje (metal przy
+  antenie obniża zasięg). Położenie otworów jest częścią kontraktu mechanicznego i nie zostało zmienione.
+  **Uwagi dla firmware:** odczyt CC1/CC2 (GPIO1, GPIO3) dopiero po kilku sekundach od podłączenia
+  (ładowarki PD wysyłają komunikaty po CC), mediana z kilku próbek, wewnętrzne pull-upy na tych pinach
+  wyłączone. GPIO0 i GPIO1 to też piny kwarcu 32 kHz; na schemacie DevKitC-1 v1.4 kwarcu nie ma
+  (sprawdzone wyszukiwaniem w tekście schematu), więc nie koliduje.
+  **Przepięcie (świadomie bez zmiany):** TVS SMAJ5.0A ogranicza impulsy, ale przy trwałym nadnapięciu
+  z wadliwej ładowarki (np. 9 V) spali się, a AP22804 nie ma ochrony nadnapięciowej. Zgodna ładowarka
+  przy rezystorach 5,1 kΩ na CC nie poda więcej niż 5 V, więc ryzyko jest szczątkowe. Zamiana na eFuse
+  z OVP (rodzina TI TPS2595x) wymaga potwierdzenia dostępności, footprintu i karty katalogowej, a
+  symbolu nie ma w bibliotece KiCada. Opcja na kolejną rewizję.
   **Do sprawdzenia przed zamówieniem:** wariant AP22804**A**W5 (EN aktywny wysokim; potwierdzone
-  wyszukiwaniem w sieci, nie w pełnym datasheecie Diodes); limit prądu 2,5–3 A jest wyższy niż
-  1,5 A ładowarek USB-C: chroni przed zwarciem, ale ładowarka ma własne zabezpieczenie.
+  wyszukiwaniem w sieci, nie w pełnym datasheecie Diodes); dopuszczalna pojemność wyjściowa i
+  zachowanie przy przegrzaniu (za U2 jest ok. 900 µF, start trwa ok. 2 ms w limicie prądu 2,5–3 A);
+  start z pełną pojemnością i ładowarką 1,5 A na prototypie. Limit prądu U2 jest wyższy niż 1,5 A
+  ładowarek USB-C: chroni przed zwarciem, ale ładowarka ma własne zabezpieczenie.
 - **Rendery i PDF:** `tools/export_docs.sh` (po `build_all.sh`).
 - **Do sprawdzenia przed zamówieniem:** gniazdo USB-C GCT USB4105-xx-A (footprint z biblioteki KiCad) – potwierdzić
   dostępność u wykonawcy montażu; dopuszczalny odstęp 0,19 mm pól GND od otworów pozycjonujących jest
