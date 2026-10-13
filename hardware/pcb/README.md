@@ -65,8 +65,8 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 - **Płytka (szkic automatyczny, 2026-10-10):** `radar-pcb.kicad_pcb`, 66 × 128 mm, dwie warstwy,
   generowana skryptem `tools/gen_pcb.py` z netlisty schematu. Układ (widok od frontu): u góry
   złącza kabli do głowicy (sonar, serwo, buzzer, przycisk zewnętrzny), pod nimi gniazda OLED i
-  MAX7219 (moduły wtykane od frontu), od tyłu poziomo DevKit (USB po lewej), gniazdo USB-C zasilania na
-  prawej krawędzi, bufor AHCT (SOIC) między rzędami DevKita. Trasowanie: Freerouting 2.5.0
+  MAX7219 (moduły wtykane od frontu), od tyłu poziomo DevKit (USB po lewej), gniazdo USB-C zasilania i przycisk
+  ON/STANDBY na lewej krawędzi między rzędami pinów DevKita, bufor AHCT (SOIC) między rzędami DevKita. Trasowanie: Freerouting 2.5.0
   (jar + Temurin JRE 25, pobrane do `~/tools`, sumy kontrolne zweryfikowane), potem wylewki GND.
 - **Stan DRC (2026-10-11, po audycie):** `kicad-cli pcb drc --schematic-parity`: **0 naruszeń
   (także silkscreen), 0 niepołączonych, 0 niezgodności ze schematem**. Freerouting: 0 nietrasowanych.
@@ -109,6 +109,24 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   Pomiary CC1 i CC2 przez ADC (R22/R23 100 kΩ, C14/C15 100 nF → IO1 i IO3) są wdrożone; elementy stoją
   tuż przy pinach 8 i 13 DevKita między rzędami (wcześniejsze ustawienie przy złączu USB-C nie dawało
   się poprowadzić).
+- **Układ lewej krawędzi (2026-10-13, decyzja użytkownika):** oba gniazda USB-C (zasilania na froncie, programowania
+  DevKita od tyłu) są po lewej stronie; gniazdo zasilania ma oś 100 mm od górnej krawędzi (W6), przycisk
+  ON/STANDBY 113 mm (W7), oba między rzędami pinów DevKita (94–117 mm), czyli nisko na płytce. Na prawej
+  krawędzi, w strefie anteny DevKita, nie ma już metalu ani miedzi. Przeniesiono za gniazdem: R16/R17 (CC),
+  D3 (TVS), U2, C16, LED zasilania (D1/R1, wyżej po lewej), R18/R19/C5 (przycisk), punkty TP2/TP4 i dzielnik
+  R20/R21/C13 (na dole). Na obudowie opisać, które gniazdo jest zasilające, a które do programowania.
+  **Uwaga:** W6 i W7 są do zatwierdzenia po obejrzeniu PDF; DRC i trasowanie przechodzą (0 naruszeń).
+  Generator usuwa ślepe przelotki po imporcie wyniku Freeroutingu (Freerouting zgłasza 3 nietrasowane
+  połączenia, a KiCad po imporcie ma 0 niepołączonych; sprawdzone przez DRC).
+- **DevKit (zmierzone 2026-10-13):** laminat 52,0 × 25,4 mm, z anteną 58,5 × 25,4 mm; od pinu 1 do końca
+  płytki od strony anteny oraz od pinu 16 do końca od strony USB po ok. 7 mm (zgadza się z (52,0 − 38,1)/2 ≈ 6,95).
+  Przy pinie 1 na x = 55 mm laminat sięga x ≈ 62, a antena modułu ok. 68,5 mm, czyli ok. 2,5 mm poza prawą
+  krawędź płytki. Strefa bez miedzi (x ≥ 57, y 91–121) obejmuje antenę z zapasem, więc **nie zmienia się**.
+  Koniec USB DevKita leży przy x ≈ 10 mm, ok. 10 mm od lewej krawędzi płytki.
+- **Moduły (zmierzone 2026-10-13):** OLED SH1106 33,5 × 35,5 mm, piny 13,5 mm od krawędzi do osi pierwszego i
+  ostatniego, kolejność VCC, GND, SCK, SDA od strony wyświetlacza; MAX7219 32 × 39 mm, piny 11 mm od krawędzi,
+  piny wystają poza obrys na wymiarze 39 mm po ok. 6 mm na stronę; HC-SR04 VCC/TRIG/ECHO/GND i serwo SG90
+  3-pin 2,54 mm potwierdzone. Gniazda J7 (OLED) i J6 (MAX7219) są wyśrodkowane na x = 33 mm, co zgadza się z pomiarami.
 - **Drugi audyt (2026-10-11), wdrożone:** U2 i C16 stoją tuż przy gnieździe USB-C (VIN jest krótki,
   dalej idzie `+5V` ścieżką 0,6–0,8 mm; wcześniej VIN miał ok. 41 mm i spadek napięcia nie malał); LED
   zasilania (D1, R1) przeniesiona niżej; złącze J10 stoi między rzędami DevKita blisko pinów RST (J1 pin 2)
@@ -136,9 +154,11 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 - **Rendery i PDF:** `tools/export_docs.sh` (po `build_all.sh`).
 - **Do sprawdzenia przed zamówieniem:** gniazdo USB-C GCT USB4105-xx-A (footprint z biblioteki KiCad) – potwierdzić
   dostępność u wykonawcy montażu; dopuszczalny odstęp 0,19 mm pól GND od otworów pozycjonujących jest
-  z zaleceń producenta (ustawione w `.kicad_pro`); rozstaw rzędów DevKita (założone 23,3 mm) i położenie gniazd modułów po pomiarach.
+  z zaleceń producenta (ustawione w `.kicad_pro`); położenie gniazd modułów po pomiarach (rozstaw rzędów DevKita zmierzony: 23,1 mm).
 - **Obrys 66 × 128 mm i położenie elementów to propozycja** do zatwierdzenia po zmierzeniu
-  modułów i DevKita (rozstaw rzędów DevKita założony 23,3 mm między środkami pinów).
+  modułów i DevKita. **Zmierzone 2026-10-13 (suwmiarka 0,05 mm):** rozstaw rzędów DevKita 23,1 mm (W10;
+  wcześniej zakładane 23,3), długość listwy 38,1 mm (W11), pin 1 11,0 mm od prawej krawędzi (W12), odstęp
+  gniazd OLED–MAX7219 42,0 mm (W5). Otwory M3: H1–H4 tworzą prostokąt 59 × 92 mm, x = 3,5 i 62,5, y = 32 i 124.
 - **Odtworzenie całości jednym poleceniem** (z katalogu repo): `hardware/pcb/tools/build_all.sh`
   (schemat, ERC, netlista, rozmieszczenie, Freerouting, wylewki GND, DRC; ok. 1,5 min).
 - **Następne:** poprawić rozmieszczenie i trasowanie do DRC bez błędów, przegląd użytkownika w

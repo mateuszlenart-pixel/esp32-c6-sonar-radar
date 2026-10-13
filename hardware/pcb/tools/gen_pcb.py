@@ -53,6 +53,7 @@ def load_fp(libname):
 # Pozycje wszystkich elementów: ref -> (x, y, obrót, strona); obrót CCW na ekranie, y w dół,
 # widok od frontu płytki. Moduły OLED i MAX7219 wtykane od frontu zajmują x 15-51 (pod nimi
 # tylko niskie elementy SMD), DevKit od tyłu zajmuje pas y 92-120.
+ROW_SPACING = 23.1   # zmierzony rozstaw rzędów pinów DevKita (2026-10-13)
 FIXED = {
     # góra: złącza kabli do głowicy (sonar, serwo), buzzer, przycisk zewnętrzny
     'J4': (6, 4, 90, 'F'), 'J5': (20, 4, 90, 'F'), 'J8': (34, 4, 90, 'F'), 'J9': (42, 4, 90, 'F'),
@@ -62,32 +63,32 @@ FIXED = {
     'J7': (33 - 3.81, 13, 90, 'F'), 'J6': (33 - 5.08, 55, 90, 'F'),
     # lewy pas: kondensator serwa, przycisk ON/standby
     'C4': (21, 20.5, 0, 'F'), 'FB1': (23.5, 12.4, 0, 'F'), 'C10': (14.5, 19.5, 90, 'F'),
-    'R15': (29.2, 7.0, 0, 'F'), 'C11': (44.5, 16, 0, 'F'), 'C12': (51, 16, 0, 'F'), 'SW1': (2.64, 68, 90, 'F'), 'C5': (7, 72, 0, 'F'),
+    'R15': (29.2, 7.0, 0, 'F'), 'C11': (44.5, 16, 0, 'F'), 'C12': (51, 16, 0, 'F'), 'SW1': (2.64, 115.25, 90, 'F'), 'C5': (10.2, 115.8, 0, 'F'),
     # prawy pas: gniazdo USB-C zasilania (na krawędzi), CC, TVS, bezpiecznik, kondensatory, LED
-    'J1': (W - 3.1, 66, 90, 'F'), 'R16': (55.3, 67.6, 0, 'F'), 'R17': (55.3, 64.2, 0, 'F'), 'D3': (51.2, 72.4, 90, 'F'), 'D1': (63.5, 89, 90, 'F'), 'R1': (59.0, 89.2, 0, 'F'),
-    'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'U2': (57.8, 73.6, 0, 'F'), 'C16': (62.6, 73.4, 90, 'F'), 'R26': (48.5, 77.5, 0, 'F'),
+    'J1': (3.1, 100, 270, 'F'), 'R16': (10.8, 98.8, 0, 'F'), 'R17': (10.8, 102.2, 0, 'F'), 'D3': (14.4, 105.5, 90, 'F'), 'D1': (7.5, 86.5, 90, 'F'), 'R1': (13.5, 86.9, 0, 'F'),
+    'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'U2': (13.2, 95.2, 0, 'F'), 'C16': (9.0, 92.6, 0, 'F'), 'R26': (48.5, 77.5, 0, 'F'),
     'TP1': (49.5, 89.5, 0, 'F'), 'TP3': (46, 89.5, 0, 'F'),
-    'D4': (25, 121.8, 0, 'F'), 'R18': (12.5, 73.5, 0, 'F'), 'R19': (12.5, 77, 0, 'F'), 'J10': (41, 111.5, 90, 'F'),
-    'R20': (5.5, 108.5, 0, 'F'), 'R21': (5.5, 112.5, 0, 'F'), 'C13': (5.5, 116.5, 0, 'F'),
+    'D4': (25, 121.8, 0, 'F'), 'R18': (10.2, 110.0, 0, 'F'), 'R19': (10.2, 113.0, 0, 'F'), 'J10': (41, 111.5, 90, 'F'),
+    'R20': (9.5, 125.3, 0, 'F'), 'R21': (13.5, 125.3, 0, 'F'), 'C13': (17.5, 125.3, 0, 'F'),
     'R24': (46, 121.8, 0, 'F'),
     'R25': (50.5, 121.8, 0, 'F'), 'R22': (37.2, 113.6, 90, 'F'), 'C14': (34.3, 113.6, 90, 'F'),
     'R23': (24.8, 112.2, 90, 'F'), 'C15': (28.0, 114.0, 90, 'F'), 'TP6': (13, 26, 0, 'F'),
     # DevKit od tyłu (poziomo, USB po lewej w widoku od frontu)
-    'J3': (55, 94, 90, 'B'), 'J2': (55, 117.3, 90, 'B'),
+    'J3': (55, 94, 90, 'B'), 'J2': (55, 94 + ROW_SPACING, 90, 'B'),
     # bufor SOIC-14 między rzędami DevKita, pull-downy przy wejściach, odsprzęganie
     'U1': (28.6, 104.2, 90, 'F'), 'C3': (17.5, 104, 90, 'F'),
     'R2': (20.2, 110.5, 0, 'F'), 'R3': (31.2, 112, 0, 'F'), 'R4': (33.7, 97.4, 0, 'F'), 'R5': (26.1, 97.4, 0, 'F'),
     # dzielnik ECHO i punkt testowy węzła GPIO6
     'R6': (42, 104, 90, 'F'), 'R7': (45.5, 104, 90, 'F'), 'TP5': (49, 104, 0, 'F'),
     # pozostałe punkty testowe, rezystor serwa
-    'TP2': (10, 100, 0, 'F'), 'TP4': (10, 104, 0, 'F'), 'R8': (30, 122, 0, 'F'),
+    'TP2': (12.5, 121.0, 0, 'F'), 'TP4': (18.7, 121.0, 0, 'F'), 'R8': (30, 122, 0, 'F'),
     # filtr RC zasilania sonaru przy J4 (lewy górny róg)
     'R11': (16.5, 14, 0, 'F'), 'C6': (4.5, 17.5, 0, 'F'), 'C7': (11, 18, 90, 'F'),
     # rezystory szeregowe DIN/CS/CLK nad gniazdem MAX7219, kondensatory obok modułu
     'R12': (27, 51, 0, 'F'), 'R14': (35.5, 51, 0, 'F'), 'R13': (44, 51, 0, 'F'),
     'C8': (52.2, 55, 0, 'F'), 'C9': (61.5, 55, 90, 'F'),
 }
-HOLES = [(3.5, 32), (W - 3.5, 32), (3.5, 88), (W - 3.5, 124)]
+HOLES = [(3.5, 32), (W - 3.5, 32), (3.5, 124), (W - 3.5, 124)]
 
 
 def place_fixed(board, fp, ref):
@@ -149,26 +150,26 @@ DEVKIT = {
 # oznaczenie + wartość na opisie: ref -> (tekst, dx, dy, wyrównanie, obrót) względem środka elementu.
 # Własne oznaczenie elementu (pole Reference) jest ukrywane, żeby napisy się nie dublowały.
 VALUES = {
-    'R1': ('R1 1k', -1.6, 0, 'right', 0), 'D1': ('D1 PWR', 0, 2.3, 'center', 0),
+    'R1': ('R1 1k', 0, -1.7, 'center', 0), 'D1': ('D1 PWR', 0, -2.4, 'center', 0),
     'C1': ('C1 470uF 16V', 1.75, 5.4, 'center', 0), 'C2': ('C2 100nF', 1.9, 0, 'center', 90),
-    'U2': ('AP22804', -1.9, -2.7, 'center', 0), 'R26': ('R26 10k', 0, 1.7, 'center', 0), 'C16': ('C16 1uF', 1.9, 0, 'center', 90),
-    'R16': ('R16 5k1', 0, -1.6, 'center', 0), 'R17': ('R17 5k1', 0, -1.6, 'center', 0), 'D3': ('D3 TVS', -2.2, 0, 'center', 90),
-    'D4': ('D4 5V->DevKit', 0, 1.7, 'center', 0), 'R18': ('R18 1k', 0, 1.6, 'center', 0), 'R19': ('R19 10k', 0, 1.6, 'center', 0),
-    'R20': ('R20 100k', 0, -1.6, 'center', 0), 'R21': ('R21 47k', 0, 1.6, 'center', 0), 'C13': ('C13 100n', 0, 1.6, 'center', 0),
+    'U2': ('AP22804', 1.0, -2.5, 'center', 0), 'R26': ('R26 10k', 0, 1.7, 'center', 0), 'C16': ('C16 1uF', -1.0, -1.6, 'center', 0),
+    'R16': ('5k1', 2.0, 0, 'left', 0), 'R17': ('5k1', 2.0, -0.5, 'left', 0), 'D3': ('D3 TVS', -2.7, 0, 'center', 90),
+    'D4': ('D4 5V->DevKit', 0, 1.7, 'center', 0), 'R18': ('R18 1k', 2.0, 0, 'left', 0), 'R19': ('R19 10k', 2.0, 0, 'left', 0),
+    'R20': ('R20 100k', 0, -1.5, 'center', 0), 'R21': ('R21 47k', 0, 1.5, 'center', 0), 'C13': ('C13 100n', 0, -1.5, 'center', 0),
     'R22': ('100k', 0.6, -3.0, 'center', 0), 'R23': ('100k', -2.0, 0, 'right', 0),
     'C14': ('100n', 0, -2.6, 'center', 0), 'C15': ('100n', 2.0, 0, 'left', 0), 'R24': ('R24 4k7 (opcja)', 0, -1.6, 'center', 0), 'R25': ('R25 4k7 (opcja)', 0, 1.6, 'center', 0),
     'C4': ('C4 220uF 10V', 1.25, 4.6, 'center', 0), 'FB1': ('FB1 0R', 0, 1.7, 'center', 0),
     'C10': ('C10 100n', 0, 2.2, 'center', 0), 'R15': ('R15 10k', -0.5, 1.7, 'center', 0),
-    'C11': ('C11 100nF', 0, 1.7, 'center', 0), 'C12': ('C12 100n opc.', 0, -1.7, 'center', 0), 'SW1': ('SW1 ON/STANDBY', 4.0, -1.6, 'left', 0),
-    'C5': ('C5 100nF', 0, 1.6, 'center', 0),
+    'C11': ('C11 100nF', 0, 1.7, 'center', 0), 'C12': ('C12 100n opc.', 0, -1.7, 'center', 0), 'SW1': ('SW1 STANDBY', 0, 6.2, 'left', 0),
+    'C5': ('100n', 1.9, 0, 'left', 0),
     'Q2': ('Q2 3904', -0.7, 3.0, 'center', 0), 'R9': ('R9 1k', 0, -1.7, 'center', 0),
     'R10': ('R10 100k', 0.7, 2.1, 'center', 0), 'D2': ('D2 1N4148', -0.6, 2.3, 'left', 0),
-    'C3': ('C3 100nF', 1.1, -2.6, 'right', 0),
+    'C3': ('C3 100n', 1.2, 2.4, 'center', 0),
     'R2': ('R2 47k', 0, -1.7, 'center', 0), 'R3': ('R3 47k', -1.0, -1.7, 'center', 0),
     'R4': ('R4 47k', 1.6, 0, 'left', 0), 'R5': ('R5 47k', -1.6, 0, 'right', 0),
     'R6': ('R6 10k', 0, -2.6, 'center', 0), 'R7': ('R7 15k', 0, 2.5, 'center', 0),
     'R8': ('R8 330', 1.6, 0, 'left', 0), 'U1': ('U1 74AHCT125', 0, 4.4, 'center', 0),
-    'J1': ('J1 USB-C 5V', -6.0, -6.4, 'center', 0),
+    'J1': ('J1 USB-C 5V', 1.9, 6.7, 'center', 0),
     'R11': ('R11 10R', 0, 1.7, 'center', 0), 'C6': ('C6 100uF', 1.25, 4.4, 'center', 0),
     'C7': ('C7 100nF', 1.9, 0, 'center', 90),
     'R12': ('R12 100R', 0, -1.7, 'center', 0), 'R14': ('R14 100R', 0, -1.7, 'center', 0),
@@ -177,9 +178,8 @@ VALUES = {
 }
 FREE_TEXT = [
     # (tekst, x, y, wysokość, obrót, warstwa)
-    ('(GPIO2)  <- przycisk z boku', 6.6, 67.8, 0.8, 0, 'F', 'left'),
     ('+5V', 49.5, 87.6, 0.8, 0, 'F'), ('GND', 46, 87.6, 0.8, 0, 'F'), ('SERVO 5V', 13, 27.8, 0.8, 0, 'F'),
-    ('3V3', 12.6, 100, 0.8, 0, 'F'), ('TRIG', 12.9, 104, 0.8, 0, 'F'), ('ECHO', 50.9, 104, 0.8, 0, 'F', 'left'),
+    ('3V3', 12.5, 122.7, 0.8, 0, 'F'), ('TRIG', 18.7, 122.7, 0.8, 0, 'F'), ('ECHO', 50.9, 104, 0.8, 0, 'F', 'left'),
     ('DevKit od tylu  <- USB-C', 30, 90.2, 0.9, 0, 'F'),
     ('Radar ESP32-C6  v0.1  2026-10', 33, 126.4, 0.9, 0, 'F'),
     ('USB-C ->', 30, 126.6, 1.0, 0, 'B'),
@@ -250,15 +250,18 @@ DIMS = [
     ('W2', (0, H), (0, 0), 9, 'F', 'wysokosc plytki: czy miesci sie w kolumnie nad podstawka'),
     ('W3', (0, 13), (33 - 3.81, 13), -3, 'F', 'OLED: od lewej krawedzi do pinu 1 gniazda J7 (okno ekranu w obudowie)'),
     ('W4', (0, 55), (33 - 5.08, 55), -3, 'F', 'MAX7219: od lewej krawedzi do pinu 1 gniazda J6 (okno matrycy)'),
-    ('W5', (42, 13), (42, 55), -3, 'F', 'odstep gniazd OLED-MAX7219 (pion), zgodny z oknami w obudowie'),
-    ('W6', (W, 0), (W, 66), -5, 'F', 'gniazdo USB-C zasilania: od gornej krawedzi do osi wtyku (otwor w scianie obudowy)'),
-    ('W7', (0, 0), (0, 65.75), 4, 'F', 'przycisk boczny: od gornej krawedzi do osi popychacza (otwor w scianie)'),
+    ('W5', (42, 13), (42, 55), -3, 'F', 'odstep gniazd OLED-MAX7219 (pion), ZMIERZONE 42,0 mm'),
+    ('W6', (0, 0), (0, 100), -7, 'F', 'gniazdo USB-C zasilania: od gornej krawedzi do osi wtyku (otwor w scianie obudowy)'),
+    ('W7', (0, 0), (0, 113.0), 4, 'F', 'przycisk boczny: od gornej krawedzi do osi popychacza (otwor w scianie)'),
     ('W8', (3.5, 32), (W - 3.5, 32), 4, 'F', 'otwory montazowe M3: rozstaw w poziomie'),
-    ('W9', (3.5, 32), (3.5, 88), -4, 'F', 'otwory montazowe M3: rozstaw w pionie'),
-    ('W10', (55, 94), (55, 117.3), -6, 'B', 'DevKit: rozstaw rzedow pinow (srodek-srodek), ZALOZONE 23,3 mm'),
-    ('W11', (55, 117.3), (55 - 38.1, 117.3), -5, 'B', 'DevKit: pin 1 - pin 16 jednej listwy (15 x 2,54 mm)'),
-    ('W12', (55, 94), (W, 94), 4, 'B', 'DevKit: od prawej krawedzi (widok od frontu) do pinu 1'),
+    ('W9', (3.5, 32), (3.5, 124), -4, 'F', 'otwory montazowe M3: rozstaw w pionie'),
+    ('W10', (55, 94), (55, 94 + ROW_SPACING), -6, 'B', 'DevKit: rozstaw rzedow pinow (srodek-srodek), ZMIERZONE 23,1 mm'),
+    ('W11', (55, 94 + ROW_SPACING), (55 - 38.1, 94 + ROW_SPACING), -5, 'B', 'DevKit: pin 1 - pin 16 jednej listwy (15 x 2,54 mm), ZMIERZONE 38,1 mm'),
+    ('W12', (55, 94), (W, 94), 4, 'B', 'DevKit: od prawej krawedzi (widok od frontu) do pinu 1, ZMIERZONE 11,0 mm'),
 ]
+
+
+MEASURED = {'W1', 'W2', 'W3', 'W4', 'W5', 'W10', 'W11', 'W12'}   # zmierzone (W5, W10-12) lub zatwierdzone (W1-W4) 2026-10-13
 
 
 def add_dimensions(board):
@@ -272,7 +275,7 @@ def add_dimensions(board):
         d.SetUnitsFormat(pcbnew.DIM_UNITS_FORMAT_BARE_SUFFIX)
         d.SetPrecision(pcbnew.DIM_PRECISION_X_XX)
         d.SetPrefix(nr + ': ')
-        d.SetSuffix(' ?')
+        d.SetSuffix(' OK' if nr in MEASURED else ' ?')
         d.SetTextSize(pcbnew.VECTOR2I(mm(1.1), mm(1.1)))
         if side == 'B':
             d.SetMirrored(True)
@@ -280,7 +283,7 @@ def add_dimensions(board):
         d.Update()
     # legenda obok płytki
     for side, layer in (('F', pcbnew.Dwgs_User), ('B', pcbnew.Cmts_User)):
-        lines = ['WYMIARY DO WERYFIKACJI  (? = wartosc z projektu)',
+        lines = ['WYMIARY DO WERYFIKACJI  (? = do potwierdzenia, OK = zmierzone lub zatwierdzone 2026-10-13)',
                  'Wydruk w skali 1:1 (100%, bez dopasowania do strony).', '']
         lines += ['%s  %s' % (nr, opis) for (nr, _, _, _, sd, opis) in DIMS if sd == side]
         lines += ['', 'Strona: ' + ('PRZOD (widok od frontu)' if side == 'F' else
@@ -433,6 +436,18 @@ def finish():
     board = pcbnew.LoadBoard(PCB)
     ok = pcbnew.ImportSpecctraSES(board, SES)
     print('import SES:', ok)
+    # przelotki, które kończą się ślepo (ścieżka tylko po jednej warstwie): usuwamy je przed wylewkami
+    conn = board.GetConnectivity()
+    conn.RecalculateRatsnest()
+    dead = []
+    for t in board.GetTracks():
+        if t.Type() == pcbnew.PCB_VIA_T:
+            layers = {x.GetLayer() for x in conn.GetConnectedTracks(t) if x.Type() != pcbnew.PCB_VIA_T}
+            if len(layers) < 2 and not conn.GetConnectedPads(t):
+                dead.append(t)
+    for t in dead:
+        board.Remove(t)
+    print('usunięte ślepe przelotki:', len(dead))
     # wylewki GND na obu warstwach
     gnd = board.FindNet('GND')
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
