@@ -261,7 +261,7 @@ DIMS = [
 ]
 
 
-MEASURED = {'W1', 'W2', 'W3', 'W4', 'W5', 'W10', 'W11', 'W12'}   # zmierzone (W5, W10-12) lub zatwierdzone (W1-W4) 2026-10-13
+MEASURED = {'W%d' % i for i in range(1, 13)}   # wszystkie zmierzone (W5, W10-12) lub zatwierdzone przez użytkownika (reszta) 2026-10-13
 
 
 def add_dimensions(board):

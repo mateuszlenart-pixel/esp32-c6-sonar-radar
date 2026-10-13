@@ -115,7 +115,8 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   krawędzi, w strefie anteny DevKita, nie ma już metalu ani miedzi. Przeniesiono za gniazdem: R16/R17 (CC),
   D3 (TVS), U2, C16, LED zasilania (D1/R1, wyżej po lewej), R18/R19/C5 (przycisk), punkty TP2/TP4 i dzielnik
   R20/R21/C13 (na dole). Na obudowie opisać, które gniazdo jest zasilające, a które do programowania.
-  **Uwaga:** W6 i W7 są do zatwierdzenia po obejrzeniu PDF; DRC i trasowanie przechodzą (0 naruszeń).
+  **W6 (100 mm), W7 (113 mm), W8 (59 mm) i W9 (92 mm) zatwierdzone przez użytkownika 2026-10-13**; wszystkie wymiary
+  W1–W12 w PDF mają teraz „OK”. DRC i trasowanie przechodzą (0 naruszeń).
   Generator usuwa ślepe przelotki po imporcie wyniku Freeroutingu (Freerouting zgłasza 3 nietrasowane
   połączenia, a KiCad po imporcie ma 0 niepołączonych; sprawdzone przez DRC).
 - **DevKit (zmierzone 2026-10-13):** laminat 52,0 × 25,4 mm, z anteną 58,5 × 25,4 mm; od pinu 1 do końca
