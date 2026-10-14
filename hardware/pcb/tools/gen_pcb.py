@@ -22,7 +22,7 @@ DSN = os.path.join(PCB_DIR, 'radar-pcb.dsn')
 SES = os.path.join(PCB_DIR, 'radar-pcb.ses')
 FP_ROOT = '/app/extensions/Library/footprints/'
 
-DY = -27.0                  # wariant kompaktowy: moduły OLED i MAX7219 na kablach, środkowy pas płytki usunięty
+DY = -37.0                  # wariant kompaktowy: moduły OLED i MAX7219 na kablach, środkowy pas płytki usunięty
 W, H = 66.0, 128.0 + DY     # obrys płytki, mm (propozycja do zatwierdzenia)
 OX, OY = 100.0, 25.0        # przesunięcie na arkuszu KiCada (A4 poziomo, płytka nad tabelką)
 mm = pcbnew.FromMM
@@ -96,10 +96,11 @@ for _ref, (_x, _y, _r, _s) in list(FIXED.items()):
         FIXED[_ref] = (_x, _y + DY, _r, _s)
 FIXED.update({
     'J6': (33 - 5.08, 36, 90, 'F'),
-    'R12': (27, 32, 0, 'F'), 'R14': (35.5, 32, 0, 'F'), 'R13': (44, 32, 0, 'F'),
-    'C8': (52.2, 36, 0, 'F'), 'C9': (61.5, 36, 90, 'F'),
+    'R12': (25, 32, 0, 'F'), 'R14': (32, 32, 0, 'F'), 'R13': (39, 32, 0, 'F'),
+    'C8': (48, 35, 0, 'F'), 'C9': (55, 33, 90, 'F'),
 })
-HOLES = [(3.5, 44), (W - 3.5, 44), (3.5, H - 4), (W - 3.5, H - 4)]
+HY = 30.0   # wiersz górnych otworów montażowych
+HOLES = [(3.5, HY), (W - 3.5, HY), (3.5, H - 4), (W - 3.5, H - 4)]
 
 
 def place_fixed(board, fp, ref):
@@ -265,8 +266,8 @@ DIMS = [
     ('W4', (0, 36), (33 - 5.08, 36), -3, 'F', 'gniazdo kabla MAX7219 (J6): od lewej krawedzi do pinu 1'),
     ('W6', (0, 0), (0, 100 + DY), -7, 'F', 'gniazdo USB-C zasilania: od gornej krawedzi do osi wtyku (otwor w scianie obudowy)'),
     ('W7', (0, 0), (0, 113.0 + DY), 4, 'F', 'przycisk boczny: od gornej krawedzi do osi popychacza (otwor w scianie)'),
-    ('W8', (3.5, 44), (W - 3.5, 44), 4, 'F', 'otwory montazowe M3: rozstaw w poziomie'),
-    ('W9', (3.5, 44), (3.5, H - 4), -4, 'F', 'otwory montazowe M3: rozstaw w pionie'),
+    ('W8', (3.5, HY), (W - 3.5, HY), 4, 'F', 'otwory montazowe M3: rozstaw w poziomie'),
+    ('W9', (3.5, HY), (3.5, H - 4), -4, 'F', 'otwory montazowe M3: rozstaw w pionie'),
     ('W10', (55, 94 + DY), (55, 94 + ROW_SPACING + DY), -6, 'B', 'DevKit: rozstaw rzedow pinow (srodek-srodek), ZMIERZONE 23,1 mm'),
     ('W11', (55, 94 + ROW_SPACING + DY), (55 - 38.1, 94 + ROW_SPACING + DY), -5, 'B', 'DevKit: pin 1 - pin 16 jednej listwy (15 x 2,54 mm), ZMIERZONE 38,1 mm'),
     ('W12', (55, 94 + DY), (W, 94 + DY), 4, 'B', 'DevKit: od prawej krawedzi (widok od frontu) do pinu 1, ZMIERZONE 11,0 mm'),
