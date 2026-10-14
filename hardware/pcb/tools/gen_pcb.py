@@ -26,6 +26,8 @@ DY = -37.0                  # wariant kompaktowy: moduły OLED i MAX7219 na kabl
 W, H = 66.0, 128.0 + DY     # obrys płytki, mm (propozycja do zatwierdzenia)
 OX, OY = 100.0, 25.0        # przesunięcie na arkuszu KiCada (A4 poziomo, płytka nad tabelką)
 mm = pcbnew.FromMM
+SILK_H, SILK_T = 1.0, 0.17   # napisy na silkscreenie: JLCPCB wymaga wysokości >= 1 mm i grubości kreski >= 0,15 mm
+SILK_LINE_MIN = 0.15        # minimalna grubość linii obrysu elementów na silkscreenie
 
 
 def P(x, y):
@@ -149,7 +151,7 @@ PIN_NAMES = {
     'J5': ('SERWO', ['GND', '+5V', 'SIG']),
     'J8': ('BUZZ', ['+', '-']),
     'J9': ('PRZYC.', ['IO2', 'GND']),
-    'J10': ('BOOT', ['IO9', 'GND', 'RST']),
+    'J10': ('J10', ['IO9', 'GND', 'RST']),
     'J7': ('OLED SH1106', ['VCC', 'GND', 'SCK', 'SDA']),
     'J6': ('MAX7219', ['VCC', 'GND', 'DIN', 'CS', 'CLK']),
 }
@@ -164,35 +166,37 @@ DEVKIT = {
 VALUES = {
     'R1': ('R1 1k', 0, -1.7, 'center', 0), 'D1': ('D1 PWR', 0, -2.4, 'center', 0),
     'C1': ('C1 470uF 16V', 1.75, 5.4, 'center', 0), 'C2': ('C2 100nF', 1.9, 0, 'center', 90),
-    'U2': ('AP22804', 1.0, -2.5, 'center', 0), 'R26': ('R26 10k', 0, 1.7, 'center', 0), 'C16': ('C16 1uF', -1.0, -1.6, 'center', 0),
+    'U2': ('AP22802', 0.8, -3.0, 'center', 0), 'R26': ('R26 10k', 0, 1.7, 'center', 0), 'C16': ('C16 1uF', -1.0, -1.6, 'center', 0),
     'R16': ('5k1', 2.0, 0, 'left', 0), 'R17': ('5k1', 2.0, -0.5, 'left', 0), 'D3': ('D3 TVS', -2.7, 0, 'center', 90),
-    'D4': ('D4 5V->DevKit', 0, 1.7, 'center', 0), 'R18': ('R18 1k', 2.0, 0, 'left', 0), 'R19': ('R19 10k', 2.0, 0, 'left', 0),
-    'R20': ('R20 100k', 0, -1.5, 'center', 0), 'R21': ('R21 47k', 0, 1.5, 'center', 0), 'C13': ('C13 100n', 0, -1.5, 'center', 0),
-    'R22': ('100k', 0.6, -3.0, 'center', 0), 'R23': ('100k', -2.0, 0, 'right', 0),
-    'C14': ('100n', 0, -2.6, 'center', 0), 'C15': ('100n', 2.0, 0, 'left', 0), 'R24': ('R24 4k7 (opcja)', 0, -1.6, 'center', 0), 'R25': ('R25 4k7 (opcja)', 0, 1.6, 'center', 0),
-    'C4': ('C4 220uF 10V', 1.25, 4.6, 'center', 0), 'FB1': ('FB1 0R', 0, 1.7, 'center', 0),
-    'C10': ('C10 100n', 0, 2.2, 'center', 0), 'R15': ('R15 10k', -0.5, 1.7, 'center', 0),
-    'C11': ('C11 100nF', 0, 1.7, 'center', 0), 'C12': ('C12 100n opc.', 0, -1.7, 'center', 0), 'SW1': ('SW1 STANDBY', 0, 6.2, 'left', 0),
+    'D4': ('D4 5V->DevKit', 0, 2.2, 'center', 0), 'R18': ('R18 1k', 2.0, 0, 'left', 0), 'R19': ('R19 10k', 2.0, 0, 'left', 0),
+    'R20': ('R20 100k', -1.0, 1.7, 'center', 0), 'R21': ('R21 47k', 0, -1.5, 'center', 0), 'C13': ('C13 100n', 0.5, 1.7, 'center', 0),
+    'R22': ('R22', 0.5, -2.4, 'center', 0), 'R23': ('R23', -2.0, 0, 'right', 0),
+    'C14': ('C14', 0, -2.2, 'center', 0), 'C15': ('C15', 1.8, 0, 'left', 0), 'R24': ('R24', 0, -1.7, 'center', 0), 'R25': ('R25', 0, -1.7, 'center', 0),
+    'C4': ('C4 220uF 10V', -0.5, 4.6, 'center', 0), 'FB1': ('FB1 0R', 0, 1.7, 'center', 0),
+    'C10': ('C10 100n', -1.2, 3.2, 'center', 0), 'R15': ('R15 10k', -2.0, 2.0, 'center', 0),
+    'C11': ('C11 100nF', 0, 1.7, 'center', 0), 'C12': ('C12 100n opc.', 0, -1.7, 'center', 0), 'SW1': ('SW1 STBY', 0, 5.0, 'left', 0),
     'C5': ('100n', 1.9, 0, 'left', 0),
-    'Q2': ('Q2 3904', -0.7, 3.0, 'center', 0), 'R9': ('R9 1k', 0, -1.7, 'center', 0),
-    'R10': ('R10 100k', 0.7, 2.1, 'center', 0), 'D2': ('D2 1N4148', -0.6, 2.3, 'left', 0),
-    'C3': ('C3 100n', 1.2, 2.4, 'center', 0),
+    'Q2': ('Q2 3904', -2.2, 3.0, 'center', 0), 'R9': ('R9 1k', 0, -1.7, 'center', 0),
+    'R10': ('R10 100k', -0.5, 2.1, 'left', 0), 'D2': ('D2 1N4148', -0.6, 2.3, 'left', 0),
+    'C3': ('C3 100n', 2.5, -2.5, 'center', 0),
     'R2': ('R2 47k', 0, -1.7, 'center', 0), 'R3': ('R3 47k', -1.0, -1.7, 'center', 0),
     'R4': ('R4 47k', 1.6, 0, 'left', 0), 'R5': ('R5 47k', -1.6, 0, 'right', 0),
     'R6': ('R6 10k', 0, -2.6, 'center', 0), 'R7': ('R7 15k', 0, 2.5, 'center', 0),
-    'R8': ('R8 330', 1.6, 0, 'left', 0), 'U1': ('U1 74AHCT125', 0, 4.4, 'center', 0),
-    'J1': ('J1 USB-C 5V', 1.9, 6.7, 'center', 0),
-    'R11': ('R11 10R', 0, 1.7, 'center', 0), 'C6': ('C6 100uF', 1.25, 4.4, 'center', 0),
+    'R8': ('R8 330', 1.6, 0, 'left', 0), 'U1': ('U1 74AHCT125', 2.5, 4.4, 'center', 0),
+    'J1': ('J1 USB-C', -1.4, 6.7, 'left', 0),
+    'R11': ('R11 10R', 1.4, 1.7, 'center', 0), 'C6': ('C6 100uF', 1.25, 4.4, 'center', 0),
     'C7': ('C7 100nF', 1.9, 0, 'center', 90),
-    'R12': ('R12 100R', 0, -1.7, 'center', 0), 'R14': ('R14 100R', 0, -1.7, 'center', 0),
+    'R12': ('R12 100R', 0, -1.7, 'center', 0), 'R14': ('R14 100R', 0, -3.0, 'center', 0),
     'R13': ('R13 100R', 0, -1.7, 'center', 0), 'C8': ('C8 100uF', 1.25, -4.3, 'center', 0),
-    'C9': ('C9 100nF', -1.9, 0, 'center', 90),
+    'C9': ('C9 100nF', 1.9, 0, 'center', 90),
 }
 FREE_TEXT = [
     # (tekst, x, y, wysokość, obrót, warstwa)
     ('+5V', 49.5, 87.6, 0.8, 0, 'F'), ('GND', 46, 87.6, 0.8, 0, 'F'), ('SERVO 5V', 13, 27.8, 0.8, 0, 'F'),
-    ('3V3', 12.5, 122.7, 0.8, 0, 'F'), ('TRIG', 18.7, 122.7, 0.8, 0, 'F'), ('ECHO', 50.9, 104, 0.8, 0, 'F', 'left'),
+    ('3V3', 12.5, 119.3, 0.8, 0, 'F'), ('TRIG', 18.7, 119.3, 0.8, 0, 'F'), ('ECHO', 50.9, 104, 0.8, 0, 'F', 'left'),
     ('DevKit od tylu  <- USB-C', 30, 90.2, 0.9, 0, 'F'),
+    ('R24, R25 4k7: nie montowac', 48, 124.6, 1.0, 0, 'F'),
+    ('R22,R23 100k  C14,C15 100n', 33, 119.4, 1.0, 0, 'F'),
     ('Radar C6 v0.1 compact', 36, 126.4, 0.9, 0, 'F'),
     ('USB-C ->', 30, 126.6, 1.0, 0, 'B'),
     ('DevKit J3 (pin 1 = GND)', 36, 86.2, 0.9, 0, 'B'),
@@ -207,8 +211,9 @@ def add_text(board, s, x, y, h=0.8, angle=0, side='F', just='center'):
     t = pcbnew.PCB_TEXT(board)
     t.SetText(s)
     t.SetLayer(pcbnew.F_SilkS if side == 'F' else pcbnew.B_SilkS)
+    h = max(h, SILK_H)
     t.SetTextSize(pcbnew.VECTOR2I(mm(h), mm(h)))
-    t.SetTextThickness(mm(0.15))
+    t.SetTextThickness(mm(SILK_T))
     t.SetTextAngleDegrees(angle)
     t.SetHorizJustify({'center': pcbnew.GR_TEXT_H_ALIGN_CENTER, 'left': pcbnew.GR_TEXT_H_ALIGN_LEFT,
                        'right': pcbnew.GR_TEXT_H_ALIGN_RIGHT}[just])
@@ -377,7 +382,11 @@ def build():
             nm = pin_net.get((ref, pad.GetNumber()))
             if nm:
                 pad.SetNet(netinfo[nm])
-        fp.Reference().SetTextSize(pcbnew.VECTOR2I(mm(0.8), mm(0.8)))
+        fp.Reference().SetTextSize(pcbnew.VECTOR2I(mm(SILK_H), mm(SILK_H)))
+        fp.Reference().SetTextThickness(mm(SILK_T))
+        for g in fp.GraphicalItems():
+            if g.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS) and g.GetWidth() < mm(SILK_LINE_MIN):
+                g.SetWidth(mm(SILK_LINE_MIN))
         fp.Value().SetVisible(False)
         if ref.startswith('TP') or ref == 'J10':
             fp.Reference().SetVisible(False)
@@ -401,6 +410,8 @@ def build():
     for i, (hx, hy) in enumerate(HOLES):
         h = load_fp('MountingHole:MountingHole_3.2mm_M3')
         h.SetReference('H%d' % (i + 1))
+        h.Reference().SetVisible(False)
+        h.Value().SetVisible(False)
         h.SetBoardOnly(True)
         h.SetPosition(P(hx, hy))
         board.Add(h)
@@ -481,5 +492,22 @@ def finish():
     print('zapisano z wylewkami GND')
 
 
+def relabel():
+    """Szybka poprawka opisów: usuwa napisy z silkscreenu i dodaje je ponownie na gotowej płytce
+    (bez ponownego rozmieszczania i trasowania). Po zmianach w VALUES/FREE_TEXT/PIN_NAMES."""
+    board = pcbnew.LoadBoard(PCB)
+    for t in list(board.GetDrawings()):
+        if t.Type() == pcbnew.PCB_TEXT_T and t.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS):
+            board.RemoveNative(t)
+    fps = {fp.GetReference(): fp for fp in board.GetFootprints()}
+    for ref, fp in fps.items():
+        if ref.startswith('H'):
+            fp.Reference().SetVisible(False)
+            fp.Value().SetVisible(False)
+    add_labels(board, fps)
+    board.Save(PCB)
+    print('opisy przeliczone')
+
+
 if __name__ == '__main__':
-    {'place': build, 'finish': finish}[sys.argv[1]]()
+    {'place': build, 'finish': finish, 'relabel': relabel}[sys.argv[1]]()

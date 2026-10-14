@@ -131,8 +131,8 @@ place('J1', 'Connector', 'USB_C_Receptacle_USB2.0_16P', 'USB-C zasilanie 5 V (GC
 place('R16', 'Device', 'R', '5,1 k', R, 60, 85, {'1': 'CC1', '2': 'GND'})
 place('R17', 'Device', 'R', '5,1 k', R, 80, 85, {'1': 'CC2', '2': 'GND'})
 place('D3', 'Device', 'D_Zener', 'SMAJ5.0A (TVS 5 V, jednokierunkowy)', 'Diode_SMD:D_SMA', 100, 85, {'1': 'VIN', '2': 'GND'})
-# przelacznik obciazenia z miekkim startem i ogranicznikiem pradu (zamiast polyfuse): AP22804AW5 (EN aktywny wysokim)
-place('U2', 'Power_Management', 'AP22804AW5', 'AP22804AW5 (przelacznik 5 V, limit ok. 2,5-3 A)',
+# przelacznik obciazenia z miekkim startem i ogranicznikiem pradu (zamiast polyfuse): AP22802AW5-7 (EN aktywny wysokim; pin w pin z AP22804AW5)
+place('U2', 'Power_Management', 'AP22804AW5', 'AP22802AW5-7 (przelacznik 5 V, LCSC C211404, limit ok. 2,2-3,2 A)',
       'Package_TO_SOT_SMD:SOT-23-5', 75, 60, {'5': 'VIN', '4': 'VIN', '2': 'GND', '1': '+5V', '3': 'U2_FLG'})
 place('C16', 'Device', 'C', '1 uF', C, 95, 60, {'1': 'VIN', '2': 'GND'})
 flag(115, 50, 'VIN', '#FLG04')
