@@ -30,7 +30,19 @@ gcc -std=c11 -Wall -Wextra -Werror -Isrc src/detector.c tests/test_detector.c -o
 gcc -std=c11 -Wall -Wextra -Werror -Isrc src/scan_control.c tests/test_scan_control.c -o /tmp/test_scan_control && /tmp/test_scan_control
 ```
 
-GitHub Actions uruchamia oba zestawy testów oraz kompiluje firmware przy pushu na `main` i przy pull requestach.
+```bash
+gcc -std=c11 -Wall -Wextra -Werror -Isrc src/usb_cc.c tests/test_usb_cc.c -o /tmp/test_usb_cc && /tmp/test_usb_cc
+```
+
+GitHub Actions uruchamia wszystkie trzy zestawy testów oraz kompiluje firmware przy pushu na `main` i przy pull requestach.
+
+## Buzzer
+
+Płytka ma tranzystorowy stopień (Q2) i diodę (D2), więc pasuje zarówno buzzer pasywny, jak i aktywny
+na 5 V. W `src/app_config.h` ustaw `BUZZER_ACTIVE`:
+
+- `0` (domyślnie): buzzer pasywny, firmware generuje ton PWM i alarm krytyczny ma wyraźnie inne tony;
+- `1`: buzzer aktywny, firmware tylko włącza i wyłącza, a różnice zostają w rytmie sygnału.
 
 ## Wi-Fi
 
@@ -50,6 +62,11 @@ Plik `src/wifi_credentials.h` jest ignorowany przez Git. Nie umieszczaj danych s
 - `sonar.c` wykonuje pojedynczy pomiar, a `sonar_task.c` przekazuje wyniki dalej.
 - `detector.c` wykrywa cel i alarm krytyczny na podstawie kolejnych pomiarów.
 - `ui_task.c`, `oled.c`, `matrix.c` i `buzzer.c` obsługują ekran, matrycę i sygnał dźwiękowy.
+- `power_monitor.c` mierzy przez ADC napięcie szyny 5 V (GPIO0) oraz linie CC1/CC2 gniazda USB-C zasilania
+  (GPIO1, GPIO3) i czyta flagę przeciążenia przełącznika U2 (GPIO23). Co 30 s oraz przy każdej zmianie
+  zapisuje wynik w logu i ostrzega, gdy zasilacz podaje tylko 500/900 mA, szyna 5 V spadnie poniżej 4,5 V
+  albo U2 ogranicza prąd. Klasyfikacja CC jest w `usb_cc.c` (testy hostowe). Działa na płytce PCB;
+  na breadboardzie bez tych elementów odczyty są przypadkowe, a log tylko informacyjny.
 - `network.c` obsługuje połączenie Wi-Fi oraz ponawianie połączenia.
 - `zigbee_bridge.c` udostępnia czujniki i przełączniki przez Zigbee.
 - `mqtt_bridge.c` publikuje stan radaru oraz każdy kolejny pomiar po MQTT.
