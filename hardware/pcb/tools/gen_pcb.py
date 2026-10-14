@@ -22,7 +22,8 @@ DSN = os.path.join(PCB_DIR, 'radar-pcb.dsn')
 SES = os.path.join(PCB_DIR, 'radar-pcb.ses')
 FP_ROOT = '/app/extensions/Library/footprints/'
 
-W, H = 66.0, 128.0          # obrys płytki, mm (propozycja do zatwierdzenia)
+DY = -27.0                  # wariant kompaktowy: moduły OLED i MAX7219 na kablach, środkowy pas płytki usunięty
+W, H = 66.0, 128.0 + DY     # obrys płytki, mm (propozycja do zatwierdzenia)
 OX, OY = 100.0, 25.0        # przesunięcie na arkuszu KiCada (A4 poziomo, płytka nad tabelką)
 mm = pcbnew.FromMM
 
@@ -88,7 +89,17 @@ FIXED = {
     'R12': (27, 51, 0, 'F'), 'R14': (35.5, 51, 0, 'F'), 'R13': (44, 51, 0, 'F'),
     'C8': (52.2, 55, 0, 'F'), 'C9': (61.5, 55, 90, 'F'),
 }
-HOLES = [(3.5, 32), (W - 3.5, 32), (3.5, 124), (W - 3.5, 124)]
+# Wariant kompaktowy: wszystko od y >= 70 (zasilanie, DevKit, bufor) przesunięte w górę o DY,
+# gniazdo kabla MAX7219 (J6) i jego elementy tuż pod gniazdem kabla OLED (J7).
+for _ref, (_x, _y, _r, _s) in list(FIXED.items()):
+    if _y >= 70:
+        FIXED[_ref] = (_x, _y + DY, _r, _s)
+FIXED.update({
+    'J6': (33 - 5.08, 36, 90, 'F'),
+    'R12': (27, 32, 0, 'F'), 'R14': (35.5, 32, 0, 'F'), 'R13': (44, 32, 0, 'F'),
+    'C8': (52.2, 36, 0, 'F'), 'C9': (61.5, 36, 90, 'F'),
+})
+HOLES = [(3.5, 44), (W - 3.5, 44), (3.5, H - 4), (W - 3.5, H - 4)]
 
 
 def place_fixed(board, fp, ref):
@@ -181,12 +192,14 @@ FREE_TEXT = [
     ('+5V', 49.5, 87.6, 0.8, 0, 'F'), ('GND', 46, 87.6, 0.8, 0, 'F'), ('SERVO 5V', 13, 27.8, 0.8, 0, 'F'),
     ('3V3', 12.5, 122.7, 0.8, 0, 'F'), ('TRIG', 18.7, 122.7, 0.8, 0, 'F'), ('ECHO', 50.9, 104, 0.8, 0, 'F', 'left'),
     ('DevKit od tylu  <- USB-C', 30, 90.2, 0.9, 0, 'F'),
-    ('Radar ESP32-C6  v0.1  2026-10', 33, 126.4, 0.9, 0, 'F'),
+    ('Radar C6 v0.1 compact', 36, 126.4, 0.9, 0, 'F'),
     ('USB-C ->', 30, 126.6, 1.0, 0, 'B'),
     ('DevKit J3 (pin 1 = GND)', 36, 86.2, 0.9, 0, 'B'),
     ('DevKit J1 (pin 1 = 3V3)', 36, 124.6, 0.9, 0, 'B'),
     ('Radar ESP32-C6 - tyl', 33, 66, 1.2, 0, 'B'),
 ]
+
+FREE_TEXT = [(t[0], t[1], t[2] + DY if t[2] >= 60 else t[2]) + tuple(t[3:]) for t in FREE_TEXT]
 
 
 def add_text(board, s, x, y, h=0.8, angle=0, side='F', just='center'):
@@ -247,21 +260,20 @@ def add_labels(board, fps):
 # (nr, start, koniec, odsunięcie linii wymiaru, strona, opis do legendy)
 DIMS = [
     ('W1', (0, 0), (W, 0), 5, 'F', 'szerokosc plytki: czy miesci sie we wnetrzu kolumny obudowy'),
-    ('W2', (0, H), (0, 0), 9, 'F', 'wysokosc plytki: czy miesci sie w kolumnie nad podstawka'),
-    ('W3', (0, 13), (33 - 3.81, 13), -3, 'F', 'OLED: od lewej krawedzi do pinu 1 gniazda J7 (okno ekranu w obudowie)'),
-    ('W4', (0, 55), (33 - 5.08, 55), -3, 'F', 'MAX7219: od lewej krawedzi do pinu 1 gniazda J6 (okno matrycy)'),
-    ('W5', (42, 13), (42, 55), -3, 'F', 'odstep gniazd OLED-MAX7219 (pion), ZMIERZONE 42,0 mm'),
-    ('W6', (0, 0), (0, 100), -7, 'F', 'gniazdo USB-C zasilania: od gornej krawedzi do osi wtyku (otwor w scianie obudowy)'),
-    ('W7', (0, 0), (0, 113.0), 4, 'F', 'przycisk boczny: od gornej krawedzi do osi popychacza (otwor w scianie)'),
-    ('W8', (3.5, 32), (W - 3.5, 32), 4, 'F', 'otwory montazowe M3: rozstaw w poziomie'),
-    ('W9', (3.5, 32), (3.5, 124), -4, 'F', 'otwory montazowe M3: rozstaw w pionie'),
-    ('W10', (55, 94), (55, 94 + ROW_SPACING), -6, 'B', 'DevKit: rozstaw rzedow pinow (srodek-srodek), ZMIERZONE 23,1 mm'),
-    ('W11', (55, 94 + ROW_SPACING), (55 - 38.1, 94 + ROW_SPACING), -5, 'B', 'DevKit: pin 1 - pin 16 jednej listwy (15 x 2,54 mm), ZMIERZONE 38,1 mm'),
-    ('W12', (55, 94), (W, 94), 4, 'B', 'DevKit: od prawej krawedzi (widok od frontu) do pinu 1, ZMIERZONE 11,0 mm'),
+    ('W2', (0, H), (0, 0), 9, 'F', 'wysokosc plytki (wariant kompaktowy, moduly na kablach)'),
+    ('W3', (0, 13), (33 - 3.81, 13), -3, 'F', 'gniazdo kabla OLED (J7): od lewej krawedzi do pinu 1'),
+    ('W4', (0, 36), (33 - 5.08, 36), -3, 'F', 'gniazdo kabla MAX7219 (J6): od lewej krawedzi do pinu 1'),
+    ('W6', (0, 0), (0, 100 + DY), -7, 'F', 'gniazdo USB-C zasilania: od gornej krawedzi do osi wtyku (otwor w scianie obudowy)'),
+    ('W7', (0, 0), (0, 113.0 + DY), 4, 'F', 'przycisk boczny: od gornej krawedzi do osi popychacza (otwor w scianie)'),
+    ('W8', (3.5, 44), (W - 3.5, 44), 4, 'F', 'otwory montazowe M3: rozstaw w poziomie'),
+    ('W9', (3.5, 44), (3.5, H - 4), -4, 'F', 'otwory montazowe M3: rozstaw w pionie'),
+    ('W10', (55, 94 + DY), (55, 94 + ROW_SPACING + DY), -6, 'B', 'DevKit: rozstaw rzedow pinow (srodek-srodek), ZMIERZONE 23,1 mm'),
+    ('W11', (55, 94 + ROW_SPACING + DY), (55 - 38.1, 94 + ROW_SPACING + DY), -5, 'B', 'DevKit: pin 1 - pin 16 jednej listwy (15 x 2,54 mm), ZMIERZONE 38,1 mm'),
+    ('W12', (55, 94 + DY), (W, 94 + DY), 4, 'B', 'DevKit: od prawej krawedzi (widok od frontu) do pinu 1, ZMIERZONE 11,0 mm'),
 ]
 
 
-MEASURED = {'W%d' % i for i in range(1, 13)}   # wszystkie zmierzone (W5, W10-12) lub zatwierdzone przez użytkownika (reszta) 2026-10-13
+MEASURED = {'W1', 'W10', 'W11', 'W12'}   # wariant kompaktowy: reszta zmieniła położenie, do ponownego zatwierdzenia
 
 
 def add_dimensions(board):
@@ -418,7 +430,7 @@ def build():
     ka.SetLayerSet(pcbnew.LSET.AllCuMask())
     o = ka.Outline()
     o.NewOutline()
-    for (x, y) in [(57, 91), (W, 91), (W, 121), (57, 121)]:
+    for (x, y) in [(57, 91 + DY), (W, 91 + DY), (W, 121 + DY), (57, 121 + DY)]:
         o.Append(mm(OX + x), mm(OY + y))
     board.Add(ka)
     add_labels(board, fps)
