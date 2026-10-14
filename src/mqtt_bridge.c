@@ -44,6 +44,7 @@ static char s_availability_topic[96];
 static char s_scan_topic[96];
 static char s_patrol_command_topic[96];
 static char s_buzzer_command_topic[96];
+static char s_power_command_topic[96];
 
 static void publish_discovery(const char *component,
                               const char *object_id,
@@ -123,6 +124,9 @@ static void publish_discovery_configs(void)
     publish_discovery("switch", "radar_buzzer", "Buzzer radaru", NULL,
                       NULL, "{{ 'ON' if value_json.buzzer_enabled else 'OFF' }}",
                       s_buzzer_command_topic, "{{ 'ON' if value_json.buzzer_enabled else 'OFF' }}");
+    publish_discovery("switch", "radar_power", "Zasilanie radaru", NULL,
+                      NULL, "{{ 'ON' if value_json.power_enabled else 'OFF' }}",
+                      s_power_command_topic, "{{ 'ON' if value_json.power_enabled else 'OFF' }}");
 }
 
 static void publish_status(void)
@@ -156,13 +160,13 @@ static void publish_status(void)
         .critical_distance_cm = RADAR_CRITICAL_DISTANCE_CM,
     };
     (void)logic_get_thresholds(&thresholds);
-    char payload[384];
+    char payload[448];
     const int length = snprintf(payload, sizeof(payload),
                                 "{\"state\":\"%s\",\"target_detected\":%s,"
                                 "\"critical\":%s,\"distance_cm\":%lu,"
                                 "\"angle_deg\":%d,\"scan_angle_deg\":%d,"
                                 "\"distance_valid\":%s,\"patrol_enabled\":%s,"
-                                "\"buzzer_enabled\":%s,\"target_threshold_cm\":%lu,"
+                                "\"buzzer_enabled\":%s,\"power_enabled\":%s,\"target_threshold_cm\":%lu,"
                                 "\"critical_threshold_cm\":%lu,\"timestamp_ms\":%lu}",
                                 state, target_detected ? "true" : "false",
                                 critical ? "true" : "false",
@@ -171,6 +175,7 @@ static void publish_status(void)
                                 status.distance_valid ? "true" : "false",
                                 logic_is_patrol_enabled() ? "true" : "false",
                                 logic_is_buzzer_enabled() ? "true" : "false",
+                                logic_is_power_enabled() ? "true" : "false",
                                 (unsigned long)thresholds.target_distance_cm,
                                 (unsigned long)thresholds.critical_distance_cm,
                                 (unsigned long)status.timestamp_ms);
@@ -218,6 +223,9 @@ static void apply_command(const char *topic, int topic_length, const char *data,
     } else if ((size_t)topic_length == strlen(s_buzzer_command_topic) &&
                strncmp(topic, s_buzzer_command_topic, (size_t)topic_length) == 0) {
         logic_set_buzzer_enabled(enabled);
+    } else if ((size_t)topic_length == strlen(s_power_command_topic) &&
+               strncmp(topic, s_power_command_topic, (size_t)topic_length) == 0) {
+        logic_set_power_enabled(enabled);
     }
 }
 
@@ -233,6 +241,7 @@ static void mqtt_event_handler(void *arg,
         ESP_LOGI(TAG, "Connected to MQTT broker");
         (void)esp_mqtt_client_subscribe(s_client, s_patrol_command_topic, 1);
         (void)esp_mqtt_client_subscribe(s_client, s_buzzer_command_topic, 1);
+        (void)esp_mqtt_client_subscribe(s_client, s_power_command_topic, 1);
         (void)esp_mqtt_client_publish(s_client, s_availability_topic, "online", 6, 1, 1);
         publish_discovery_configs();
         if (!s_publish_task_started) {
@@ -273,6 +282,8 @@ esp_err_t mqtt_bridge_start(void)
     snprintf(s_patrol_command_topic, sizeof(s_patrol_command_topic), "%s/%s/set/patrol",
              RADAR_MQTT_BASE_TOPIC, s_device_id);
     snprintf(s_buzzer_command_topic, sizeof(s_buzzer_command_topic), "%s/%s/set/buzzer",
+             RADAR_MQTT_BASE_TOPIC, s_device_id);
+    snprintf(s_power_command_topic, sizeof(s_power_command_topic), "%s/%s/set/power",
              RADAR_MQTT_BASE_TOPIC, s_device_id);
 
     const esp_mqtt_client_config_t config = {

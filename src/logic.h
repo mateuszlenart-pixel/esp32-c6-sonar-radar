@@ -28,6 +28,8 @@ bool logic_submit_measurement(int angle_deg,
                               uint32_t timestamp_ms);
 bool logic_is_target_locked(void);
 bool logic_get_status(radar_status_t *status);
+void logic_set_power_enabled(bool enabled);
+bool logic_is_power_enabled(void);
 void logic_set_patrol_enabled(bool enabled);
 bool logic_is_patrol_enabled(void);
 void logic_set_buzzer_enabled(bool enabled);

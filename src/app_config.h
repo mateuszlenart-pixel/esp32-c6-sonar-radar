@@ -23,6 +23,10 @@
 #define SONAR_TRIGGER_PULSE_US 10
 #define SONAR_RISE_TIMEOUT_US 30000
 #define SONAR_ECHO_TIMEOUT_US 25000
+// Shortest ECHO pulse accepted (about 1.7 cm); shorter pulses are treated as noise.
+#define SONAR_MIN_ECHO_US 100
+// Median over the last N valid readings rejects isolated false echoes (odd number).
+#define SONAR_MEDIAN_WINDOW 5
 #define SONAR_POLL_INTERVAL_US 5
 #define RADAR_TASK_STACK_SIZE 4096
 #define RADAR_TASK_PRIORITY 4
@@ -56,3 +60,9 @@
 #define GPIO_OLED_SCL 21
 // PWM output for a transistor driver; do not connect an unknown buzzer directly.
 #define GPIO_BUZZER 22
+// Push button to GND (internal pull-up): toggles the device between ON and standby.
+#define GPIO_POWER_BUTTON 2
+#define POWER_BUTTON_POLL_MS 20
+#define POWER_BUTTON_DEBOUNCE_MS 60
+#define RADAR_POWER_TASK_STACK_SIZE 3072
+#define RADAR_POWER_TASK_PRIORITY 3

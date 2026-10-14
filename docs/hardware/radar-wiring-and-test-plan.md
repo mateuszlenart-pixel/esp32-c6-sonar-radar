@@ -53,6 +53,36 @@ i system Zigbee2MQTT/Home Assistant.
   napięcie i polaryzację na zaciskach gniazda (dla EB2005: 5,14 V bez obciążenia,
   plus w środku). Wymieniony wtyk pochodzi z adaptera oznaczonego do weryfikacji
   (ostrzeżenie OPSS), tylko wtyk jest używany, nie sam adapter.
+- **ESP32-C6-DevKitC-1(-N8) poza płytką stykową (decyzja 2026-10-08):** próba
+  wciśnięcia płytki w breadboard (63 kolumny) wymagała dużej siły przy 2 × 16
+  pinach (schemat v1.4: listwy J1 i J3 to `CON16X1_2P54`, nie 2 × 22), a
+  zniszczone styki płytki stykowej psułyby też już zbudowane zworki. ESP32 zostaje
+  obok, a do płytki idą tylko trzy przewody Dupont żeńsko-męskie: GPIO6, GPIO11
+  i GND. Rozstaw rzędów goldpinów sprawdzono przykładając płytkę, pasuje do
+  breadboardu.
+- **Adapter z zaciskami śrubowymi, zakup 2026-10-08:** „Adapter do ESP32 30 pin
+  Devkit V1 z zaciskami ARK terminal” (2 × 15 pinów, rozstaw rzędów wg opisu
+  24 mm). C6-DevKitC-1 ma 2 × 16 pinów, więc **nie pasuje bez sprawdzenia**:
+  na każdej stronie jeden pin wystaje poza gniazda, a zgodność rozstawu rzędów
+  trzeba zmierzyć na własnej płytce. Nadruki na spodzie płytki (zdjęcie
+  2026-10-09, rewizja **ESP32-C6-DevKitC-1 V1.2**) potwierdzają 16 pinów na
+  listwę, a pin **NC leży na końcu od strony USB-C na obu listwach**. Licząc od
+  końca z anteną: J1 pin 1 to 3V3, pin 5 to GPIO6, pin 11 to GPIO11, pin 15 to
+  G, pin 16 to NC; J3 pin 1 to G. Wszystkie potrzebne sygnały mieszczą się więc
+  w 15 pozycjach, jeśli płytkę ułoży się od strony anteny. Zmierzona długość
+  jednej listwy to 38 mm (15 rozstawów po 2,54 mm); **rozstaw między rzędami**
+  (środek do środka) nadal trzeba zmierzyć i porównać z 24 mm podanymi dla
+  adaptera. Pomiar płytki suwmiarką: **23,9 mm między zewnętrznymi krawędziami
+  pinów** obu rzędów (przy pinie ok. 0,64 mm to ok. 23,3 mm środek–środek).
+  **Temat adaptera zaparkowany (2026-10-09):** adapter jeszcze nie dotarł,
+  dostawa planowana na sobotę 2026-10-10. Po odbiorze zmierzyć odległość między
+  zewnętrznymi krawędziami obudów jego żeńskich listw i porównać z tą samą
+  wartością zmierzoną na płytce; różnica do ok. 0,3 mm jest bezpieczna, powyżej
+  ok. 0,6 mm nie wciskać na siłę i rozważyć zwrot.
+  **Nie wciskać ESP32 w adapter przed porównaniem układu bez nacisku** (nałożyć
+  płytkę nad gniazdami i sprawdzić, czy oba rzędy trafiają w gniazda).
+  **Przed zakupem adaptera zawsze sprawdzać:** liczbę pinów na stronę (C6: 16),
+  rozstaw rzędów i opis zgodności z konkretnym modelem płytki.
 - Buzzer nie ma znanego numeru części. Dlatego jego końcowy obwód jest oznaczony
   jako do potwierdzenia: nie podłączamy nieznanego buzzera bezpośrednio do GPIO.
 
@@ -98,7 +128,7 @@ podłączymy przez właściwe gniazdo/rozdzielacz DC, nie bezpośrednio do GPIO.
 
 ![Szkic sygnałów i zasilania](radar-wiring.svg)
 
-### Układ na breadboardzie: sonar i bufor TRIG (plan, niepotwierdzony sprzętowo)
+### Układ na breadboardzie: sonar i bufor TRIG (stan na 2026-10-09)
 
 ![Układ na breadboardzie](breadboard-sonar-layout.png)
 
@@ -112,22 +142,27 @@ pin 14 w f22 (zatrzask po lewej).
 | R1 10 kΩ | a10 – a14 | złożone |
 | R2 15 kΩ | b14 – b18 | złożone |
 | Koniec dzielnika | a18 → szyna dolna − | złożone |
-| ECHO z HC-SR04 | a10 | do zrobienia |
-| GPIO6 z ESP32 | c14 (węzeł dzielnika) | do zrobienia |
-| GPIO11 z ESP32 | c23 (pin 2, 1A) | po dostawie AHCT |
-| TRIG do HC-SR04 | c24 (pin 3, 1Y) | po dostawie AHCT |
-| /1OE (pin 1) | b22 → szyna dolna − | po dostawie AHCT |
-| GND układu (pin 7) | b28 → szyna dolna − | po dostawie AHCT |
-| VCC układu (pin 14) | j22 → szyna górna + | po dostawie AHCT |
-| 100 nF | h22 → szyna górna − | po dostawie AHCT |
-| 47 kΩ na 1A | a23 → szyna dolna − | po dostawie AHCT |
-| Nieużywane kanały 2–4 | b25, b26, g23, g24, g26, g27 → GND | po dostawie AHCT |
-| Mostki szyn | dolna + → górna +, dolna − → górna − | po dostawie AHCT |
-| VCC i GND sonaru | szyna dolna + i − | do zrobienia |
-| GND ESP32 | szyna dolna − | do zrobienia |
+| ECHO z HC-SR04 | a10 | złożone |
+| GPIO6 z ESP32 | c14 (węzeł dzielnika), przewód Dupont | do zrobienia |
+| GPIO11 z ESP32 | c23 (pin 2, 1A), przewód Dupont | do zrobienia |
+| TRIG do HC-SR04 | c24 (pin 3, 1Y) | złożone |
+| SN74AHCT125N | pin 1 w e22, pin 14 w f22 | złożone |
+| /1OE (pin 1) | b22 → szyna dolna − | złożone |
+| GND układu (pin 7) | b28 → szyna dolna − | złożone |
+| VCC układu (pin 14) | j22 → szyna górna + | zmierzone 5,12 V (pin 14 ↔ pin 7), 2026-10-09 |
+| 100 nF | h22 → szyna górna − | złożone |
+| 47 kΩ na 1A | a23 → szyna dolna − | złożone |
+| Nieużywane kanały 2–4 | b25, b26, g23, g24, g26, g27 → GND | złożone |
+| Mostki szyn | dolna + → górna +, dolna − → górna − | zmierzone: szyna górna 5,13 V (2026-10-09) |
+| VCC sonaru | szyna dolna + | złożone |
+| GND sonaru | szyna dolna − w kolumnie 14 | złożone |
+| GND ESP32 | szyna dolna −, przewód Dupont | do zrobienia |
+
+Stan „złożone” pochodzi z relacji użytkownika z 2026-10-09; nie był jeszcze
+sprawdzony pod napięciem ani multimetrem poza pozycjami opisanymi w dzienniku.
 
 Podczas montażu: najpierw układ bez zasilania, potem multimetrem sprawdzić brak
-zwarcia 5 V ↔ GND i dopiero włączyć zasilacz. Szyna górna nie była jeszcze mierzona.
+zwarcia 5 V ↔ GND i dopiero włączyć zasilacz. Szyna górna zmierzona 2026-10-09: 5,13 V.
 
 ### Szczegóły połączeń i zasilania
 
@@ -249,6 +284,252 @@ Wpisy dotyczą tylko rzeczy faktycznie zmierzonych lub sprawdzonych na stole.
   (c14 lub d14).
 - **Nie zrobiono jeszcze:** SN74AHCT125N (dostawa w czwartek), kondensator 100 nF,
   podłączenie ESP32, HC-SR04, OLED, MAX7219, serwa i buzzera.
+
+### 2026-10-09: bufor TRIG i sonar złożone, bez ESP32
+
+- **Stan według relacji użytkownika:** wszystko z etapu „sonar i bufor TRIG” jest
+  złożone na płytce: SN74AHCT125N, kondensator 100 nF, rezystor 47 kΩ, przewody
+  GND i VCC układu, wszystkie przewody nieużywanych kanałów, mostki szyn,
+  VCC i GND sonaru, ECHO (a10) i TRIG (c24). GND sonaru jest wpięty w szynę
+  dolną − w kolumnie 14.
+- **Zostało z tego etapu:** podłączenie ESP32 trzema przewodami Dupont (GND,
+  GPIO6 do c14, GPIO11 do c23). ESP32 zostaje poza płytką stykową.
+- **Nie zmierzone:** napięcie szyny górnej po mostkach (oczekiwane ok. 5,1 V),
+  zasilanie układu AHCT pod napięciem, brak zwarć 5 V ↔ GND po całym montażu.
+- **Nie testowano sprzętowo:** pomiar odległości, sygnał TRIG i ECHO, praca
+  z firmware.
+
+### 2026-10-09: test zwarcia 5 V ↔ GND po montażu (bez zasilania)
+
+- **Wynik według relacji użytkownika:** multimetr w trybie ciągłości nie
+  zapiszczał we wszystkich trzech pomiarach, czyli brak zwarcia: (1) szyna dolna
+  + ↔ −, (2) szyna górna + ↔ −, (3) VCC ↔ GND układu AHCT (pin 14 ↔ pin 7).
+  Odczytu w omach nie podano. Zasilacz i USB odłączone (wg uzgodnionej procedury).
+
+### 2026-10-09: zasilanie płytki włączone (ESP32 i USB odłączone)
+
+- **Pomiary:** szyna górna + ↔ − **5,13 V**; szyna dolna + ↔ − **5,13 V**;
+  VCC układu AHCT, pin 14 ↔ pin 7, **5,12 V**.
+- **Obserwacja użytkownika:** nic niepokojącego (bez nagrzewania i zapachu).
+- **Wniosek:** mostki szyn przewodzą, układ AHCT dostaje 5 V. Zmierzone zostały
+  też W3, W4, W7 i W8 w modelu (pośrednio, przez napięcie).
+- **Nie testowano:** TRIG i ECHO, ESP32, pomiar odległości.
+
+### 2026-10-09: trzy przewody Dupont od ESP32 podłączone (bez zasilania)
+
+- **Stan według relacji użytkownika:** GND ESP32 → B-@15 (szyna dolna −),
+  GPIO6 → c14 (węzeł dzielnika ECHO), GPIO11 → a23 (kolumna 23: wejście 1A
+  bufora i rezystor 47 kΩ do GND; a23 i c23 to ta sama sieć). Plan zakładał
+  GND w B-@27 i GPIO11 w c23; zmiany nie wpływają na działanie.
+- **Zostało:** po sprawdzeniu połączeń włączyć USB-C, potem zasilacz zgodnie
+  z kolejnością z listy „Przy kompletnym okablowaniu” (najpierw 5 V, potem USB), i wykonać pomiar odległości.
+- **Pomiary przy wyłączonych zasilaczu i USB (ESP32 podpięte kablami):**
+  GND ESP32 ↔ szyna dolna −: ciągłość (OK). GND ESP32 ↔ szyna dolna +: brak
+  ciągłości (OK). GPIO6 ↔ GND: **14,7 kΩ** (zgodnie z R2 = 14,71 kΩ). GPIO11 ↔
+  GND: **50,6 kΩ**. GPIO6 ↔ szyna dolna +: **34,8 kΩ**.
+- **Interpretacja:** GPIO6 ↔ GND zgadza się z R2. GPIO11 ↔ GND jest wyższe niż
+  47 kΩ (R3 mógł być 51 kΩ albo wchodzi tolerancja i układ pomiarowy); dla
+  pull-downa na wejściu bufora każda wartość 10–100 kΩ jest wystarczająca.
+  Wartość 34,8 kΩ między GPIO6 a + jest mniejsza niż zakładałem. **Hipoteza
+  (niepotwierdzona):** to R1 (9,77 kΩ) plus rezystancja wewnętrzna wyjścia ECHO
+  sonaru do jego VCC (ok. 25 kΩ, typowy słaby pull-up klonów HC-SR04). Nie jest
+  to zwarcie, a przy 5 V węzeł GPIO6 zostaje w granicach dzielnika (ok. 3 V).
+- **Pomiary pod napięciem 5 V (zasilacz włączony, USB ESP32 odłączone):**
+  c14 (węzeł GPIO6/dzielnik) ↔ GND **0 V**; a23 (wejście TRIG bufora) ↔ GND
+  **0 V**; c24 (wyjście bufora do sonaru) ↔ GND **0 V**. To stan spoczynkowy
+  (ECHO nisko, TRIG nisko). Bez uwag użytkownika o grzaniu lub zapachu.
+- **Nie zmierzone / nie testowane:** napięcie w węźle GPIO6 podczas impulsu
+  ECHO, TRIG i ECHO w ruchu, pomiar odległości, praca z firmware.
+
+### 2026-10-09: pierwszy pomiar odległości HC-SR04 (program testowy, ESP32 z USB, 5 V z EB2005)
+
+- **Co uruchomiono:** minimalny program `hardware/firmware-tests/sonar-bench/`
+  (tylko TRIG GPIO11 i ECHO GPIO6, pomiar co 500 ms, bez serwa, OLED, matrycy i
+  sieci), wgrany z Asusa przez COM5 (esptool 5.5.0, `Hash of data verified`).
+- **Wynik:** odczyty 9–10 cm przy nieruchomym przedmiocie, kilka wartości
+  6–13 cm podczas jego ruchu i jeden `no echo (timeout)`. Według użytkownika
+  odczyt odpowiada odległości zmierzonej od czoła czujnika do przeszkody
+  (liczbowej wartości nie podano; dokładność nie jest zmierzona).
+- **Wniosek:** tor TRIG (ESP32 → AHCT → sonar) i tor ECHO (sonar → dzielnik →
+  ESP32) działają funkcjonalnie, a ESP32 przeżył pracę z dzielnikiem. Nie
+  zmierzono napięcia w węźle GPIO6 w trakcie impulsu ECHO (z rachunku ok. 3,1 V).
+- **Test dokładności (relacja użytkownika, miarka od czoła czujnika):**
+
+  | Sonar | Miarka | Różnica |
+  |---|---|---|
+  | 130 cm | 131 cm | −1 cm |
+  | 21 cm | 20 cm | +1 cm |
+  | 52 cm | 52 cm | 0 cm |
+  | 107 cm | 107 cm | 0 cm |
+
+  Różnice mieszczą się w ±1 cm, czyli w rozdzielczości programu (zaokrąglenie do
+  pełnych cm) i w niedokładności ustawienia miarki. Test czterech punktów na jednym
+  celu; nie jest to pełna charakterystyka (inne kąty, powierzchnie, temperatura).
+- **Nie testowano:** zasięgu poniżej 20 cm i powyżej 130 cm, odbić od skośnych
+  lub miękkich celów, OLED, MAX7219, serwa, buzzera, pełnego firmware.
+
+### 2026-10-09: oględziny modułu OLED (zdjęcia przodu i tyłu)
+
+- **Z nadruków:** moduł „1.30'' IIC V2.2”, cztery piny opisane od lewej strony
+  przodu (ekranem do góry): **1 VCC, 2 GND, 3 SCK (SCL), 4 SDA**. Kolejność
+  VCC-GND-SCL-SDA różni się od części modułów (np. GND-VCC), więc czytamy
+  nadruki, a nie zakładamy układu.
+- **Z zdjęcia tyłu (do potwierdzenia na sprzęcie):** dwa zestawy pól lutowniczych
+  „1(VDD)/1(GND)” i „2(VDD)/2(GND)” z rezystorem zworką, prawdopodobnie wybór
+  adresu I2C; rezystory R3, R4 i R6 z oznaczeniem „103” (10 kΩ), prawdopodobnie
+  podciągi SDA/SCL do VCC modułu; element Q1 w SOT-23 o niepotwierdzonej funkcji.
+  Kontroler (SSD1306 lub SH1106) nie jest potwierdzony nadrukiem; firmware zakłada
+  SH1106, adres 0x3C.
+- **Wniosek dla zasilania:** jeśli podciągi są do VCC modułu, zasilanie 5 V
+  podciągnęłoby SDA/SCL do 5 V i mogłoby uszkodzić ESP32, dlatego moduł zasilamy
+  wyłącznie z 3,3 V ESP32 (pin 3V3). Brak nadruku o napięciu zasilania.
+- **Opis sprzedawcy (do weryfikacji, nie zmierzone):** kontroler **SH1106**,
+  interfejs I2C, ekran 1,3" 128×64, białe piksele, zasilanie **3,3–5 V**,
+  rozmiar ekranu 29,42 × 14,7 mm, rozmiar modułu 33,5 × 35,5 mm, wlutowane
+  goldpiny. Zakres 3,3–5 V sugeruje regulator na module, ale nie potwierdza,
+  do jakiego napięcia są podciągnięte SDA/SCL, więc nadal zasilamy z 3,3 V
+  (mieści się w zakresie).
+- **Nie zmierzone / nie testowane:** napięcie pracy, adres I2C, pobór prądu,
+  obraz, wymiary suwmiarką.
+
+### 2026-10-09: OLED podłączony do ESP32, bez zasilania (relacja użytkownika)
+
+- **Połączenia (stan faktyczny, korekta z relacji użytkownika):** moduł OLED jest
+  podłączony **bezpośrednio do ESP32** przewodami Dupont, **nie wpięty w płytkę
+  stykową** (zapis o f40–f43 z wcześniejszej wersji tego wpisu był nieaktualny):
+  VCC → 3V3 (J1 pin 1), GND → J3 pin 1 (obok TX), SCK (SCL) → GPIO21 (J3 pin 7),
+  SDA → GPIO20 (J3 pin 8).
+- **Pomiary ciągłości (wszystko odłączone):** 3V3 ↔ szyna dolna +, 3V3 ↔ GND
+  i GPIO20 ↔ GPIO21: we wszystkich trzech brak pisku (OK).
+- **Test na sprzęcie (program `hardware/firmware-tests/oled-bench/`, wgrany z
+  Asusa na COM5, zasilanie modułu 3,3 V z ESP32):** według użytkownika wyświetlacz
+  działa i pokazuje przykładowe ekrany (RADAR, ANGLE, DIST, CRITICAL ALERT).
+  Inicjalizacja przeszła pod adresem 0x3C z firmware (SH1106).
+- **Nie zmierzone / nie testowane:** napięcie na VCC modułu i pobór prądu,
+  wypisy skanu I2C (log startowy nie został wklejony), położenie obrazu na
+  krawędziach i ewentualne przesunięcie, pełny firmware z OLED-em.
+
+### 2026-10-09: MAX7219 zaparkowany do następnej sesji
+
+- **Stan:** nic nie zostało zmienione na płytce. W10, W12 i W14 (wejścia 2A, 3A,
+  4A buforu do GND) nadal są na swoim miejscu.
+- **Gotowe do wznowienia:** plan połączeń w modelu (grupa „Matryca MAX7219”,
+  przewody W22–W29, przerywane = do zrobienia), program testowy
+  `hardware/firmware-tests/matrix-bench/`. Krok 1: zdjąć W10, W12, W14 i dołożyć
+  GPIO7 → c26, GPIO18 → h27, GPIO19 → h24. Krok 2: wyjścia buforu do modułu
+  (DIN ← b27, CLK ← g28, CS ← g25) i zasilanie modułu z szyny dolnej.
+- **Uwaga do PCB:** wejścia 2A–4A nie mają pull-downów; na docelowej płytce dodać
+  rezystory do GND na wszystkich wejściach buforu.
+
+### 2026-10-09: sonar + OLED razem (program `sonar-oled-bench`)
+
+- **Co uruchomiono:** `hardware/firmware-tests/sonar-oled-bench/`: pomiar HC-SR04
+  co 250 ms i pokazanie na OLED-zie (stan, kąt stały 90, odległość).
+- **Wynik według użytkownika:** stan na ekranie zmienia się zgodnie z progami
+  z `app_config.h`: poniżej 20 cm CRITICAL, do 50 cm TARGET LOCKED, dalej PATROL.
+- **Nie testowano:** zgodności wartości DIST z miarką w tym teście (poza wcześniejszym
+  testem sonaru), ruchu serwa, pełnego firmware z logiką potwierdzeń i histerezą.
+
+### 2026-10-10: wyłącznik ON/standby (firmware zbudowany, nietestowany na sprzęcie)
+
+- **Wymaganie użytkownika:** fizyczny wyłącznik: sygnał z przycisku na GPIO zatrzymuje
+  serwo i pomiary oraz gasi ekrany; ten sam ON/OFF z Zigbee/Home Assistant; także
+  na płytce testowej i na PCB.
+- **Realizacja w kodzie (`src/`):** stan „zasilanie” w `logic.c`
+  (`logic_set_power_enabled`, domyślnie ON po starcie). W standby: patrol i pomiary
+  stoją, serwo jest zwolnione (`servo_release`, brak impulsów PWM), OLED i MAX7219
+  wygaszone, buzzer cicho, stan w HA wraca do PATROL z nieważną odległością.
+  Przycisk: GPIO2 do GND, pull-up wewnętrzny, odbicie styków 60 ms, jedno przełączenie
+  na wciśnięcie (`power_button.c`). Zigbee: nowy endpoint 9 (On/Off) „power”;
+  MQTT: przełącznik „Zasilanie radaru” (`power_enabled`).
+- **Uwaga:** to standby, a nie odcięcie zasilania. ESP32 pracuje dalej, żeby odbierać
+  polecenia z Zigbee. Twardy wyłącznik 5 V jest osobną opcją.
+- **Konwerter Zigbee2MQTT** (`zigbee2mqtt/radar_converter.mjs`): dodany przełącznik
+  `power` (endpoint 9). Dodanie endpointu zmienia opis urządzenia, więc po wgraniu
+  trzeba w Zigbee2MQTT ponownie skonfigurować (Reconfigure) albo sparować urządzenie.
+- **Sprawdzone:** pełny firmware kompiluje się (PlatformIO, `[SUCCESS]`).
+- **Nie sprawdzone na sprzęcie:** przycisk, standby, wznowienie, polecenie z Zigbee/HA.
+- **Breadboard:** przycisk chwilowy między GPIO2 (J1 pin 12) a GND; w modelu przewody
+  W35 i W36 (do zrobienia).
+
+### 2026-10-10: stan płytki z modelu użytkownika i MAX7219 wpięty w płytkę
+
+- **Stan według zapisu modelu od użytkownika:** dzielnik przesunięty o kolumnę:
+  R1 10 kΩ d11–d15, R2 15 kΩ e15–e19, ECHO sonaru → a11, GPIO6 → c15, koniec dzielnika
+  b19 → szyna dolna −. Zasilacz: + w B+@1, − w B-@1; VCC sonaru B+@7, GND sonaru B-@13;
+  C1 100 nF h22 → szyna górna −; R3 47 kΩ a23 → szyna dolna −.
+- **Krok 1 MAX7219 wykonany** (relacja użytkownika): GPIO7 → b26 (2A), GPIO18 → g27 (3A),
+  GPIO19 → g24 (4A). Użytkownik potwierdził, że b26, g24 i g27 nie są już połączone z masą
+  (przewody W10, W12, W14 zdjęte).
+- **MAX7219 wpięty bezpośrednio w płytkę** (z braku przewodów), po korekcie użytkownika w rzędzie a:
+  VCC a40, GND a41, DIN a42, CS a43, CLK a44 (te same kolumny co wcześniej w rzędzie e).
+- **Krok 2 wykonany (relacja użytkownika):** e40 → szyna dolna + (VCC 5 V), e41 → szyna dolna −
+  (GND), e42 → b27 (DIN z 2Y), e43 → g25 (CS z 4Y), e44 → g28 (CLK z 3Y). Przycisk ON/standby
+  jeszcze nie podłączony (brak przycisku).
+- **Test ciągłości bez zasilania (relacja użytkownika):** szyna dolna + ↔ −, b27 ↔ g27 oraz
+  e42/e43/e44 ↔ szyna −: we wszystkich brak pisku (OK).
+- **Pierwsze zasilenie (relacja użytkownika):** wgrywanie programu testowego się zawiesiło, matryca
+  zapaliła najpierw jedną diodę, po chwili wszystkie. Zasilanie odłączone. **Hipoteza
+  (niepotwierdzona):** wejścia 2A/3A/4A bufora bez pull-downów wiszą, gdy GPIO ESP32 nie są
+  ustawione, i MAX7219 dostaje losowe dane (m.in. tryb testu wyświetlacza = wszystkie diody).
+- **Poprawka:** trzy rezystory 47 kΩ do masy: a26 → szyna dolna − (2A/DIN), j27 → szyna górna −
+  (3A/CLK), j24 → szyna górna − (4A/CS). W modelu R11–R13.
+- **Pomiary po wpięciu pull-downów (wszystko odłączone):** a26 ↔ szyna dolna −, j27 ↔ szyna
+  górna −, j24 ↔ szyna górna −: ok. 47 kΩ każdy. j27 ↔ szyna górna + i j24 ↔ szyna górna +:
+  ok. 66 kΩ. Interpretacja: 47 kΩ do masy plus ok. 19 kΩ między + a − przez obciążenia
+  (moduł, bufor, sonar, LED) widziane przez omomierz; rezystory są do −, nie do +.
+
+### 2026-10-10: MAX7219 działa (program `matrix-bench`)
+
+- **Przebieg:** po wgraniu programu matryca nadal świeciła w całości. Użytkownik poprawił wpięcie
+  rezystorów 47 kΩ od j24 i od j27 (pull-downy wejść 4A/CS i 3A/CLK; co dokładnie było nie tak,
+  nie opisano); po tym matryca zaczęła pokazywać obrazy.
+- **Wynik według użytkownika:** cykl stanów zgodny z programem: X migający szybko (alarm
+  krytyczny), X migający wolno (utracony cel), łuk z ruchomą linią (patrol), krzyżyk (cel).
+  Bufor i ESP32 w normalnej temperaturze.
+- **Błąd firmware znaleziony podczas testu:** krzyżyk celu miał krótsze ramię (`render_target`
+  w `src/matrix.c` rysował prawe ramię od x = 3 zamiast od 4). Poprawione w kodzie 2026-10-10.
+  Po wgraniu przebudowanego `matrix-bench` krzyżyk jest symetryczny (relacja użytkownika).
+- **Orientacja:** moduł wpięty obrócony; krótsze ramię widoczne u góry, czyli obraz jest obrócony
+  o 90° względem założenia w kodzie. Do ustalenia przy obudowie (ew. obrót obrazu w firmware).
+
+### 2026-10-10: pełny firmware z Zigbee i diagnostyka skaczących pomiarów
+
+- **Zigbee/HA:** pełny firmware dołącza do sieci, Zigbee2MQTT widzi urządzenie online. Reconfigure
+  przerywał się na żądaniu raportowania `outOfService` (UNREPORTABLE_ATTRIBUTE, atrybut
+  nieraportowalny w ZCL), przez co endpoint 9 („power”) nie był konfigurowany. Po poprawce
+  konwertera (raportowanie tylko `presentValue`, każdy krok osobno) Reconfigure przechodzi, a
+  przełącznik power w HA działa (relacja użytkownika).
+- **Objaw:** w HA odległość skakała 20–120 cm. Log z urządzenia: przy pomiarze co 80 ms większość
+  odczytów 78–128 cm, tylko co kilka ok. 56 cm.
+- **Hipoteza 1 (odrzucona):** opóźnienia programowej pętli pomiaru przez radio Zigbee. Pomiar
+  przepisany na sprzętowy capture MCPWM; rozkład wyników bez zmian. Capture zostaje (odporniejszy).
+- **Test A (co 250 ms, matryca włączona, mały przedmiot ok. 56 cm):** ok. 85% odczytów 55–58 cm,
+  pojedyncze 93–127 cm.
+- **Test B (co 80 ms, matryca nieużywana i wygaszona, ściana 100 cm):** 99–100 cm, bez wyskoków.
+- **Test porównawczy (co 80 ms, matryca włączona, ta sama ściana 100 cm):** częste zaniżone odczyty
+  86–98 cm przy części pomiarów, pozostałe 99–100 cm.
+- **Wniosek:** praca matrycy MAX7219 zakłóca pomiar (zaniżone odczyty, typowe dla zakłóceń na
+  zasilaniu odbiornika HC-SR04); przy małym celu dochodzi wpływ częstych impulsów (odbicia).
+  Rzeczywistych odległości w teście A nie zmierzono miarką.
+
+### 2026-10-11: zakłócenia matrycy w sonarze rozwiązane w firmware (sonar przy ścianie 100 cm)
+
+- **Kondensatory dodane (relacja użytkownika):** 100 µF c40/c41 i 100 nF d40/d41 przy MAX7219,
+  100 µF i 100 nF na szynach dolnych przy przewodach sonaru. Same nie usunęły zakłóceń.
+- **Obserwacje:** gdy matryca pracowała, odczyty układały się w powoli rosnące serie (zakłócenie
+  okresowe od przełączania wierszy MAX7219, ok. 800 Hz, przesuwające się względem pomiaru), a
+  fałszywe krótkie odczyty wywoływały alarm i dalsze zakłócenia („dyskoteka”). Po wprowadzeniu
+  gaszenia matrycy na czas pomiaru zostały regularne `raw 2` co 5. pomiar (co 400 ms = zbieg
+  odświeżania matrycy co 50 ms z pomiarem co 80 ms).
+- **Zmiany w firmware (2026-10-10/11):** pomiar ECHO sprzętowy (MCPWM capture) z odrzucaniem
+  szpilek i impulsów < 100 µs; matryca w trybie shutdown i zablokowana magistrala na cały czas
+  pomiaru; konfiguracja MAX7219 wysyłana w każdej klatce (matryca sama wraca po zakłóceniu);
+  wolniejsze zbocza zegara; mediana z 5 ostatnich pomiarów.
+- **Wynik (log użytkownika, ok. 20 s, dwa pełne przebiegi):** po starcie (ok. 1,3 s) wynik po
+  filtrze 99–100 cm we wszystkich pomiarach; surowe pojedyncze odstające (4–61 cm) rzadko, odrzucane.
+- **Koszt:** delikatne mruganie matrycy (gaszenie na czas pomiaru). Docelowo do usunięcia sprzętowo
+  na PCB: filtr RC na zasilaniu sonaru, rezystory szeregowe na DIN/CLK/CS, kondensatory przy modułach.
 
 ## Schematy i karty katalogowe
 

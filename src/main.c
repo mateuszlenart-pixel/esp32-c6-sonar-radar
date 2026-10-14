@@ -5,6 +5,7 @@
 #include "app_config.h"
 #include "logic.h"
 #include "network.h"
+#include "power_button.h"
 #include "radar.h"
 #include "sonar.h"
 #include "sonar_task.h"
@@ -30,6 +31,11 @@ void app_main(void)
     ESP_ERROR_CHECK(logic_start());
     ESP_ERROR_CHECK(sonar_task_start());
     ESP_ERROR_CHECK(ui_task_start());
+
+    const esp_err_t button_err = power_button_start();
+    if (button_err != ESP_OK) {
+        ESP_LOGW(TAG, "Power button unavailable: %s", esp_err_to_name(button_err));
+    }
 
     const esp_err_t network_err = network_start();
     if (network_err != ESP_OK) {

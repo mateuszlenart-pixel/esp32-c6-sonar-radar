@@ -21,6 +21,7 @@
 #define RADAR_BUZZER_ENDPOINT 6
 #define RADAR_TARGET_THRESHOLD_ENDPOINT 7
 #define RADAR_CRITICAL_THRESHOLD_ENDPOINT 8
+#define RADAR_POWER_ENDPOINT 9
 #define RADAR_ZIGBEE_TASK_STACK 6144
 #define RADAR_ZIGBEE_TASK_PRIORITY 5
 #define RADAR_ZIGBEE_RETRY_DELAY_MS 5000
@@ -98,6 +99,8 @@ static ezb_af_device_desc_t create_radar_descriptor(void)
         &enabled_config, EZB_ZCL_CLUSTER_SERVER);
     ezb_zcl_cluster_desc_t buzzer = ezb_zcl_on_off_create_cluster_desc(
         &enabled_config, EZB_ZCL_CLUSTER_SERVER);
+    ezb_zcl_cluster_desc_t power = ezb_zcl_on_off_create_cluster_desc(
+        &enabled_config, EZB_ZCL_CLUSTER_SERVER);
     const ezb_zcl_analog_output_cluster_server_config_t target_threshold_config = {
         .out_of_service = false,
         .present_value = RADAR_TARGET_DISTANCE_CM,
@@ -146,7 +149,8 @@ static ezb_af_device_desc_t create_radar_descriptor(void)
     /* Give every measurement its own endpoint so no cluster is registered twice. */
     if (occupancy == EZB_INVALID_DESC || critical == EZB_INVALID_DESC ||
         angle == EZB_INVALID_DESC || distance == EZB_INVALID_DESC ||
-        patrol == EZB_INVALID_DESC || buzzer == EZB_INVALID_DESC || !basic_attributes_added ||
+        patrol == EZB_INVALID_DESC || buzzer == EZB_INVALID_DESC ||
+        power == EZB_INVALID_DESC || !basic_attributes_added ||
         !threshold_attributes_added ||
         !add_endpoint(device, RADAR_ENDPOINT, occupancy, basic) ||
         !add_endpoint(device, RADAR_CRITICAL_ENDPOINT, critical, EZB_INVALID_DESC) ||
@@ -155,7 +159,8 @@ static ezb_af_device_desc_t create_radar_descriptor(void)
         !add_endpoint(device, RADAR_PATROL_ENDPOINT, patrol, EZB_INVALID_DESC) ||
         !add_endpoint(device, RADAR_BUZZER_ENDPOINT, buzzer, EZB_INVALID_DESC) ||
         !add_endpoint(device, RADAR_TARGET_THRESHOLD_ENDPOINT, target_threshold, EZB_INVALID_DESC) ||
-        !add_endpoint(device, RADAR_CRITICAL_THRESHOLD_ENDPOINT, critical_threshold, EZB_INVALID_DESC)) {
+        !add_endpoint(device, RADAR_CRITICAL_THRESHOLD_ENDPOINT, critical_threshold, EZB_INVALID_DESC) ||
+        !add_endpoint(device, RADAR_POWER_ENDPOINT, power, EZB_INVALID_DESC)) {
         ezb_af_free_device_desc(device);
         return EZB_INVALID_AF_DEVICE_DESC;
     }
@@ -211,6 +216,9 @@ static void zigbee_attribute_handler(ezb_zcl_core_action_callback_id_t callback_
     } else if (change->info.dst_ep == RADAR_BUZZER_ENDPOINT) {
         logic_set_buzzer_enabled(enabled);
         ESP_LOGI(TAG, "Buzzer %s from Zigbee", enabled ? "enabled" : "muted");
+    } else if (change->info.dst_ep == RADAR_POWER_ENDPOINT) {
+        logic_set_power_enabled(enabled);
+        ESP_LOGI(TAG, "Radar %s from Zigbee", enabled ? "ON" : "standby");
     }
 }
 
@@ -231,6 +239,7 @@ static void zigbee_update_task(void *arg)
             bool distance_out_of_service = !status.distance_valid;
             uint8_t patrol = logic_is_patrol_enabled() ? 1U : 0U;
             uint8_t buzzer = logic_is_buzzer_enabled() ? 1U : 0U;
+            uint8_t power = logic_is_power_enabled() ? 1U : 0U;
             radar_thresholds_t thresholds;
             if (!logic_get_thresholds(&thresholds)) {
                 thresholds.target_distance_cm = RADAR_TARGET_DISTANCE_CM;
@@ -268,6 +277,10 @@ static void zigbee_update_task(void *arg)
                 EZB_ZCL_CLUSTER_ID_ON_OFF, EZB_ZCL_CLUSTER_SERVER,
                 EZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, EZB_ZCL_STD_MANUF_CODE,
                 &buzzer, false);
+            (void)ezb_zcl_set_attr_value(RADAR_POWER_ENDPOINT,
+                EZB_ZCL_CLUSTER_ID_ON_OFF, EZB_ZCL_CLUSTER_SERVER,
+                EZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, EZB_ZCL_STD_MANUF_CODE,
+                &power, false);
             (void)ezb_zcl_set_attr_value(RADAR_TARGET_THRESHOLD_ENDPOINT,
                 EZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, EZB_ZCL_CLUSTER_SERVER,
                 EZB_ZCL_ATTR_ANALOG_OUTPUT_PRESENT_VALUE_ID, EZB_ZCL_STD_MANUF_CODE,

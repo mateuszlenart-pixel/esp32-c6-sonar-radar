@@ -251,6 +251,15 @@ esp_err_t oled_show_status(const radar_status_t *status)
     return ESP_OK;
 }
 
+esp_err_t oled_set_power(bool on)
+{
+    if (s_oled_device == NULL) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    const uint8_t command[] = {on ? 0xAF : 0xAE};
+    return write_commands(command, sizeof(command));
+}
+
 void oled_deinit(void)
 {
     if (s_oled_device != NULL) {
