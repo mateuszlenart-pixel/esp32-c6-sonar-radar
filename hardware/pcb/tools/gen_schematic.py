@@ -123,8 +123,8 @@ TP = 'TestPoint:TestPoint_Pad_D1.5mm'
 
 # ------------------------------------------------------------------ zasilanie
 text(30, 30, 'ZASILANIE 5 V: gniazdo USB-C (tylko zasilanie, rezystory CC 5,1 k), TVS, przelacznik z miekkim startem')
-place('J1', 'Connector', 'USB_C_Receptacle_USB2.0_16P', 'USB-C zasilanie 5 V (GCT USB4105)',
-      'Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal', 40, 60,
+place('J1', 'Connector', 'USB_C_Receptacle_USB2.0_16P', 'USB-C zasilanie 5 V (HRO TYPE-C-31-M-12)',
+      'Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12', 40, 60,
       {'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', 'SH': 'GND',
        'A4': 'VIN', 'A9': 'VIN', 'B4': 'VIN', 'B9': 'VIN', 'A5': 'CC1', 'B5': 'CC2'},
       nc=['A6', 'A7', 'A8', 'B6', 'B7', 'B8'])
