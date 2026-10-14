@@ -1,3 +1,3 @@
-idf_component_register(SRCS "main.c" "power_button.c" "radar.c" "scan_control.c" "servo.c" "sonar.c" "sonar_task.c" "detector.c" "logic.c" "oled.c" "ui_task.c" "matrix.c" "buzzer.c" "network.c" "mqtt_bridge.c" "zigbee_bridge.c"
+idf_component_register(SRCS "main.c" "power_button.c" "radar.c" "scan_control.c" "servo.c" "sonar.c" "sonar_task.c" "detector.c" "logic.c" "oled.c" "ui_task.c" "matrix.c" "buzzer.c" "usb_cc.c" "power_monitor.c" "network.c" "mqtt_bridge.c" "zigbee_bridge.c"
                        INCLUDE_DIRS "."
-                       PRIV_REQUIRES esp_driver_gpio esp_driver_i2c esp_driver_ledc esp_driver_mcpwm esp_timer esp_rom esp_event esp_netif esp_wifi nvs_flash esp-zigbee-lib mqtt)
+                       PRIV_REQUIRES esp_driver_gpio esp_driver_i2c esp_driver_ledc esp_adc esp_driver_mcpwm esp_timer esp_rom esp_event esp_netif esp_wifi nvs_flash esp-zigbee-lib mqtt)

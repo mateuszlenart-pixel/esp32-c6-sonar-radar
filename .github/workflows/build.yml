@@ -37,3 +37,8 @@ jobs:
         run: |
           gcc -std=c11 -Wall -Wextra -Werror -Isrc src/scan_control.c tests/test_scan_control.c -o test_scan_control
           ./test_scan_control
+
+      - name: Test USB-C supply classification
+        run: |
+          gcc -std=c11 -Wall -Wextra -Werror -Isrc src/usb_cc.c tests/test_usb_cc.c -o test_usb_cc
+          ./test_usb_cc

@@ -29,7 +29,7 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 2. **Zasilanie wejściowe (zmiana 2026-10-11):** gniazdo **USB-C tylko do zasilania** (GCT USB4105,
    montaż maszynowy) zamiast gniazda DC. Rezystory 5,1 kΩ na CC1/CC2 (R16, R17) są konieczne, żeby
    ładowarka z kablem USB-C ↔ USB-C podała 5 V. Ochrona: TVS 5 V (D3, SMAJ5.0A, jednokierunkowy) na wejściu oraz przełącznik obciążenia z miękkim startem
-   i ogranicznikiem prądu U2 (AP22804AW5, EN aktywny wysokim, EN połączone z VIN, RDS(on) 65 mΩ) zamiast
+   i ogranicznikiem prądu U2 (**AP22802AW5-7**, LCSC C211404, od 2026-10-14; zastąpił AP22804AW5, którego nie ma w katalogu JLCPCB; ten sam układ wyprowadzeń SOT-25, EN aktywny wysokim, EN połączone z VIN, RDS(on) typ. 50 mΩ, limit prądu 2,2–3,2 A, typ. 2,7 A, znamionowo 2 A) zamiast
    bezpiecznika polimerowego (mniejszy spadek napięcia, miękki start i ograniczenie prądu przy ładowaniu ok. 900 µF; patrz uwagi do weryfikacji niżej); zabezpieczenie przed odwrotną polaryzacją (Q1) usunięte, bo USB-C nie da się
    podłączyć odwrotnie. Linie danych USB (D+/D−, SBU) niepodłączone. Wejście 5 V zasila serwo, HC-SR04,
    MAX7219, bufor i ESP32. Wymagana ładowarka ≥ 5 V / 1,5 A (szczyt poboru około 1–1,3 A); port USB
@@ -143,13 +143,13 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   wyłączone. GPIO0 i GPIO1 to też piny kwarcu 32 kHz; na schemacie DevKitC-1 v1.4 kwarcu nie ma
   (sprawdzone wyszukiwaniem w tekście schematu), więc nie koliduje.
   **Przepięcie (świadomie bez zmiany):** TVS SMAJ5.0A ogranicza impulsy, ale przy trwałym nadnapięciu
-  z wadliwej ładowarki (np. 9 V) spali się, a AP22804 nie ma ochrony nadnapięciowej. Zgodna ładowarka
+  z wadliwej ładowarki (np. 9 V) spali się, a AP22802 nie ma ochrony nadnapięciowej. Zgodna ładowarka
   przy rezystorach 5,1 kΩ na CC nie poda więcej niż 5 V, więc ryzyko jest szczątkowe. Zamiana na eFuse
   z OVP (rodzina TI TPS2595x) wymaga potwierdzenia dostępności, footprintu i karty katalogowej, a
   symbolu nie ma w bibliotece KiCada. Opcja na kolejną rewizję.
-  **Do sprawdzenia przed zamówieniem:** wariant AP22804**A**W5 (EN aktywny wysokim; potwierdzone
-  wyszukiwaniem w sieci, nie w pełnym datasheecie Diodes); dopuszczalna pojemność wyjściowa i
-  zachowanie przy przegrzaniu (za U2 jest ok. 900 µF, start trwa ok. 2 ms w limicie prądu 2,5–3 A);
+  **Do sprawdzenia przed zamówieniem:** wariant AP22802**A**W5-7 (EN aktywny wysokim; potwierdzone
+  w karcie katalogowej Diodes: pin 4 EN, A = aktywny wysokim, B = niskim); dopuszczalna pojemność wyjściowa i
+  zachowanie przy przegrzaniu (za U2 jest ok. 900 µF, start trwa kilka ms w limicie prądu 2,2–3,2 A; AP22802 startuje wolniej niż AP22804, rise time typ. 2,1 ms przy 4,7 µF);
   start z pełną pojemnością i ładowarką 1,5 A na prototypie. Limit prądu U2 jest wyższy niż 1,5 A
   ładowarek USB-C: chroni przed zwarciem, ale ładowarka ma własne zabezpieczenie.
 - **Rendery i PDF:** `tools/export_docs.sh` (po `build_all.sh`).
