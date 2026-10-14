@@ -30,6 +30,11 @@ SILK_H, SILK_T = 1.0, 0.17   # napisy na silkscreenie: JLCPCB wymaga wysokości 
 SILK_LINE_MIN = 0.15        # minimalna grubość linii obrysu elementów na silkscreenie
 
 
+def set_origin(board):
+    """Początek pomocniczy (Gerbery, wiercenia, pozycje montażowe) w lewym dolnym rogu płytki."""
+    board.GetDesignSettings().SetAuxOrigin(P(0, H))
+
+
 def P(x, y):
     return pcbnew.VECTOR2I(mm(OX + x), mm(OY + y))
 
@@ -447,6 +452,7 @@ def build():
     board.Add(ka)
     add_labels(board, fps)
     add_dimensions(board)
+    set_origin(board)
     board.Save(PCB)
     pcbnew.ExportSpecctraDSN(board, DSN)
     # kontrola położeń rzędów DevKita i modułów
@@ -488,6 +494,7 @@ def finish():
             out.Append(mm(OX + x), mm(OY + y))
         board.Add(z)
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    set_origin(board)
     board.Save(PCB)
     print('zapisano z wylewkami GND')
 
@@ -505,6 +512,7 @@ def relabel():
             fp.Reference().SetVisible(False)
             fp.Value().SetVisible(False)
     add_labels(board, fps)
+    set_origin(board)
     board.Save(PCB)
     print('opisy przeliczone')
 

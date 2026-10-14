@@ -38,11 +38,40 @@ Stan: 2026-10-14. Płytka kompaktowa 66 × 91 mm. **Nic nie zamówione**, płytk
 | napisy na silkscreenie | wysokość min. 1 mm, grubość min. 0,15 mm | wysokość 1,0 mm, grubość 0,17 mm: OK (poprawione 2026-10-14) |
 | odstęp napisu od padu | min. 0,15 mm | DRC płytki: 0 naruszeń |
 
+## Pliki produkcyjne (wygenerowane 2026-10-14)
+
+`bash hardware/pcb/tools/export_jlcpcb.sh` (po `build_all.sh`) tworzy w `hardware/pcb/production/`:
+`gerber-jlcpcb.zip` (Gerbery, wiercenia, 2 warstwy, początek współrzędnych w lewym dolnym rogu płytki),
+`bom-jlcpcb.csv` (20 pozycji, 44 elementy SMD) i `cpl-jlcpcb.csv` (pozycje elementów z przodu).
+Numery LCSC wpisane w `tools/jlcpcb_bom.py` i sprawdzone na stronach `jlcpcb.com/partdetail/<numer>`:
+
+| Element | LCSC | Typ w bibliotece JLCPCB |
+|---|---|---|
+| R 1 k / 10 k / 100 k / 47 k / 100 Ω / 330 Ω / 5,1 k / 15 k, 0805 1 % | C17513 / C17414 / C17407 / C17713 / C17408 / C17630 / C27834 / C17475 | Basic |
+| R 10 Ω 0805 (R11) | C17415 | nie potwierdzono |
+| zworka 0 Ω 0805 (FB1) | C17477 | Basic |
+| C 100 nF 50 V X7R 0805 / 1 µF 50 V X7R 0805 | C49678 / C28323 | Basic |
+| D1 LED czerwona 0805 | C84256 | Basic |
+| D2 1N4148W | C81598 | Basic |
+| D3 SMAJ5.0A (MDD) | C113952 | nie potwierdzono |
+| D4 1N5819HW-7-F | C82544 | nie potwierdzono |
+| Q2 MMBT3904 | C20526 | Basic |
+| U1 SN74AHCT125DR | C155176 | nie potwierdzono |
+| U2 AP22802AW5-7 | C211404 | nie potwierdzono |
+| J1 USB4105-GF-A | C3020560 | nie potwierdzono |
+
+Nie montowane (nie są w BOM): C12, R24, R25 (opcje), punkty testowe, gniazda, listwy, SW1, C1, C4, C6, C8.
+Kolor LED zasilania nie był ustalony, wybrałem czerwony (zmiana = inny numer LCSC w `tools/jlcpcb_bom.py`).
+Typ „Basic/Extended” decyduje o dopłacie za każdy unikalny element; stany magazynowe nie były sprawdzane.
+
 ## Do zrobienia przed zamówieniem
 
-- Wygenerować Gerbery, BOM i CPL (nie zrobione) i sprawdzić je w kreatorze JLCPCB (numery LCSC, rotacje części).
-- Numery LCSC znane z katalogu: GCT USB4105-GF-A (C3020560), AP22802AW5-7 (C211404), SN74AHCT125DR (C155176),
-  SMAJ5.0A (kilku producentów). Pozostałe części (rezystory i kondensatory 0805, MMBT3904, 1N4148W, 1N5819HW,
-  LED 0805, ferryt/zworka FB1) dopiero dobrać; sprawdzić, które są „Basic” (bez dopłaty za element).
-- Zamówić z montażem tylko strony przedniej i sprawdzić podgląd rozmieszczenia w kreatorze, w szczególności
-  obrót USB-C, U1 (SOIC-14, pin 1), U2 i Q2.
+- W kreatorze JLCPCB wgrać `gerber-jlcpcb.zip`, potem BOM i CPL, i **obejrzeć podgląd rozmieszczenia**: obrót
+  U1 (pin 1), U2, Q2, D2–D4, USB-C J1. JLCPCB potrafi obrócić część względem KiCada (inne definicje pinu 1),
+  a CPL jest wygenerowany bez korekt rotacji. Poprawki robi się w kreatorze (przycisk obrotu), nie w plikach.
+- Sprawdzić w kreatorze, czy U2 (C211404) i USB-C (C3020560) są na stanie i czy nie ma dopłaty lub ostrzeżenia.
+- Montaż tylko strony przedniej (wszystkie SMD są z przodu), grubość 1,6 mm, 2 warstwy.
+- Opcja „numer zamówienia na płytce”: JLCPCB dodaje własny numer na silkscreenie, jeśli nie ma na płytce
+  znacznika; można zamówić usunięcie za dopłatą lub zostawić.
+- Nic nie było sprawdzone na sprzęcie. Przed zamówieniem zalecam przetestować bloki na breadboardzie
+  (MAX7219, serwo, buzzer) i pomiary obudowy, gdy będą możliwe.
