@@ -26,7 +26,7 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 
 1. **ESP32-C6-DevKitC-1 w gniazdach żeńskich** (decyzja użytkownika z 2026-10-09).
    Rozstaw rzędów do potwierdzenia na posiadanej płytce przed layoutem.
-2. **Zasilanie wejściowe (zmiana 2026-10-11):** gniazdo **USB-C tylko do zasilania** (GCT USB4105,
+2. **Zasilanie wejściowe (zmiana 2026-10-11):** gniazdo **USB-C tylko do zasilania** (HRO TYPE-C-31-M-12, od 2026-10-14; wcześniej GCT USB4105,
    montaż maszynowy) zamiast gniazda DC. Rezystory 5,1 kΩ na CC1/CC2 (R16, R17) są konieczne, żeby
    ładowarka z kablem USB-C ↔ USB-C podała 5 V. Ochrona: TVS 5 V (D3, SMAJ5.0A, jednokierunkowy) na wejściu oraz przełącznik obciążenia z miękkim startem
    i ogranicznikiem prądu U2 (**AP22802AW5-7**, LCSC C211404, od 2026-10-14; zastąpił AP22804AW5, którego nie ma w katalogu JLCPCB; ten sam układ wyprowadzeń SOT-25, EN aktywny wysokim, EN połączone z VIN, RDS(on) typ. 50 mΩ, limit prądu 2,2–3,2 A, typ. 2,7 A, znamionowo 2 A) zamiast
@@ -153,7 +153,7 @@ wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
   start z pełną pojemnością i ładowarką 1,5 A na prototypie. Limit prądu U2 jest wyższy niż 1,5 A
   ładowarek USB-C: chroni przed zwarciem, ale ładowarka ma własne zabezpieczenie.
 - **Rendery i PDF:** `tools/export_docs.sh` (po `build_all.sh`).
-- **Do sprawdzenia przed zamówieniem:** gniazdo USB-C GCT USB4105-xx-A (footprint z biblioteki KiCad) – potwierdzić
+- **Do sprawdzenia przed zamówieniem:** gniazdo USB-C HRO TYPE-C-31-M-12 (footprint z biblioteki KiCad; zmienione z GCT USB4105-xx-A 2026-10-14) – potwierdzić
   dostępność u wykonawcy montażu; dopuszczalny odstęp 0,19 mm pól GND od otworów pozycjonujących jest
   z zaleceń producenta (ustawione w `.kicad_pro`); położenie gniazd modułów po pomiarach (rozstaw rzędów DevKita zmierzony: 23,1 mm).
 - **Obrys 66 × 128 mm i położenie elementów to propozycja** do zatwierdzenia po zmierzeniu

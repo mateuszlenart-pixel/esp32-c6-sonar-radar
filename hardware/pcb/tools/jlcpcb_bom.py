@@ -19,7 +19,7 @@ NETLIST = os.path.join(HERE, '..', 'radar-pcb.net')
 PARTS = OrderedDict([
     ('1 k', ('1kΩ ±1% 0805', 'C17513', 'Basic')),
     ('10 k', ('10kΩ ±1% 0805', 'C17414', 'Basic')),
-    ('100 k', ('100kΩ ±1% 0805', 'C17407', 'Basic')),
+    ('100 k', ('100kΩ ±1% 0805 (Yageo)', 'C96346', 'Extended')),
     ('47 k', ('47kΩ ±1% 0805', 'C17713', 'Basic')),
     ('100', ('100Ω ±1% 0805', 'C17408', 'Basic')),
     ('10', ('10Ω ±1% 0805', 'C17415', 'sprawdzić')),
@@ -36,7 +36,7 @@ PARTS = OrderedDict([
     ('MMBT3904', ('MMBT3904 SOT-23', 'C20526', 'Basic')),
     ('SN74AHCT125D', ('SN74AHCT125DR SOIC-14', 'C155176', 'sprawdzić')),
     ('AP22802AW5-7 (przelacznik 5 V, LCSC C211404, limit ok. 2,2-3,2 A)', ('AP22802AW5-7 SOT-25', 'C211404', 'sprawdzić')),
-    ('USB-C zasilanie 5 V (GCT USB4105)', ('USB4105-GF-A USB-C', 'C3020560', 'sprawdzić')),
+    ('USB-C zasilanie 5 V (HRO TYPE-C-31-M-12)', ('TYPE-C-31-M-12 USB-C 16P', 'C165948', 'Extended')),
 ])
 DNP = {'C12', 'R24', 'R25'}  # opcjonalne, niemontowane (zob. order-notes.md)
 

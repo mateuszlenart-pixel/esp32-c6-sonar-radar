@@ -73,7 +73,7 @@ FIXED = {
     'C4': (21, 20.5, 0, 'F'), 'FB1': (23.5, 12.4, 0, 'F'), 'C10': (14.5, 19.5, 90, 'F'),
     'R15': (29.2, 7.0, 0, 'F'), 'C11': (44.5, 16, 0, 'F'), 'C12': (51, 16, 0, 'F'), 'SW1': (2.64, 115.25, 90, 'F'), 'C5': (10.2, 115.8, 0, 'F'),
     # prawy pas: gniazdo USB-C zasilania (na krawędzi), CC, TVS, bezpiecznik, kondensatory, LED
-    'J1': (3.1, 100, 270, 'F'), 'R16': (10.8, 98.8, 0, 'F'), 'R17': (10.8, 102.2, 0, 'F'), 'D3': (14.4, 105.5, 90, 'F'), 'D1': (7.5, 86.5, 90, 'F'), 'R1': (13.5, 86.9, 0, 'F'),
+    'J1': (2.74, 100, 270, 'F'), 'R16': (10.8, 98.8, 0, 'F'), 'R17': (10.8, 102.2, 0, 'F'), 'D3': (14.4, 105.5, 90, 'F'), 'D1': (7.5, 86.5, 90, 'F'), 'R1': (13.5, 86.9, 0, 'F'),
     'C1': (55.5, 80, 0, 'F'), 'C2': (63, 80, 90, 'F'), 'U2': (13.2, 95.2, 0, 'F'), 'C16': (9.0, 92.6, 0, 'F'), 'R26': (48.5, 77.5, 0, 'F'),
     'TP1': (49.5, 89.5, 0, 'F'), 'TP3': (46, 89.5, 0, 'F'),
     'D4': (25, 121.8, 0, 'F'), 'R18': (10.2, 110.0, 0, 'F'), 'R19': (10.2, 113.0, 0, 'F'), 'J10': (41, 111.5, 90, 'F'),
@@ -398,6 +398,10 @@ def build():
 
     for ref in FIXED:
         place_fixed(board, fps[ref], ref)
+    # obrys gniazda USB-C wychodzi poza pas przy krawędzi: usuwamy jego odcinki silkscreenu bliżej krawędzi niż 1,2 mm
+    for g in list(fps['J1'].GraphicalItems()):
+        if g.GetLayer() == pcbnew.F_SilkS and min(pcbnew.ToMM(g.GetStart().x), pcbnew.ToMM(g.GetEnd().x)) - OX < 1.2:
+            fps['J1'].RemoveNative(g)
 
     missing = [r for r in fps if r not in FIXED]
     if missing:
