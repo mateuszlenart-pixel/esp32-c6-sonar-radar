@@ -11,6 +11,11 @@ JAVA=$(ls -d ~/tools/java25/*/bin)/java
 $KPY $PCB/tools/gen_schematic.py
 (cd $PCB && $KCLI sch erc --severity-error --exit-code-violations --output erc.rpt radar-pcb.kicad_sch)
 (cd $PCB && $KCLI sch export netlist --format kicadxml --output radar-pcb.net radar-pcb.kicad_sch)
+# logo (silkscreen): wektoryzacja logo/am-logo-source.jfif i footprint logo/am-logo.kicad_mod (bez pliku: bez logo)
+if [ -f $PCB/logo/am-logo-source.jfif ]; then
+  python3 $PCB/tools/logo_trace.py $PCB/logo/am-logo-source.jfif 22
+  $KPY $PCB/tools/logo_footprint.py
+fi
 if [ -z "$SKIP_PLACE" ]; then
   $KPY $PCB/tools/fpinfo.py
   python3 $PCB/tools/autoplace.py --seed ${SEED:-3} --iters ${ITERS:-500000}

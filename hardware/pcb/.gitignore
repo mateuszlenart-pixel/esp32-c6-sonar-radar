@@ -17,3 +17,4 @@ production/gerber/
 production/pos-kicad.csv
 tools/fpinfo.json
 tools/_logo.pretty/
+tools/logo-contours.json
