@@ -1,81 +1,52 @@
 # Decyzje i uwagi do zamówienia (JLCPCB)
 
-Stan: 2026-10-14. Płytka kompaktowa 66 × 91 mm. **Nic nie zamówione**, płytka nie była sprawdzana na sprzęcie.
+Stan: 2026-10-15. **Wersja przewlekana v0.2**, płytka 76 × 137,5 mm. Nic nie zamówione, nic nie sprawdzone na sprzęcie.
 
-## Decyzje
+## Zmiana podejścia (2026-10-15)
 
-- **Buzzer:** użytkownik ma aktywny i pasywny, bez modelu. Stopień Q2 (MMBT3904) + D2 (1N4148W) obsługuje oba,
-  pod warunkiem że są na **5 V** i pobierają do ok. 50 mA. Domyślnie pasywny (`BUZZER_ACTIVE 0` w
-  `src/app_config.h`): firmware gra różne tony. Aktywny działa po zmianie na `1`, ale ma jeden stały ton.
-- **FB1:** footprint 0805 przyjmie zarówno zworkę 0 Ω, jak i ferryt, bez zmiany płytki. Na płytkach
-  z montażem zamawiamy zworkę 0 Ω; ferryt (≥ 1 A, DCR do ok. 0,1 Ω) dolutowujemy ręcznie, jeśli w testach
-  serwo będzie zakłócać sonar. Sprawdzić przy zamówieniu, czy ferryt wybrany z katalogu mieści się
-  w pasie 0805 i ma prąd znamionowy ≥ 1 A (SG90 w szczycie około 0,7 A).
-- **R24, R25:** nie montować (opcjonalne pull-upy I2C; moduł OLED ma własne).
+Montaż SMD w JLCPCB wychodził zbyt drogo, więc **płytki zamawiamy bez montażu, a wszystkie elementy lutuje użytkownik**.
+Wersja SMD z USB-C (HRO TYPE-C-31-M-12, AP22802, 0805) została zastąpiona wersją przewlekaną. Historia jest w gitcie
+(PR #2–#6). Z tamtej wersji nie przechodzą: BOM i CPL dla JLCPCB, numery LCSC.
 
-## Decyzje z 2026-10-14
+Co się zmieniło względem wersji SMD:
+- **Zasilanie:** gniazdo DC 5,5/2,1 mm (środek +5 V), bezpiecznik PTC 2 A (hold) i dioda TVS SA5.0A (po bezpieczniku,
+  zwiera przy przepięciu i odwróconej polaryzacji, PTC odcina). Zamiast przełącznika AP22802 (brak wersji przewlekanej).
+  Nie ma miękkiego startu ani flagi przeciążenia. Zniknęły rezystory i pomiary CC (GPIO1, GPIO3, GPIO23 są wolne).
+- **Elementy:** rezystory 1/4 W osiowe (7,62 mm), kondensatory ceramiczne radialne 5 mm, diody 1N4148 (DO-35),
+  1N5819 (DO-41), TVS SA5.0A (DO-15), tranzystor 2N3904 (TO-92), bufor SN74AHCT125N w DIP-14 na podstawce, LED 3 mm.
+- **Piny DevKita:** gniazda żeńskie J2/J3 od tyłu (bez zmian), a z przodu dwie listwy **żeńskie** J11 (kopia pinów J3 DevKita)
+  i J12 (kopia pinów J1) z **wszystkimi 30 sygnałami** (pin 5V listwy J12 to szyna +5V płytki), listwa zasilania J13
+  (GND, 3V3, 5V) i **pole prototypowe** 14 × 8 otworów 2,54 mm. Pin IO0 ma na płytce dzielnik pomiaru 5 V
+  (R20/R21); nie montuj ich, jeśli chcesz mieć IO0 wolny.
+- **Decyzje bez zmian:** moduły OLED (J7) i MAX7219 (J6) na kablach, HC-SR04 i serwo (J4, J5), buzzer (J8, aktywny lub
+  pasywny, 5 V), przycisk ON/STANDBY (SW1) i zewnętrzny (J9), FB1 jako zworka 0 R, R24/R25 i C12 nie montować.
 
-- **Zamówienie:** płytka z **zamontowanymi elementami SMD** (montaż JLCPCB), a gniazda DevKita J2/J3, listwy
-  J4–J10, przycisk SW1 i kondensatory elektrolityczne C1, C4, C6, C8 lutuje użytkownik. Wszystkie elementy SMD
-  są po przedniej stronie, THT jest po przedniej (listwy, SW1, kondensatory) i tylnej (gniazda DevKita).
-- **U2 zmieniony na AP22802AW5-7 (LCSC C211404, SMT do montażu w JLCPCB).** AP22804AW5 nie ma w katalogu.
-  Układ wyprowadzeń SOT-25 jest ten sam (1 OUT, 2 GND, 3 FLG, 4 EN aktywny wysokim, 5 IN), więc płytka się nie
-  zmienia. Różnice (karta katalogowa Diodes): znamionowo 2 A zamiast 2,5 A (radar potrzebuje ok. 1–1,3 A),
-  limit prądu 2,2–3,2 A (typ. 2,7 A), wolniejszy start (rise time typ. 2,1 ms przy 4,7 µF).
-- **USB-C (zmiana 2026-10-14):** GCT USB4105-GF-A (C3020560) był w katalogu, ale kreator pokazał brak na stanie,
-  więc J1 zmieniony na Korean Hroparts **TYPE-C-31-M-12 (LCSC C165948, Extended, 390 755 szt. na stanie)**,
-  footprint `USB_C_Receptacle_HRO_TYPE-C-31-M-12` z biblioteki KiCad. Pady sygnałowe są 0,36 mm dalej od krawędzi,
-  więc gniazdo przesunięto o 0,36 mm ku krawędzi (x = 2,74 mm), korpus wystaje 1,43 mm poza płytkę. Dwa odcinki
-  obrysu silkscreenu przy krawędzi usunięte (DRC pokazuje przez to ostrzeżenie `lib_footprint_mismatch`). Strona JLCPCB oznacza montaż jako trudny („High”);
-  w kreatorze sprawdzić, czy nie ma dopłaty ani ostrzeżenia o gabarycie lub kołkach.
-- **Silkscreen:** wszystkie napisy mają wysokość **1,0 mm** i grubość kreski 0,17 mm, obrysy elementów min. 0,15 mm
-  (wymóg JLCPCB). DRC: 0 naruszeń. Wartości C14, C15, R22, R23 (100 kΩ / 100 nF) i R24, R25 (4,7 kΩ, nie montować)
-  są podane w osobnych opisach zamiast przy elementach (brak miejsca); oznaczenia „H1–H4” przy otworach ukryte.
+## Zamówienie w JLCPCB (same płytki)
 
-## Zgodność z możliwościami JLCPCB (2 warstwy, źródło: strony Capabilities JLCPCB)
+Plik: `production/gerber-jlcpcb.zip` (wygeneruje go `tools/export_jlcpcb.sh`). Ustawienia w kreatorze: 2 warstwy, FR-4,
+1,6 mm, wykończenie HASL (z ołowiem jest najłatwiejsze do lutowania ręcznego), kolor dowolny, ilość 5. **Montaż
+(PCB Assembly) wyłączony.** Kreator powinien wykryć 76 × 137,5 mm.
 
-| Parametr | Wymaganie JLCPCB | Płytka |
-|---|---|---|
-| ścieżka / odstęp | min. 0,127 mm | min. ścieżka 0,15 mm, odstęp 0,2 mm: OK |
-| przelotka | otwór min. 0,3 mm, średnica min. 0,5 mm | 0,35 / 0,7 mm: OK |
-| napisy na silkscreenie | wysokość min. 1 mm, grubość min. 0,15 mm | wysokość 1,0 mm, grubość 0,17 mm: OK (poprawione 2026-10-14) |
-| odstęp napisu od padu | min. 0,15 mm | DRC płytki: 0 naruszeń |
+Zgodność z możliwościami JLCPCB (źródło: strony Capabilities): ścieżki i odstępy min. 0,127 mm (u nas 0,3 / 0,2 mm),
+przelotka 0,3 / 0,5 mm (u nas 0,35 / 0,7 mm), napisy na silkscreenie min. 1 mm i 0,15 mm kreski (u nas 1,0 / 0,17 mm).
 
-## Pliki produkcyjne (wygenerowane 2026-10-14)
+## Lista zakupów
 
-`bash hardware/pcb/tools/export_jlcpcb.sh` (po `build_all.sh`) tworzy w `hardware/pcb/production/`:
-`gerber-jlcpcb.zip` (Gerbery, wiercenia, 2 warstwy, początek współrzędnych w lewym dolnym rogu płytki),
-`bom-jlcpcb.csv` (20 pozycji, 44 elementy SMD) i `cpl-jlcpcb.csv` (pozycje elementów z przodu).
-Numery LCSC wpisane w `tools/jlcpcb_bom.py` i sprawdzone na stronach `jlcpcb.com/partdetail/<numer>`:
-
-| Element | LCSC | Typ w bibliotece JLCPCB |
-|---|---|---|
-| R 1 k / 10 k / 47 k / 100 Ω / 330 Ω / 5,1 k / 15 k, 0805 1 % | C17513 / C17414 / C17713 / C17408 / C17630 / C27834 / C17475 | Basic |
-| R 100 k 0805 1 % (R10, R20, R22, R23) | C96346 (Yageo RC0805FR-07100KL; C17407 był niedostępny) | Extended |
-| R 10 Ω 0805 (R11) | C17415 | nie potwierdzono |
-| zworka 0 Ω 0805 (FB1) | C17477 | Basic |
-| C 100 nF 50 V X7R 0805 / 1 µF 50 V X7R 0805 | C49678 / C28323 | Basic |
-| D1 LED czerwona 0805 | C84256 | Basic |
-| D2 1N4148W | C81598 | Basic |
-| D3 SMAJ5.0A (MDD) | C113952 | nie potwierdzono |
-| D4 1N5819HW-7-F | C82544 | nie potwierdzono |
-| Q2 MMBT3904 | C20526 | Basic |
-| U1 SN74AHCT125DR | C155176 | nie potwierdzono |
-| U2 AP22802AW5-7 | C211404 | nie potwierdzono |
-| J1 TYPE-C-31-M-12 | C165948 | Extended |
-
-Nie montowane (nie są w BOM): C12, R24, R25 (opcje), punkty testowe, gniazda, listwy, SW1, C1, C4, C6, C8.
-Kolor LED zasilania nie był ustalony, wybrałem czerwony (zmiana = inny numer LCSC w `tools/jlcpcb_bom.py`).
-Typ „Basic/Extended” decyduje o dopłacie za każdy unikalny element; stany magazynowe nie były sprawdzane.
+`production/lista-zakupow.csv` (wygeneruje ją `tools/hand_bom.py`): pozycje do kupienia, osobno elementy
+opcjonalne. Uwagi:
+- **Gniazdo DC:** footprint `BarrelJack_Horizontal` (3 pady: 0 / −6 mm / −3 × 4,7 mm). Przed zamówieniem sprawdź w karcie
+  katalogowej wybranego gniazda, że rozstaw pinów (środek, obudowa, styk przełączny) jest taki sam (pasuje CUI PJ-002A i zgodne).
+  Wtyk zasilacza 5,5/2,1 mm, środek plus.
+- **Przycisk SW1:** C&K PTS645VL58-2LFS lub zgodny kątowy (wciskany od strony krawędzi, popychacz wystaje przez ściankę obudowy).
+- **PTC F1:** radialny 2 A hold, rozstaw 5 mm.
+- **Wszystkie listwy są żeńskie** (decyzja 2026-10-15): J2–J13. Do gniazd wtyka się przewody z męskimi końcówkami (np. M–M
+  dla serwa SG90, które ma żeńską wtyczkę, i dla zworki BOOT/RST w J10). Pole prototypowe J14–J17 to same otwory.
+- **Gniazda DevKita J2/J3:** żeńskie 1×16, wysokie (ok. 8,5 mm), DevKit z lutowanymi goldpinami wchodzi w nie od tyłu płytki.
+- **Podstawka DIP-14** i układ SN74AHCT125N (wersja DIP; SOIC nie pasuje).
 
 ## Do zrobienia przed zamówieniem
 
-- W kreatorze JLCPCB wgrać `gerber-jlcpcb.zip`, potem BOM i CPL, i **obejrzeć podgląd rozmieszczenia**: obrót
-  U1 (pin 1), U2, Q2, D2–D4, USB-C J1. JLCPCB potrafi obrócić część względem KiCada (inne definicje pinu 1),
-  a CPL jest wygenerowany bez korekt rotacji. Poprawki robi się w kreatorze (przycisk obrotu), nie w plikach.
-- Sprawdzić w kreatorze, czy U2 (C211404) i USB-C (C165948) są na stanie i czy nie ma dopłaty lub ostrzeżenia.
-- Montaż tylko strony przedniej (wszystkie SMD są z przodu), grubość 1,6 mm, 2 warstwy.
-- Opcja „numer zamówienia na płytce”: JLCPCB dodaje własny numer na silkscreenie, jeśli nie ma na płytce
-  znacznika; można zamówić usunięcie za dopłatą lub zostawić.
-- Nic nie było sprawdzone na sprzęcie. Przed zamówieniem zalecam przetestować bloki na breadboardzie
-  (MAX7219, serwo, buzzer) i pomiary obudowy, gdy będą możliwe.
+- Potwierdzić wymiary w PDF (`renders/radar-pcb-v0.1-wymiary-do-weryfikacji.pdf`): oznaczone „?” to W1, W2, W6–W9
+  (zmienione położenie lub nowe), zmierzone to W10–W12.
+- Wymiary obudowy (wysokość DevKita, okna OLED/MAX, HC-SR04, SG90, buzzer) czekają na pomiary użytkownika.
+- Przetestować bloki na breadboardzie (MAX7219, serwo, buzzer). Płytka v0.2 nie była sprawdzana na sprzęcie.

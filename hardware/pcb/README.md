@@ -1,5 +1,11 @@
 # Płytka PCB radaru (KiCad 10)
 
+> **Stan 2026-10-15: wersja przewlekana v0.2** (76 × 137,5 mm, wszystko lutowane ręcznie, gniazdo DC zamiast USB-C,
+> piny DevKita wyprowadzone na listwy, pole prototypowe). Opisy poniżej (USB-C, U2, SMD, rozmieszczenie ręczne)
+> dotyczą wcześniejszej wersji SMD v0.1 i są **historyczne**; aktualne decyzje: [`order-notes.md`](order-notes.md).
+> Generatory: `tools/gen_schematic.py` (schemat), `tools/autoplace.py` (rozmieszczenie, `tools/geom.py` = kotwice i strefy),
+> `tools/gen_pcb.py` (płytka), `tools/build_all.sh` (całość, `SKIP_PLACE=1` używa zapisanego `tools/layout.json`).
+
 Status: **start projektu 2026-10-10.** Zamówienie dopiero po sprawdzeniu na breadboardzie
 wszystkich bloków i po kontrakcie mechanicznym (zob. `../README.md`).
 

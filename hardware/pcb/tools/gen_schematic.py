@@ -113,41 +113,39 @@ def text(x, y, s, size=2.0):
                  % (s, fmt(x), fmt(y), size, size, uid()))
 
 
-R = 'Resistor_SMD:R_0805_2012Metric'
-C = 'Capacitor_SMD:C_0805_2012Metric'
+R = 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal'
+C = 'Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm'
 CP8 = 'Capacitor_THT:CP_Radial_D8.0mm_P3.50mm'
 CP63 = 'Capacitor_THT:CP_Radial_D6.3mm_P2.50mm'
-HDR = 'Connector_PinHeader_2.54mm:PinHeader_1x%02d_P2.54mm_Vertical'
+HDR = 'Connector_PinSocket_2.54mm:PinSocket_1x%02d_P2.54mm_Vertical'   # wszystkie listwy na płytce są żeńskie
+HDR2 = 'Connector_PinHeader_2.54mm:PinHeader_2x%02d_P2.54mm_Vertical'
 SKT = 'Connector_PinSocket_2.54mm:PinSocket_1x%02d_P2.54mm_Vertical'
-TP = 'TestPoint:TestPoint_Pad_D1.5mm'
+TP = 'TestPoint:TestPoint_THTPad_D2.0mm_Drill1.0mm'
+DIODE_S = 'Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal'      # 1N4148
+DIODE_P = 'Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal'     # 1N5819
+DIODE_T = 'Diode_THT:D_DO-15_P10.16mm_Horizontal'           # TVS SA5.0A
 
 # ------------------------------------------------------------------ zasilanie
-text(30, 30, 'ZASILANIE 5 V: gniazdo USB-C (tylko zasilanie, rezystory CC 5,1 k), TVS, przelacznik z miekkim startem')
-place('J1', 'Connector', 'USB_C_Receptacle_USB2.0_16P', 'USB-C zasilanie 5 V (HRO TYPE-C-31-M-12)',
-      'Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12', 40, 60,
-      {'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', 'SH': 'GND',
-       'A4': 'VIN', 'A9': 'VIN', 'B4': 'VIN', 'B9': 'VIN', 'A5': 'CC1', 'B5': 'CC2'},
-      nc=['A6', 'A7', 'A8', 'B6', 'B7', 'B8'])
-place('R16', 'Device', 'R', '5,1 k', R, 60, 85, {'1': 'CC1', '2': 'GND'})
-place('R17', 'Device', 'R', '5,1 k', R, 80, 85, {'1': 'CC2', '2': 'GND'})
-place('D3', 'Device', 'D_Zener', 'SMAJ5.0A (TVS 5 V, jednokierunkowy)', 'Diode_SMD:D_SMA', 100, 85, {'1': 'VIN', '2': 'GND'})
-# przelacznik obciazenia z miekkim startem i ogranicznikiem pradu (zamiast polyfuse): AP22802AW5-7 (EN aktywny wysokim; pin w pin z AP22804AW5)
-place('U2', 'Power_Management', 'AP22804AW5', 'AP22802AW5-7 (przelacznik 5 V, LCSC C211404, limit ok. 2,2-3,2 A)',
-      'Package_TO_SOT_SMD:SOT-23-5', 75, 60, {'5': 'VIN', '4': 'VIN', '2': 'GND', '1': '+5V', '3': 'U2_FLG'})
-place('C16', 'Device', 'C', '1 uF', C, 95, 60, {'1': 'VIN', '2': 'GND'})
+text(30, 30, 'ZASILANIE 5 V: gniazdo DC 5,5/2,1 mm (srodek +), bezpiecznik PTC i dioda TVS (zwiera przy przepieciu i odwroconej polaryzacji, PTC odcina)')
+place('J1', 'Connector', 'Barrel_Jack_Switch', 'Gniazdo DC 5,5/2,1 mm, srodek +5 V',
+      'Connector_BarrelJack:BarrelJack_Horizontal', 40, 60, {'1': 'VIN', '2': 'GND'}, nc=['3'])
+place('F1', 'Device', 'Polyfuse', 'PTC 2 A (hold), rastr 5 mm', 'Capacitor_THT:C_Disc_D7.5mm_W5.0mm_P5.00mm', 75, 60,
+      {'1': 'VIN', '2': '+5V'})
+place('D3', 'Device', 'D_Zener', 'TVS SA5.0A (DO-15, katoda do +5V)', DIODE_T, 100, 85, {'1': '+5V', '2': 'GND'})
 flag(115, 50, 'VIN', '#FLG04')
+flag(130, 50, '+5V', '#FLG05')
 place('C1', 'Device', 'C_Polarized', '470 uF / 16 V', CP8, 150, 60, {'1': '+5V', '2': 'GND'})
 place('C2', 'Device', 'C', '100 nF', C, 175, 60, {'1': '+5V', '2': 'GND'})
 place('R1', 'Device', 'R', '1 k', R, 200, 60, {'1': '+5V', '2': 'LED_A'})
-place('D1', 'Device', 'LED', 'LED zasilania', 'LED_SMD:LED_0805_2012Metric', 225, 75, {'1': 'GND', '2': 'LED_A'})
+place('D1', 'Device', 'LED', 'LED zasilania 3 mm', 'LED_THT:LED_D3.0mm', 225, 75, {'1': 'GND', '2': 'LED_A'})
 flag(262, 50, 'GND', '#FLG02')
 flag(274, 50, '+3V3', '#FLG03')
 for i, (ref, net) in enumerate([('TP1', '+5V'), ('TP2', '+3V3'), ('TP3', 'GND'), ('TP4', 'TRIG_5V'), ('TP5', 'ECHO_3V3')]):
     place(ref, 'Connector', 'TestPoint', 'TP ' + net, TP, 40 + i * 22, 100, {'1': net}, show_value=False, in_bom=False)
 
 # ------------------------------------------------------------------ bufor AHCT125
-text(30, 130, 'BUFOR SN74AHCT125 (DIP-14 w podstawce): 3,3 V z ESP32 -> 5 V; wejscia A z pull-downami')
-U = ('74xx', '74AHCT125', 'SN74AHCT125D', 'Package_SO:SOIC-14_3.9x8.7mm_P1.27mm')
+text(30, 130, 'BUFOR SN74AHCT125N (DIP-14 w podstawce): 3,3 V z ESP32 -> 5 V; wejscia A z pull-downami')
+U = ('74xx', '74AHCT125', 'SN74AHCT125N (DIP-14)', 'Package_DIP:DIP-14_W7.62mm_Socket')
 gates = [(1, 80, 160, '1', '2', '3', 'TRIG'), (2, 80, 205, '4', '5', '6', 'DIN'),
          (3, 150, 160, '10', '9', '8', 'CLK'), (4, 150, 205, '13', '12', '11', 'CS')]
 for unit, x, y, oe, a, yy, sig in gates:
@@ -163,13 +161,18 @@ place('R6', 'Device', 'R', '10 k', R, 270, 175, {'1': 'ECHO_5V', '2': 'ECHO_3V3'
 place('R7', 'Device', 'R', '15 k', R, 300, 175, {'1': 'ECHO_3V3', '2': 'GND'})
 
 # ------------------------------------------------------------------ ESP32 DevKitC-1
-text(30, 226, 'ESP32-C6-DevKitC-1 (gniazda zenskie 1x16, J1 i J3 DevKita). Pin 5V DevKita (J2 pin 14) zasilany z +5V przez diode Schottky D4 (kierunek plytka -> DevKit): USB DevKita nie zasila plytki.')
-place('J2', 'Connector_Generic', 'Conn_01x16', 'DevKit J1', SKT % 16, 40, 262,
-      {'1': '+3V3', '5': 'ECHO_3V3', '6': 'DIN_3V3', '10': 'SERVO_3V3', '11': 'TRIG_3V3', '12': 'BTN_ESP', '14': 'DEVKIT_5V', '15': 'GND', '7': 'V5_SENSE', '8': 'CC1_SENSE', '13': 'CC2_SENSE', '2': 'EN'},
-      nc=['3', '4', '9', '16'])
-place('J3', 'Connector_Generic', 'Conn_01x16', 'DevKit J3', SKT % 16, 120, 262,
-      {'1': 'GND', '6': 'BUZ_CTRL', '7': 'SCL', '8': 'SDA', '9': 'CS_3V3', '10': 'CLK_3V3', '12': 'GND', '15': 'GND', '11': 'BOOT', '5': 'U2_FLG'},
-      nc=['2', '3', '4', '13', '14', '16'])
+text(30, 226, 'ESP32-C6-DevKitC-1 (gniazda zenskie 1x16). Wszystkie piny sa wyprowadzone na listwy J11 (lustro J3) i J12 (lustro J2). Pin 5V DevKita zasilany z +5V przez D4.')
+J2_NETS = {'1': '+3V3', '2': 'EN', '3': 'IO4', '4': 'IO5', '5': 'ECHO_3V3', '6': 'DIN_3V3', '7': 'V5_SENSE', '8': 'IO1',
+           '9': 'IO8', '10': 'SERVO_3V3', '11': 'TRIG_3V3', '12': 'BTN_ESP', '13': 'IO3', '14': 'DEVKIT_5V', '15': 'GND'}
+J3_NETS = {'1': 'GND', '2': 'TX', '3': 'RX', '4': 'IO15', '5': 'IO23', '6': 'BUZ_CTRL', '7': 'SCL', '8': 'SDA',
+           '9': 'CS_3V3', '10': 'CLK_3V3', '11': 'BOOT', '12': 'GND', '13': 'IO13', '14': 'IO12', '15': 'GND'}
+place('J2', 'Connector_Generic', 'Conn_01x16', 'DevKit J1', SKT % 16, 40, 262, J2_NETS, nc=['16'])
+place('J3', 'Connector_Generic', 'Conn_01x16', 'DevKit J3', SKT % 16, 120, 262, J3_NETS, nc=['16'])
+# listwy z kopia wszystkich sygnalow DevKita (do dalszych modyfikacji); pin 14 listwy J12 = szyna +5V plytki
+J12_NETS = dict(J2_NETS)
+J12_NETS['14'] = '+5V'
+place('J12', 'Connector_Generic', 'Conn_01x16', 'Piny DevKit J1 (kopia J2)', HDR % 16, 200, 262, J12_NETS, nc=['16'])
+place('J11', 'Connector_Generic', 'Conn_01x16', 'Piny DevKit J3 (kopia J3)', HDR % 16, 260, 262, dict(J3_NETS), nc=['16'])
 
 # ------------------------------------------------------------------ moduly i zlacza
 text(330, 30, 'MODULY I ZLACZA')
@@ -183,7 +186,7 @@ place('J5', 'Connector_Generic', 'Conn_01x03', 'Serwo SG90 (kabel): GND +5V SIG'
       {'1': 'GND', '2': 'SERVO_5V', '3': 'SERVO_SIG'})
 # zasilanie serwa przez miejsce na ferryt (montowac zworke 0 R albo ferryt >= 1 A): silnik nie zasmieca
 # szyny 5 V sonaru, bufora i matrycy; C4 + C10 przy zlaczu zasilaja impulsy pradu serwa
-place('FB1', 'Device', 'FerriteBead', '0 R (zworka; opcja: ferryt >= 1 A)', 'Inductor_SMD:L_0805_2012Metric', 300, 75,
+place('FB1', 'Device', 'R', '0 R (zworka z drutu; opcja: ferryt >= 1 A)', R, 300, 75,
       {'1': '+5V', '2': 'SERVO_5V'})
 place('C10', 'Device', 'C', '100 nF', C, 320, 75, {'1': 'SERVO_5V', '2': 'GND'})
 # rezystor ciagnie sygnal serwa do masy, gdy GPIO10 jest nieukonczone (reset, start): brak drgan serwa
@@ -200,12 +203,12 @@ place('C8', 'Device', 'C_Polarized', '100 uF / 16 V', CP63, 370, 140, {'1': '+5V
 place('C9', 'Device', 'C', '100 nF', C, 385, 140, {'1': '+5V', '2': 'GND'})
 place('J7', 'Connector_Generic', 'Conn_01x04', 'OLED SH1106: VCC GND SCK SDA', SKT % 4, 340, 165,
       {'1': '+3V3', '2': 'GND', '3': 'SCL', '4': 'SDA'})
-text(260, 200, 'BUZZER (typ do ustalenia): tranzystor + dioda')
+text(260, 200, 'BUZZER (aktywny lub pasywny, 5 V): tranzystor 2N3904 + dioda')
 place('R9', 'Device', 'R', '1 k', R, 270, 225, {'1': 'BUZ_CTRL', '2': 'BUZ_BASE'})
 place('R10', 'Device', 'R', '100 k', R, 295, 225, {'1': 'BUZ_BASE', '2': 'GND'})
-place('Q2', 'Transistor_BJT', 'MMBT3904', 'MMBT3904', 'Package_TO_SOT_SMD:SOT-23', 330, 225,
-      {'1': 'BUZ_BASE', '2': 'GND', '3': 'BUZ_NEG'})
-place('D2', 'Device', 'D', '1N4148W', 'Diode_SMD:D_SOD-123', 365, 225, {'1': '+5V', '2': 'BUZ_NEG'})
+place('Q2', 'Transistor_BJT', '2N3904', '2N3904 (TO-92, E B C)', 'Package_TO_SOT_THT:TO-92_Inline', 330, 225,
+      {'1': 'GND', '2': 'BUZ_BASE', '3': 'BUZ_NEG'})
+place('D2', 'Device', 'D', '1N4148', DIODE_S, 365, 225, {'1': '+5V', '2': 'BUZ_NEG'})
 place('J8', 'Connector_Generic', 'Conn_01x02', 'Buzzer: + -', HDR % 2, 395, 215, {'1': '+5V', '2': 'BUZ_NEG'})
 # odsprzezenie zasilania sterownika buzzera: przelaczanie 2 kHz nie moze wchodzic w szyne 5 V
 place('C11', 'Device', 'C', '100 nF', C, 420, 215, {'1': '+5V', '2': 'GND'})
@@ -221,21 +224,23 @@ place('R18', 'Device', 'R', '1 k', R, 300, 262, {'1': 'BTN', '2': 'BTN_ESP'})
 place('R19', 'Device', 'R', '10 k', R, 320, 262, {'1': 'BTN', '2': '+3V3'})
 
 # --- dodatki z audytu (2026-10-11)
-text(30, 300, 'DODATKI: dioda 5V DevKita, pomiary ADC (5V, CC1, CC2), BOOT/RST, pull-upy I2C (opcja)')
-place('D4', 'Device', 'D_Schottky', '1N5819HW', 'Diode_SMD:D_SOD-123', 40, 320, {'1': 'DEVKIT_5V', '2': '+5V'})
+text(30, 300, 'DODATKI: dioda 5V DevKita, pomiar napiecia 5 V (ADC), BOOT/RST, pull-upy I2C (opcja), listwa zasilania, pole prototypowe')
+place('D4', 'Device', 'D_Schottky', '1N5819', DIODE_P, 40, 320, {'1': 'DEVKIT_5V', '2': '+5V'})
 place('R20', 'Device', 'R', '100 k', R, 70, 320, {'1': '+5V', '2': 'V5_SENSE'})
 place('R21', 'Device', 'R', '47 k', R, 90, 320, {'1': 'V5_SENSE', '2': 'GND'})
 place('C13', 'Device', 'C', '100 nF', C, 110, 320, {'1': 'V5_SENSE', '2': 'GND'})
-place('R22', 'Device', 'R', '100 k', R, 130, 320, {'1': 'CC1', '2': 'CC1_SENSE'})
-place('C14', 'Device', 'C', '100 nF', C, 150, 320, {'1': 'CC1_SENSE', '2': 'GND'})
-place('R23', 'Device', 'R', '100 k', R, 170, 320, {'1': 'CC2', '2': 'CC2_SENSE'})
-place('C15', 'Device', 'C', '100 nF', C, 190, 320, {'1': 'CC2_SENSE', '2': 'GND'})
-place('R26', 'Device', 'R', '10 k', R, 310, 320, {'1': 'U2_FLG', '2': '+3V3'})
 place('J10', 'Connector_Generic', 'Conn_01x03', 'Awaryjne wgrywanie: BOOT GND RST (zworka na sasiednie piny)', HDR % 3, 220, 320,
       {'1': 'BOOT', '2': 'GND', '3': 'EN'})
 place('R24', 'Device', 'R', '4,7 k (nie montowac)', R, 250, 320, {'1': 'SCL', '2': '+3V3'})
 place('R25', 'Device', 'R', '4,7 k (nie montowac)', R, 270, 320, {'1': 'SDA', '2': '+3V3'})
 place('TP6', 'Connector', 'TestPoint', 'TP SERVO_5V', TP, 290, 320, {'1': 'SERVO_5V'}, show_value=False, in_bom=False)
+# listwa zasilania do wlasnych dodatkow: masa, 3,3 V, 5 V
+place('J13', 'Connector_Generic', 'Conn_01x08', 'Listwa zasilania: GND 3V3 5V', HDR % 8, 320, 320,
+      {'1': 'GND', '2': '+3V3', '3': '+5V', '4': 'GND', '5': 'GND', '6': '+3V3', '7': '+5V', '8': 'GND'})
+# pole prototypowe: 4 bloki otworow 2x14 (rastr 2,54 mm), niepodlaczone
+for k in range(4):
+    place('J%d' % (14 + k), 'Connector_Generic', 'Conn_02x14_Odd_Even', 'Pole prototypowe %d (2x14, niepodlaczone)' % (k + 1),
+          HDR2 % 14, 360 + k * 30, 320, {}, nc=[str(i) for i in range(1, 29)], show_value=False)
 
 if errors:
     print('BLEDY OPISU:')
@@ -246,7 +251,7 @@ lib_text = '\n'.join('    ' + t.replace('\n', '\n    ') for t in LIBS.values())
 sheet = (
     '(kicad_sch (version 20250114) (generator "radar_gen") (generator_version "1.0")\n'
     '  (uuid "%s")\n  (paper "A3")\n'
-    '  (title_block (title "Radar sonarowy ESP32-C6 - plytka glowna") (date "2026-10-10") (rev "0.1")\n'
+    '  (title_block (title "Radar sonarowy ESP32-C6 - plytka glowna, wersja przewlekana") (date "2026-10-15") (rev "0.2")\n'
     '    (comment 1 "Wersja robocza do przegladu. Nie zamawiac przed testem prototypu."))\n'
     '  (lib_symbols\n%s\n  )\n  %s\n  (sheet_instances (path "/" (page "1")))\n  (embedded_fonts no)\n)\n'
     % (ROOT, lib_text, '\n  '.join(items)))

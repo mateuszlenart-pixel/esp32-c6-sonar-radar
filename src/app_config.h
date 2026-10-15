@@ -70,8 +70,11 @@
 #define RADAR_POWER_TASK_STACK_SIZE 3072
 #define RADAR_POWER_TASK_PRIORITY 3
 
-// Power supervision on the PCB (hardware/pcb): +5V divider R20 100k / R21 47k, CC1/CC2 of the
-// USB-C power jack through 100k + 100 nF, U2 (AP22804) fault flag with pull-up R26.
+// Power supervision on the PCB (hardware/pcb): +5V divider R20 100k / R21 47k on GPIO0.
+// POWER_MONITOR_USB_C 1 = the earlier USB-C board: CC1/CC2 of the power jack on GPIO1/GPIO3 (100k + 100 nF)
+// and the load-switch fault flag on GPIO23. 0 = DC jack board (through-hole version): those pins are free
+// and only the 5 V rail is measured.
+#define POWER_MONITOR_USB_C 0
 #define GPIO_V5_SENSE 0
 #define GPIO_CC1_SENSE 1
 #define GPIO_CC2_SENSE 3
