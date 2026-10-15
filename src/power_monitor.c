@@ -19,8 +19,10 @@ static const char *TAG = "POWER_MON";
 static adc_oneshot_unit_handle_t s_adc;
 static adc_cali_handle_t s_cali;
 static adc_channel_t s_ch_v5;
+#if POWER_MONITOR_USB_C
 static adc_channel_t s_ch_cc1;
 static adc_channel_t s_ch_cc2;
+#endif
 static power_status_t s_status;
 static bool s_status_valid;
 static portMUX_TYPE s_lock = portMUX_INITIALIZER_UNLOCKED;
@@ -58,6 +60,8 @@ static esp_err_t sample(power_status_t *out)
     if (err != ESP_OK) {
         return err;
     }
+    out->supply_mv = usb_divider_to_supply_mv(v5_pin_mv, V5_DIVIDER_TOP_KOHM, V5_DIVIDER_BOTTOM_KOHM);
+#if POWER_MONITOR_USB_C
     err = read_mv(s_ch_cc1, &out->cc1_mv);
     if (err != ESP_OK) {
         return err;
@@ -66,9 +70,15 @@ static esp_err_t sample(power_status_t *out)
     if (err != ESP_OK) {
         return err;
     }
-    out->supply_mv = usb_divider_to_supply_mv(v5_pin_mv, V5_DIVIDER_TOP_KOHM, V5_DIVIDER_BOTTOM_KOHM);
     out->supply = usb_cc_best(usb_cc_classify(out->cc1_mv), usb_cc_classify(out->cc2_mv));
     out->overcurrent = gpio_get_level(GPIO_POWER_FAULT) == 0;
+#else
+    /* DC jack board: no CC lines and no load-switch flag; only the 5 V rail is measured. */
+    out->cc1_mv = 0;
+    out->cc2_mv = 0;
+    out->supply = USB_CC_NONE;
+    out->overcurrent = false;
+#endif
     return ESP_OK;
 }
 
@@ -94,9 +104,13 @@ static void power_monitor_task(void *arg)
             const bool changed = first || now.supply != last_supply ||
                                  now.overcurrent != last_overcurrent || low != last_low;
             if (changed || seconds_since_report >= POWER_MONITOR_REPORT_S) {
+#if POWER_MONITOR_USB_C
                 ESP_LOGI(TAG, "5V rail %u mV, CC1 %u mV, CC2 %u mV, supply: %s",
                          (unsigned)now.supply_mv, (unsigned)now.cc1_mv, (unsigned)now.cc2_mv,
                          usb_cc_name(now.supply));
+#else
+                ESP_LOGI(TAG, "5V rail %u mV", (unsigned)now.supply_mv);
+#endif
                 seconds_since_report = 0;
             }
             if (changed) {
@@ -136,10 +150,12 @@ esp_err_t power_monitor_start(void)
 {
     esp_err_t err = channel_for(GPIO_V5_SENSE, &s_ch_v5);
     if (err == ESP_OK) {
+#if POWER_MONITOR_USB_C
         err = channel_for(GPIO_CC1_SENSE, &s_ch_cc1);
     }
     if (err == ESP_OK) {
         err = channel_for(GPIO_CC2_SENSE, &s_ch_cc2);
+#endif
     }
     if (err != ESP_OK) {
         return err;
@@ -154,7 +170,11 @@ esp_err_t power_monitor_start(void)
         .atten = ADC_ATTEN_DB_12,
         .bitwidth = ADC_BITWIDTH_DEFAULT,
     };
+#if POWER_MONITOR_USB_C
     const adc_channel_t channels[] = {s_ch_v5, s_ch_cc1, s_ch_cc2};
+#else
+    const adc_channel_t channels[] = {s_ch_v5};
+#endif
     for (size_t i = 0; i < sizeof(channels) / sizeof(channels[0]); i++) {
         err = adc_oneshot_config_channel(s_adc, channels[i], &chan_cfg);
         if (err != ESP_OK) {
@@ -176,6 +196,7 @@ esp_err_t power_monitor_start(void)
         ESP_LOGW(TAG, "ADC calibration unavailable; readings are approximate");
     }
 
+#if POWER_MONITOR_USB_C
     /* U2 FLG is open drain, pulled up by R26 on the board; the internal pull-up only helps. */
     const gpio_config_t fault_cfg = {
         .pin_bit_mask = 1ULL << GPIO_POWER_FAULT,
@@ -188,6 +209,7 @@ esp_err_t power_monitor_start(void)
     if (err != ESP_OK) {
         return err;
     }
+#endif
 
     if (xTaskCreate(power_monitor_task, "power_monitor", RADAR_POWER_MONITOR_STACK_SIZE,
                     NULL, RADAR_POWER_MONITOR_PRIORITY, NULL) != pdPASS) {
