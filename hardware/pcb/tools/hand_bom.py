@@ -46,10 +46,10 @@ def describe(ref, value, fp):
         return ('Gniazdo zasilania DC 5,5/2,1 mm na PCB (plug srodek +)', 'pasuje CUI PJ-002A i zamienniki o rastrze pinow 0 / -6 / -3 x 4,7 mm')
     if name.startswith('SW_Tactile'):
         return ('Przycisk kątowy C&K PTS645VL58-2LFS (lub zgodny)', 'tact switch kątowy, 4 piny THT')
-    if name.startswith('PinHeader_1x'):
-        return ('Listwa goldpin męska 1x%d' % int(name.split('1x')[1][:2]), 'prosta, rastr 2,54 mm')
     if name.startswith('PinSocket_1x'):
-        return ('Listwa gniazdo żeńskie 1x%d' % int(name.split('1x')[1][:2]), 'prosta, rastr 2,54 mm, wysoka (8,5 mm) dla DevKita')
+        n = int(name.split('1x')[1][:2])
+        note = 'prosta, rastr 2,54 mm' + (', wysoka (8,5 mm) dla DevKita' if ref in ('J2', 'J3') else '')
+        return ('Listwa gniazdo żeńskie 1x%d' % n, note)
     return (value, name)
 
 
